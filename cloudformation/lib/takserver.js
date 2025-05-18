@@ -462,7 +462,7 @@ export default {
                 DesiredCount: 1,
                 NetworkConfiguration: {
                     AwsvpcConfiguration: {
-                        AssignPublicIp: 'ENABLED',
+                        AssignPublicIp: 'DISABLED',
                         SecurityGroups: [
                             cf.importValue(cf.join(['coe-tak-base-', cf.ref('Environment'), '-service-sg']))
                         ],
