@@ -106,7 +106,10 @@ export default {
                 Protocol: 'TCP',
                 TargetType: 'ip',
                 VpcId: cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-vpc-id'])),
-
+                TargetGroupAttributes: [{
+                    Key: "preserve_client_ip.enabled",
+                    Value: true
+                }],
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPort: 8443,
@@ -122,7 +125,10 @@ export default {
                 Protocol: 'TCP',
                 TargetType: 'ip',
                 VpcId: cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-vpc-id'])),
-
+                TargetGroupAttributes: [{
+                    Key: "preserve_client_ip.enabled",
+                    Value: true
+                }],
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPort: 8446,
@@ -138,7 +144,10 @@ export default {
                 Protocol: 'TCP',
                 TargetType: 'ip',
                 VpcId: cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-vpc-id'])),
-
+                TargetGroupAttributes: [{
+                    Key: "preserve_client_ip.enabled",
+                    Value: true
+                }],
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPort: 8446,
@@ -154,7 +163,10 @@ export default {
                 Protocol: 'TCP',
                 TargetType: 'ip',
                 VpcId: cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-vpc-id'])),
-
+                TargetGroupAttributes: [{
+                    Key: "preserve_client_ip.enabled",
+                    Value: true
+                }],
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPort: 8089,
@@ -170,7 +182,10 @@ export default {
                 Protocol: 'TCP',
                 TargetType: 'ip',
                 VpcId: cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-vpc-id'])),
-
+                TargetGroupAttributes: [{
+                    Key: "preserve_client_ip.enabled",
+                    Value: true
+                }],
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPort: 9001,
@@ -317,6 +332,13 @@ export default {
                                 'ssmmessages:CreateDataChannel',
                                 'ssmmessages:OpenControlChannel',
                                 'ssmmessages:OpenDataChannel'
+                            ],
+                            Resource: '*'
+                        },{
+                            // Monitor ECS task with CloudWatch
+                            Effect: 'Allow',
+                            Action: [
+                                'cloudwatch:PutMetricData'
                             ],
                             Resource: '*'
                         },{

@@ -64,13 +64,16 @@ const LDAP_Auth = {
     LDAP_Updateinterval: parseInt(process.env.TAKSERVER_CoreConfig_Auth_LDAP_Updateinterval) || 60,
     LDAP_Groupprefix: process.env.TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix || 'cn=tak_',
     LDAP_GroupNameExtractorRegex: process.env.TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex || 'cn=tak_(.*?)(?:,|$)',
+    LDAP_NestedGroupLookup: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_LDAP_NestedGroupLookup) || false,
     LDAP_Style: process.env.TAKSERVER_CoreConfig_Auth_LDAP_Style || 'DS',
     LDAP_ServiceAccountDN: process.env.TAKSERVER_CoreConfig_Auth_LDAP_ServiceAccountDN || 'cn=ldapservice,ou=users,',
     LDAP_GroupObjectClass: process.env.TAKSERVER_CoreConfig_Auth_LDAP_GroupObjectClass || 'groupOfNames',
-    LDAP_GroupBaseRDN: process.env.TAKSERVER_CoreConfig_Auth_LDAP_GroupBaseRDN || 'ou=group,',
+    LDAP_UserBaseRDN: process.env.TAKSERVER_CoreConfig_Auth_LDAP_UserBaseRDN || 'ou=users,',
+    LDAP_GroupBaseRDN: process.env.TAKSERVER_CoreConfig_Auth_LDAP_GroupBaseRDN || 'ou=groups,',
     LDAP_CallsignAttribute: process.env.TAKSERVER_CoreConfig_Auth_LDAP_CallsignAttribute || 'takCallsign',
     LDAP_ColorAttribute: process.env.TAKSERVER_CoreConfig_Auth_LDAP_ColorAttribute || 'takColor',
     LDAP_RoleAttribute: process.env.TAKSERVER_CoreConfig_Auth_LDAP_RoleAttribute || 'takRole'
+    
 };
 
 const Federation = {
@@ -181,6 +184,8 @@ if (!CoreConfig) {
                         serviceAccountCredential: process.env.LDAP_Password,
                         groupObjectClass: LDAP_Auth.LDAP_GroupObjectClass,
                         groupBaseRDN: LDAP_Auth.LDAP_GroupBaseRDN + process.env.LDAP_DN,
+                        userBaseRDN: LDAP_Auth.LDAP_UserBaseRDN + process.env.LDAP_DN,
+                        nestedGroupLookup: LDAP_Auth.LDAP_NestedGroupLookup,
                         callsignAttribute: LDAP_Auth.LDAP_CallsignAttribute,
                         colorAttribute: LDAP_Auth.LDAP_ColorAttribute,
                         roleAttribute: LDAP_Auth.LDAP_RoleAttribute,
