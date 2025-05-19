@@ -73,6 +73,18 @@ const LDAP_Auth = {
     LDAP_RoleAttribute: process.env.TAKSERVER_CoreConfig_Auth_LDAP_RoleAttribute || 'takRole'
 };
 
+const Federation = {
+    EnableFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableFederation) || true,
+    AllowFederatedDelete: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowFederatedDelete) || false,
+    AllowMissionFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowMissionFederation) || true,
+    AllowDataFeedFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowDataFeedFederation) || true,
+    EnableMissionFederationDisruptionTolerance: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableMissionFederationDisruptionTolerance) || true,
+    MissionFederationDisruptionToleranceRecencySeconds: parseInt(process.env.TAKSERVER_CoreConfig_Federation_MissionFederationDisruptionToleranceRecencySeconds) || 43200,
+    EnableDataPackageAndMissionFileFilter: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableDataPackageAndMissionFileFilter) || false,
+    Federation_WebBaseUrl: process.env.TAKSERVER_CoreConfig_Federation_WebBaseUrl || 'https://localhost:8443/Marti'
+};
+
+
 const RemoteCoreConfig: Static<typeof CoreConfigType> | null = null;
 let CoreConfig: Static<typeof CoreConfigType> | null = null;
 
@@ -309,6 +321,57 @@ if (!CoreConfig) {
                         keystoreFile: '/opt/tak/certs/files/truststore-root.jks',
                         keystorePass: 'atakatak'
                     }
+                }
+            },
+            federation: {
+                _attributes: {
+                    allowFederatedDelete: Federation.AllowFederatedDelete,
+                    allowMissionFederation: Federation.AllowMissionFederation,
+                    allowDataFeedFederation: Federation.AllowDataFeedFederation,
+                    enableMissionFederationDisruptionTolerance: Federation.EnableMissionFederationDisruptionTolerance,
+                    missionFederationDisruptionToleranceRecencySeconds: Federation.MissionFederationDisruptionToleranceRecencySeconds,
+                    enableFederation: Federation.EnableFederation,
+                    enableDataPackageAndMissionFileFilter: Federation.EnableDataPackageAndMissionFileFilter
+                },
+                'federation-server': {
+                    _attributes: {
+                        port: 9000,
+                        coreVersion: 2,
+                        v1enabled: false,
+                        v2port: 9001,
+                        v2enabled: true,
+                        webBaseUrl: Federation.Federation_WebBaseUrl,
+                    },
+                    tls: {
+                        _attributes: {
+                            keystore: 'JKS',
+                            keystoreFile: '/opt/tak/certs/files/takserver.jks',
+                            keystorePass: 'atakatak',
+                            truststore: 'JKS',
+                            truststoreFile: '/opt/tak/certs/files/fed-truststore.jks',
+                            truststorePass: 'atakatak',
+                            context: 'TLSv1.2',
+                            keymanager: 'SunX509'
+                        }
+                    },
+                    'federation-port': {
+                        _attributes: {
+                            port: 9000,
+                            tlsVersion: 'TLSv1.2'
+                        }
+                    },
+                    v1Tls: [{
+                        _attributes: {
+                            tlsVersion: 'TLSv1.2'
+                        }
+                    },{
+                        _attributes: {
+                            tlsVersion: 'TLSv1.3'
+                        }
+                    }]
+                },
+                fileFilter: {
+                    fileExtension: ['pref']
                 }
             },
             plugins: {},

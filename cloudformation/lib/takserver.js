@@ -8,51 +8,6 @@ export default {
             AllowedValues: ['true', 'false'],
             Default: 'false'
         },
-//        CertificateCountry: {
-//            Description: '2 Letter Country Code',
-//            Type: 'String',
-//            Default: 'NZ'
-//        },
-//        CertificateState: {
-//            Description: 'Region or state name or code',
-//            Type: 'String',
-//            Default: 'Wellington'
-//        },
-//        CertificateCity: {
-//            Description: 'City Name',
-//            Type: 'String',
-//           Default: 'Wellington'
-//        },
-//        CertificateOrg: {
-//            Description: 'Organization',
-//            Type: 'String',
-//            Default: 'TAK-NZ'
-//        },
-//        CertificateOrgUnit: {
-//            Description: 'Organization Unit',
-//            Type: 'String',
-//            Default: 'TAK'
-//        },
-//        HostedDomain: {
-//            Description: 'Hosted Domain',
-//            Type: 'String',
-//            Default: 'ops.exampletak.com'
-//        },
-//        HostedEmail: {
-//            Description: 'Hosted Email',
-//            Type: 'String'
-//        },
-//        LetsencryptProdCert: {
-//            Description: 'Issue Let\'s Encrypt Production Certificate?',
-//            Type: 'String',
-//            AllowedValues: ['true', 'false'],
-//            Default: 'false'
-//        },
-        LDAPDN: {
-            Description: 'LDAP Base DN',
-            Type: 'String',
-            Default: 'DC=example,DC=com'
-        },
         LDAPSecureUrl: {
             Description: 'LDAP Secure Connection URL',
             Type: 'String',
@@ -132,6 +87,18 @@ export default {
                 Protocol: 'TCP'
             }
         },
+        Listener9001: {
+            Type: 'AWS::ElasticLoadBalancingV2::Listener',
+            Properties: {
+                DefaultActions: [{
+                    Type: 'forward',
+                    TargetGroupArn: cf.ref('TargetGroup9001')
+                }],
+                LoadBalancerArn: cf.importValue(cf.join(['coe-tak-base-', cf.ref('Environment'), '-elb'])),
+                Port: 9001,
+                Protocol: 'TCP'
+            }
+        },
         TargetGroup8443: {
             Type: 'AWS::ElasticLoadBalancingV2::TargetGroup',
             Properties: {
@@ -191,6 +158,22 @@ export default {
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPort: 8089,
+                HealthCheckProtocol: 'TCP',
+                HealthCheckTimeoutSeconds: 10,
+                HealthyThresholdCount: 2
+            }
+        },
+        TargetGroup9001: {
+            Type: 'AWS::ElasticLoadBalancingV2::TargetGroup',
+            Properties: {
+                Port: 9001,
+                Protocol: 'TCP',
+                TargetType: 'ip',
+                VpcId: cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-vpc-id'])),
+
+                HealthCheckEnabled: true,
+                HealthCheckIntervalSeconds: 30,
+                HealthCheckPort: 9001,
                 HealthCheckProtocol: 'TCP',
                 HealthCheckTimeoutSeconds: 10,
                 HealthyThresholdCount: 2
@@ -271,9 +254,11 @@ export default {
                         ContainerPort: 8446
                     },{
                         ContainerPort: 8089
+                    },{
+                        ContainerPort: 9001
                     }],
                     Environment: [
-                        { Name: 'LDAP_DN',              Value: cf.ref('LDAPDN') },
+                        { Name: 'LDAP_DN',              Value: cf.importValue(cf.join(['coe-auth-', cf.ref('Environment'), '-auth-ldap-basedn'])) },
                         { Name: 'LDAP_SECURE_URL',      Value: cf.ref('LDAPSecureUrl') },
                         { Name: 'StackName',            Value: cf.stackName  },
                         { Name: 'Environment',          Value: cf.ref('Environment') },
@@ -281,14 +266,6 @@ export default {
                         { Name: 'ECS_Service_Name',     Value: cf.join([cf.stackName,  '-Service']) },
                         { Name: 'PostgresUsername',     Value: cf.sub('{{resolve:secretsmanager:coe-tak-base-${Environment}/rds/secret:SecretString:username:AWSCURRENT}}') },
                         { Name: 'PostgresURL',          Value: cf.join(['postgresql://', cf.importValue(cf.join(['coe-tak-base-', cf.ref('Environment'), '-db-endpoint'])), ':5432/takserver']) },
-                        // { Name: 'HostedEmail',          Value: cf.ref('HostedEmail') },
-                        // { Name: 'HostedDomain',         Value: cf.ref('HostedDomain') },
-                        // { Name: 'LetsencryptProdCert',  Value: cf.ref('LetsencryptProdCert') },
-                        // { Name: 'COUNTRY',              Value: cf.ref('CertificateCountry') },
-                        // { Name: 'STATE',                Value: cf.ref('CertificateState') },
-                        // { Name: 'CITY',                 Value: cf.ref('CertificateCity') },
-                        // { Name: 'ORGANIZATION',         Value: cf.ref('CertificateOrg') },
-                        // { Name: 'ORGANIZATIONAL_UNIT',  Value: cf.ref('CertificateOrgUnit') },
                     ],
                     Secrets: [
                         { Name: 'LDAP_Password',        ValueFrom: cf.join([cf.importValue(cf.join(['coe-auth-', cf.ref('Environment'), '-ldapservice-user'])), ':password::']) },
@@ -467,8 +444,8 @@ export default {
                             cf.importValue(cf.join(['coe-tak-base-', cf.ref('Environment'), '-service-sg']))
                         ],
                         Subnets:  [
-                            cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-subnet-public-a'])),
-                            cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-subnet-public-b']))
+                            cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-subnet-private-a'])),
+                            cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-subnet-private-b']))
                         ]
                     }
                 },
@@ -488,6 +465,10 @@ export default {
                     ContainerName: 'takserver',
                     ContainerPort: 8089,
                     TargetGroupArn: cf.ref('TargetGroup8089')
+                },{
+                    ContainerName: 'takserver',
+                    ContainerPort: 9001,
+                    TargetGroupArn: cf.ref('TargetGroup9001')
                 }]
             }
         }

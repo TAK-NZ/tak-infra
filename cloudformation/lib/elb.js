@@ -43,6 +43,12 @@ export default {
                     IpProtocol: 'tcp',
                     FromPort: 8089,
                     ToPort: 8089
+                },{
+                    Description: 'ELB Traffic',
+                    SourceSecurityGroupId: cf.ref('ELBSecurityGroup'),
+                    IpProtocol: 'tcp',
+                    FromPort: 9001,
+                    ToPort: 9001
                 }]
             }
         },
@@ -100,6 +106,11 @@ export default {
                     IpProtocol: 'tcp',
                     FromPort: 8089,
                     ToPort: 8089
+                },{
+                    CidrIp: '0.0.0.0/0',
+                    IpProtocol: 'tcp',
+                    FromPort: 9001,
+                    ToPort: 9001
                 }],
                 VpcId: cf.importValue(cf.join(['coe-base-', cf.ref('Environment'), '-vpc-id']))
             }

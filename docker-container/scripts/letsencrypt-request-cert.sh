@@ -6,8 +6,9 @@ if [[ -z "${TAKSERVER_QuickConnect_LetsEncrypt_Domain+x}" || \
     ( "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" != "Production" && "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" != "Staging" ) \
     ]]; then
     echo "ok - TAK Server - Using self-signed certs instead of LetsEncrypt certs"
+    mkdir /opt/tak/certs/files/nodomainset || true
     cp /opt/tak/certs/files/takserver.jks /opt/tak/certs/files/nodomainset/letsencrypt.jks || true        
-    exit 1
+    exit 0
 fi
 
 # If LetsEncrypt certs are present - check validity
@@ -28,7 +29,9 @@ if [ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]; 
             echo "ok - Certbot - Staging cert exists, No cert requested - Using self-signed certs..."
             cp /opt/tak/certs/files/takserver.jks /opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks || true
             aws ecs update-service --cluster $ECS_Cluster_Name --service $ECS_Service_Name --force-new-deployment
+            exit 0
         fi
+    # Check if the issuer is from the Let's Encrypt production environment        
     elif echo "$ISSUER" | grep -q "Let's Encrypt"; then
         if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Production" ]; then
             echo "ok - Certbot - Production cert exists, Production cert requested - Nothing to be done"
@@ -39,6 +42,7 @@ if [ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]; 
             echo "ok - Certbot - Production cert exists, No cert requested - Using self-signed certs..."
             cp /opt/tak/certs/files/takserver.jks /opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks || true
             aws ecs update-service --cluster $ECS_Cluster_Name --service $ECS_Service_Name --force-new-deployment
+            exit 0
         fi
     else
         if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Production" ]; then
@@ -51,6 +55,7 @@ if [ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]; 
             echo "ok - Certbot - No cert exists, No cert requested - Using self-signed certs..."
             cp /opt/tak/certs/files/takserver.jks /opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks || true
             aws ecs update-service --cluster $ECS_Cluster_Name --service $ECS_Service_Name --force-new-deployment
+            exit 0
         fi
     fi
 fi
@@ -77,10 +82,6 @@ if [ ! -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]
 
     # Save Certbot Cronjob
     cp /etc/cron.d/certbot /etc/letsencrypt/certbot.cron
-
-    # Force generation of new TAK certs from LetsEncrypt certs on new task deployment
-
-    rm -rf "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}"
 
     echo "ok - Certbot - New LetsEncrypt certs issued - Deploying new ECS task..."
 
