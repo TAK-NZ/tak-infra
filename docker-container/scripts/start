@@ -15,12 +15,10 @@ if [ -d "/opt/tak/certs/files/" ]; then
     mkdir -p "/opt/tak/certs/files/"
 fi
 
-# Attempt to restore Certbot Cronjob or save it, if it exists
+# Attempt to restore Certbot Cronjob
 echo "ok - Certbot - Restoring cronjob"
 if [ ! -e "/etc/cron.d/certbot" ]; then
     cp /etc/letsencrypt/certbot.cron /etc/cron.d/certbot || true
-else
-    cp /etc/cron.d/certbot /etc/letsencrypt/certbot.cron || true
 fi
 
 # Check if TAK certs exist, otherwise generate them
@@ -47,7 +45,9 @@ fi
 # Restore certs for self-enrollment (HTTPS on TCP/8446)
 # Check if certs for self-enrollment (HTTPS on TCP/8446) exist
 mkdir /opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain} || true
-if [ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]; then
+if [[ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" && \
+    ( "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Production" || "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Staging" ) \
+    ]]; then
     # Previous LetsEncrypt cert exists, convert it to JKS format
     echo "ok - TAK Server - Converting LetsEncrypt certs to TAK format"
     openssl x509 \
@@ -71,7 +71,7 @@ if [ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]; 
         -srckeystore "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.p12" \
         -srcstoretype "pkcs12" 
 else 
-    # No previous LetsEncrypt cert exists, use the self-signed one instead
+    # No previous LetsEncrypt cert exists or settings call for none to be used, use the self-signed one instead
     echo "ok - TAK Server - Using self-signed certs instead of LetsEncrypt certs"
     cp /opt/tak/certs/files/takserver.jks /opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks || true
 fi
