@@ -24,12 +24,18 @@ fi
 # Check if TAK certs exist, otherwise generate them
 cd /opt/tak/certs
 if [ ! -f "/opt/tak/certs/files/ca.pem" ]; then
-    echo "ok - TAK Server - Generating new certificates"
+    echo "ok - TAK Server - Generating new certificates..."
     echo "ok - TAK Server - CA Country: ${TAKSERVER_CACert_Country:=NZ}"
     echo "ok - TAK Server - CA State: ${TAKSERVER_CACert_State:=Wellington}"
     echo "ok - TAK Server - CA City: ${TAKSERVER_CACert_City:=Wellington}"
     echo "ok - TAK Server - CA Organization: ${TAKSERVER_CACert_Org:=TAK.NZ}"
     echo "ok - TAK Server - CA Organizational Unit: ${TAKSERVER_CACert_OrgUnit:=TAK.NZ Operations}" 
+    export COUNTRY=${TAKSERVER_CACert_Country}
+    export STATE=${TAKSERVER_CACert_State}
+    export CITY=${TAKSERVER_CACert_City}
+    export ORGANIZATION=${TAKSERVER_CACert_Org}
+    export ORGANIZATIONAL_UNIT=${TAKSERVER_CACert_OrgUnit}
+    sed -i -e 's/COUNTRY=US/COUNTRY=${COUNTRY}/' /opt/tak/certs/cert-metadata.sh
     /opt/tak/certs/cert-metadata.sh
     mkdir -p "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain:=nodomainset}/"
     /opt/tak/certs/makeRootCa.sh --ca-name ${TAKSERVER_CACert_Org}
