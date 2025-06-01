@@ -90,6 +90,27 @@ const Federation = {
     Federation_WebBaseUrl: process.env.TAKSERVER_CoreConfig_Federation_WebBaseUrl || 'https://localhost:8443/Marti'
 };
 
+const OAuth = {
+    OauthUseGroupCache: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache || 'false'),
+    LoginWithEmail: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuth_LoginWithEmail || 'false'),
+    UseTakServerLoginPage: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage || 'false'),
+    GroupsClaim: process.env.TAKSERVER_CoreConfig_OAuth_GroupsClaim || 'groups',
+    UsernameClaim: process.env.TAKSERVER_CoreConfig_OAuth_UsernameClaim,
+    ScopeClaim: process.env.TAKSERVER_CoreConfig_OAuth_ScopeClaim || 'scope',
+    WebtakScope: process.env.TAKSERVER_CoreConfig_OAuth_WebtakScope,
+    Groupprefix: process.env.TAKSERVER_CoreConfig_OAuth_Groupprefix,
+    OAuthServerName: process.env.TAKSERVER_CoreConfig_OAuthServer_Name,
+    OAuthServerIssuer: process.env.TAKSERVER_CoreConfig_OAuthServer_Issuer,
+    OAuthServerClientId: process.env.TAKSERVER_CoreConfig_OAuthServer_ClientId,
+    OAuthServerSecret: process.env.TAKSERVER_CoreConfig_OAuthServer_Secret,
+    OAuthServerRedirectUri: process.env.TAKSERVER_CoreConfig_OAuthServer_RedirectUri,
+    OAuthServerScope: process.env.TAKSERVER_CoreConfig_OAuthServer_Scope,
+    OAuthServerAuthEndpoint: process.env.TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint,
+    OAuthServerTokenEndpoint: process.env.TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint,
+    OAuthServerAccessTokenName: process.env.TAKSERVER_CoreConfig_OAuthServer_AccessTokenName || 'access_token',
+    OAuthServerRefreshTokenName: process.env.TAKSERVER_CoreConfig_OAuthServer_RefreshTokenName || 'refresh_token',
+    OAuthServerTrustAllCerts: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts || 'false')
+};
 
 const RemoteCoreConfig: Static<typeof CoreConfigType> | null = null;
 let CoreConfig: Static<typeof CoreConfigType> | null = null;
@@ -200,7 +221,36 @@ if (!CoreConfig) {
                         ldapsTruststorePass: 'INTENTIONALLY_NOT_SENSITIVE',
                         enableConnectionPool: false
                     }
-                }
+                },
+                ...(OAuth.OAuthServerName && OAuth.OAuthServerIssuer && OAuth.OAuthServerClientId && OAuth.OAuthServerSecret && OAuth.OAuthServerRedirectUri && OAuth.OAuthServerAuthEndpoint && OAuth.OAuthServerTokenEndpoint) && ({
+                    oauth: {
+                        _attributes: {
+                            oauthUseGroupCache: OAuth.OauthUseGroupCache,
+                            loginWithEmail: OAuth.LoginWithEmail,
+                            useTakServerLoginPage: OAuth.UseTakServerLoginPage,
+                            groupsClaim: OAuth.GroupsClaim,
+                            ...(OAuth.UsernameClaim && { usernameClaim: OAuth.UsernameClaim }),
+                            scopeClaim: OAuth.ScopeClaim,
+                            ...(OAuth.WebtakScope && { webtakScope: OAuth.WebtakScope }),
+                            ...(OAuth.Groupprefix && { groupprefix: OAuth.Groupprefix })
+                        },
+                        authServer: {
+                            _attributes: {
+                                name: OAuth.OAuthServerName,
+                                issuer: OAuth.OAuthServerIssuer,
+                                clientId: OAuth.OAuthServerClientId,
+                                secret: OAuth.OAuthServerSecret,
+                                redirectUri: OAuth.OAuthServerRedirectUri,
+                                authEndpoint: OAuth.OAuthServerAuthEndpoint,
+                                ...(OAuth.OAuthServerScope && { scope: OAuth.OAuthServerScope }),
+                                tokenEndpoint: OAuth.OAuthServerTokenEndpoint,
+                                accessTokenName: OAuth.OAuthServerAccessTokenName,
+                                refreshTokenName: OAuth.OAuthServerRefreshTokenName,
+                                trustAllCerts: OAuth.OAuthServerTrustAllCerts
+                            }
+                        }
+                    }
+                })
             },
             submission: {
                 _attributes: {
