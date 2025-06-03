@@ -86,6 +86,15 @@ fi
 # Request LetsEncrypt certs in background
 /opt/tak/scripts/letsencrypt-request-cert.sh &
 
+# Download OIDC issuer public certificate if configured
+if [ -n "${TAKSERVER_CoreConfig_OAuthServer_JWKS:-}" ] && [ -n "${TAKSERVER_CoreConfig_OAuthServer_Issuer:-}" ]; then
+    echo "ok - TAK Server - Downloading OIDC issuer public certificate"
+    /opt/tak/scripts/getOIDCIssuerPubKey.sh
+else
+    echo "ok - TAK Server - No OIDC issuer public certificate configured, skipping download"
+fi
+
+
 echo "ok - TAK Server - Generating config file"
 cd /opt/tak
 npx tsx /opt/tak/scripts/CoreConfig.ts
