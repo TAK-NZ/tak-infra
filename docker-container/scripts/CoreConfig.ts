@@ -94,11 +94,12 @@ const OAuth = {
     OauthUseGroupCache: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache || 'false'),
     LoginWithEmail: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuth_LoginWithEmail || 'false'),
     UseTakServerLoginPage: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage || 'false'),
-    GroupsClaim: process.env.TAKSERVER_CoreConfig_OAuth_GroupsClaim || 'groups',
+    GroupsClaim: process.env.TAKSERVER_CoreConfig_OAuth_GroupsClaim,
     UsernameClaim: process.env.TAKSERVER_CoreConfig_OAuth_UsernameClaim,
-    ScopeClaim: process.env.TAKSERVER_CoreConfig_OAuth_ScopeClaim || 'scope',
+    ScopeClaim: process.env.TAKSERVER_CoreConfig_OAuth_ScopeClaim,
     WebtakScope: process.env.TAKSERVER_CoreConfig_OAuth_WebtakScope,
     Groupprefix: process.env.TAKSERVER_CoreConfig_OAuth_Groupprefix,
+    AllowUriQueryParameter: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuth_AllowUriQueryParameter || 'false'),
     OAuthServerName: process.env.TAKSERVER_CoreConfig_OAuthServer_Name,
     OAuthServerIssuer: process.env.TAKSERVER_CoreConfig_OAuthServer_Issuer,
     OAuthServerClientId: process.env.TAKSERVER_CoreConfig_OAuthServer_ClientId,
@@ -107,8 +108,8 @@ const OAuth = {
     OAuthServerScope: process.env.TAKSERVER_CoreConfig_OAuthServer_Scope,
     OAuthServerAuthEndpoint: process.env.TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint,
     OAuthServerTokenEndpoint: process.env.TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint,
-    OAuthServerAccessTokenName: process.env.TAKSERVER_CoreConfig_OAuthServer_AccessTokenName || 'access_token',
-    OAuthServerRefreshTokenName: process.env.TAKSERVER_CoreConfig_OAuthServer_RefreshTokenName || 'refresh_token',
+    OAuthServerAccessTokenName: process.env.TAKSERVER_CoreConfig_OAuthServer_AccessTokenName,
+    OAuthServerRefreshTokenName: process.env.TAKSERVER_CoreConfig_OAuthServer_RefreshTokenName,
     OAuthServerTrustAllCerts: stringToBoolean(process.env.TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts || 'false')
 };
 
@@ -225,14 +226,15 @@ if (!CoreConfig) {
                 ...(OAuth.OAuthServerName && OAuth.OAuthServerIssuer && OAuth.OAuthServerClientId && OAuth.OAuthServerSecret && OAuth.OAuthServerRedirectUri && OAuth.OAuthServerAuthEndpoint && OAuth.OAuthServerTokenEndpoint) && ({
                     oauth: {
                         _attributes: {
-                            oauthUseGroupCache: OAuth.OauthUseGroupCache,
-                            loginWithEmail: OAuth.LoginWithEmail,
-                            useTakServerLoginPage: OAuth.UseTakServerLoginPage,
-                            groupsClaim: OAuth.GroupsClaim,
+                            ...(OAuth.OauthUseGroupCache && { oauthUseGroupCache: OAuth.OauthUseGroupCache }),
+                            ...(OAuth.LoginWithEmail && { loginWithEmail: OAuth.LoginWithEmail }),
+                            ...(OAuth.UseTakServerLoginPage && { useTakServerLoginPage: OAuth.UseTakServerLoginPage }),
+                            ...(OAuth.GroupsClaim && { groupsClaim: OAuth.GroupsClaim }),
                             ...(OAuth.UsernameClaim && { usernameClaim: OAuth.UsernameClaim }),
-                            scopeClaim: OAuth.ScopeClaim,
+                            ...(OAuth.ScopeClaim && { scopeClaim: OAuth.ScopeClaim }),
                             ...(OAuth.WebtakScope && { webtakScope: OAuth.WebtakScope }),
-                            ...(OAuth.Groupprefix && { groupprefix: OAuth.Groupprefix })
+                            ...(OAuth.Groupprefix && { groupprefix: OAuth.Groupprefix }),
+                            ...(OAuth.AllowUriQueryParameter && { allowUriQueryParameter: OAuth.AllowUriQueryParameter })
                         },
                         authServer: {
                             _attributes: {
@@ -244,9 +246,9 @@ if (!CoreConfig) {
                                 authEndpoint: OAuth.OAuthServerAuthEndpoint,
                                 ...(OAuth.OAuthServerScope && { scope: OAuth.OAuthServerScope }),
                                 tokenEndpoint: OAuth.OAuthServerTokenEndpoint,
-                                accessTokenName: OAuth.OAuthServerAccessTokenName,
-                                refreshTokenName: OAuth.OAuthServerRefreshTokenName,
-                                trustAllCerts: OAuth.OAuthServerTrustAllCerts
+                                ...(OAuth.OAuthServerAccessTokenName && { accessTokenName: OAuth.OAuthServerAccessTokenName }),
+                                ...(OAuth.OAuthServerRefreshTokenName && { refreshTokenName: OAuth.OAuthServerRefreshTokenName }),
+                                ...(OAuth.OAuthServerTrustAllCerts && { trustAllCerts: OAuth.OAuthServerTrustAllCerts })
                             }
                         }
                     }
