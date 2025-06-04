@@ -3,7 +3,7 @@ LABEL org.opencontainers.image.source=https://github.com/tak-nz/takserver
 LABEL org.opencontainers.image.description="TAK server for deployment with AWS ECS"
 LABEL org.opencontainers.image.licenses=MIT
 RUN apt update \
-    && apt-get install -y cron emacs-nox net-tools vim certbot curl libxml2-utils unzip zip nodejs awscli
+    && apt-get install -y cron emacs-nox net-tools vim certbot curl libxml2-utils unzip zip nodejs awscli jq
 
 ENV HOME=/opt/tak
 WORKDIR $HOME
