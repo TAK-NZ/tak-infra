@@ -1,0 +1,12 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "testMatch": [
+    "<rootDir>/test/**/*.test.ts"
+  ],
+  "coverageReporters": ["text"],
+  "collectCoverageFrom": [
+    "lib/**/*.ts",
+    "!lib/**/*.d.ts"
+  ]
+}

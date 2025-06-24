@@ -1,0 +1,21 @@
+{
+  "version": "44.0.0",
+  "files": {
+    "c0e73ff2ae99f3cf590a03f95cf157b29698b1c9bca90dab7c9ba64a9754b3e3": {
+      "displayName": "TAK-Dev-TakInfra Template",
+      "source": {
+        "path": "TAK-Dev-TakInfra.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "453572736517-ap-southeast-2": {
+          "bucketName": "cdk-hnb659fds-assets-453572736517-ap-southeast-2",
+          "objectKey": "c0e73ff2ae99f3cf590a03f95cf157b29698b1c9bca90dab7c9ba64a9754b3e3.json",
+          "region": "ap-southeast-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::453572736517:role/cdk-hnb659fds-file-publishing-role-453572736517-ap-southeast-2"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
