@@ -1,23 +1,54 @@
 #!/usr/bin/env node
-import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { TakInfraStack } from '../lib/tak-infra-stack';
+import { applyContextOverrides } from '../lib/utils/context-overrides';
+import { DEFAULT_AWS_REGION } from '../lib/utils/constants';
+import { generateStandardTags } from '../lib/utils/tag-helpers';
 
 const app = new cdk.App();
 
-const env = app.node.tryGetContext('env') || 'dev-test';
-const config = app.node.tryGetContext(env);
+// Get environment from context (defaults to dev-test)
+const envName = app.node.tryGetContext('env') || 'dev-test';
+
+// Get the environment configuration from context
+// CDK automatically handles context overrides via --context flag
+const envConfig = app.node.tryGetContext(envName);
 const defaults = app.node.tryGetContext('tak-defaults');
 
-if (!config) {
-  throw new Error(`No configuration found for environment: ${env}`);
+if (!envConfig) {
+  throw new Error(`
+❌ Environment configuration for '${envName}' not found in cdk.json
+
+Usage:
+  npx cdk deploy --context env=dev-test
+  npx cdk deploy --context env=prod
+
+Expected cdk.json structure:
+{
+  "context": {
+    "dev-test": { ... },
+    "prod": { ... }
+  }
+}
+  `);
 }
 
-new TakInfraStack(app, `TAK-${config.stackName}-TakInfra`, {
+// Apply context overrides for non-prefixed parameters
+// This supports direct overrides that work for any environment:
+// --context takServerHostname=custom-tak
+// --context branding=custom-brand
+const finalEnvConfig = applyContextOverrides(app, envConfig);
+
+// Create stack name
+const stackName = `TAK-${finalEnvConfig.stackName}-TakInfra`;
+
+// Create the stack
+const stack = new TakInfraStack(app, stackName, {
+  environment: envName as 'prod' | 'dev-test',
+  envConfig: finalEnvConfig,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: defaults.region,
+    region: process.env.CDK_DEFAULT_REGION || defaults?.region || DEFAULT_AWS_REGION,
   },
-  config,
-  defaults,
+  tags: generateStandardTags(finalEnvConfig, envName as 'prod' | 'dev-test', defaults)
 });

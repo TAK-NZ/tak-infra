@@ -36,17 +36,17 @@ This document outlines the comprehensive migration plan to convert the TAK Infra
 - [x] Configure ESLint and TypeScript compiler
 
 #### 1.2 Configuration Management
-- [ ] Create `cdk.json` with environment contexts (dev-test, prod)
-- [ ] Implement context-based configuration system
-- [ ] Create stack configuration interfaces
-- [ ] Set up environment-specific parameters
-- [ ] Configure CDK feature flags
+- [x] Create `cdk.json` with environment contexts (dev-test, prod)
+- [x] Implement context-based configuration system
+- [x] Create stack configuration interfaces
+- [x] Set up environment-specific parameters
+- [x] Configure CDK feature flags
 
 #### 1.3 Utility Infrastructure
-- [ ] Create utility functions for tagging
-- [ ] Implement CloudFormation import helpers
-- [ ] Set up constants and configuration validators
-- [ ] Create context override mechanisms
+- [x] Create utility functions for tagging
+- [x] Implement CloudFormation import helpers
+- [x] Set up constants and configuration validators
+- [x] Create context override mechanisms
 
 ### Phase 2: Core Infrastructure Migration
 **Duration**: 3-4 days
@@ -329,11 +329,19 @@ The stack will import the following from auth-infra:
 6. **New Naming Convention**: Follow BaseInfra/AuthInfra patterns instead of current coe-tak naming
 
 ### Essential Reference Patterns to Follow
+**⚠️ CRITICAL: Always check reference projects before implementing any new code**
+
 - **Security Groups**: Copy auth-infra's dual IPv4/IPv6 rule pattern exactly
 - **Docker Management**: Use auth-infra's DockerImageAsset pattern with branding support
 - **Route53 Integration**: Follow auth-infra's automated A/AAAA record creation
 - **Configuration Structure**: Match auth-infra's context-based configuration approach
 - **Import Patterns**: Use same CloudFormation import utilities as auth-infra
+- **File Organization**: Follow exact lib/ structure as base-infra and auth-infra (lib/constructs/, lib/utils/, lib/stack-config.ts, lib/cloudformation-imports.ts, lib/utils.ts)
+- **Interface Naming**: Use ContextEnvironmentConfig pattern for consistency
+- **Utility Functions**: Match function signatures and patterns from reference projects
+- **Tag Helpers**: Use generateStandardTags() pattern, not direct tag application
+- **Function Names**: Match exact function names from reference projects (e.g., generateStandardTags, not applyStandardTags)
+- **Return Types**: Functions should return objects/values, not perform side effects when possible
 
 ### Current vs Target State
 | Current | Target (CDK) |
