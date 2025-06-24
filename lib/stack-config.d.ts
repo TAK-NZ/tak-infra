@@ -23,6 +23,7 @@ export interface ContextEnvironmentConfig {
     };
     takserver: {
         hostname: string;
+        servicename: string;
         branding: string;
         version: string;
         useS3Config: boolean;

@@ -34,6 +34,7 @@
       },
       "takserver": {
         "hostname": "tak",
+        "servicename": "ops",
         "branding": "tak-nz",
         "version": "5.4-RELEASE-19",
         "useS3Config": false
@@ -60,6 +61,7 @@
       },
       "takserver": {
         "hostname": "tak",
+        "servicename": "ops",
         "branding": "tak-nz",
         "version": "5.4-RELEASE-19",
         "useS3Config": true

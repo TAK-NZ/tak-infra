@@ -31,6 +31,14 @@ export declare const BASE_EXPORT_NAMES: {
  */
 export declare function createBaseImportValue(environment: string, exportName: string): string;
 /**
+ * Common export names for auth infrastructure resources (imported from auth stack)
+ */
+export declare const AUTH_EXPORT_NAMES: {
+    readonly LDAP_BASE_DN: "LdapBaseDn";
+    readonly LDAP_SERVICE_USER_SECRET: "AuthentikLdapServiceUserArn";
+    readonly LDAPS_ENDPOINT: "LdapsEndpoint";
+};
+/**
  * Helper to create auth infrastructure import value names for cross-stack references
  * @param environment - Environment name (e.g. 'prod', 'dev', 'test', etc.)
  * @param exportName - The specific export name suffix

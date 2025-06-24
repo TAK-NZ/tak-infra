@@ -33,6 +33,7 @@ export function applyContextOverrides(
     takserver: {
       ...baseConfig.takserver,
       hostname: app.node.tryGetContext('takServerHostname') ?? baseConfig.takserver.hostname,
+      servicename: app.node.tryGetContext('takServerServicename') ?? baseConfig.takserver.servicename,
       branding: app.node.tryGetContext('branding') ?? baseConfig.takserver.branding,
       version: app.node.tryGetContext('takServerVersion') ?? baseConfig.takserver.version,
       useS3Config: app.node.tryGetContext('useS3Config') ?? baseConfig.takserver.useS3Config,

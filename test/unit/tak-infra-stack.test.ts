@@ -14,7 +14,7 @@ test('TakInfraStack creates successfully', () => {
       deleteProtection: false
     },
     ecs: { taskCpu: 1024, taskMemory: 2048, desiredCount: 1 },
-    takserver: { hostname: 'tak', branding: 'generic', version: '5.4-RELEASE-19', useS3Config: false },
+    takserver: { hostname: 'tak', servicename: 'ops', branding: 'generic', version: '5.4-RELEASE-19', useS3Config: false },
     general: { removalPolicy: 'DESTROY', enableDetailedLogging: true }
   };
   
