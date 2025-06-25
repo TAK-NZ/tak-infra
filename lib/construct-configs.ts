@@ -54,6 +54,11 @@ export interface SecretsConfig {
      * OAuth configuration secrets
      */
     oauthConfig?: secretsmanager.ISecret;
+
+    /**
+     * TAK admin certificate (p12) secret
+     */
+    adminCertificate?: secretsmanager.ISecret;
   };
 }
 

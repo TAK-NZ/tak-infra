@@ -24,7 +24,9 @@
         "instanceCount": 1,
         "engineVersion": "17.4",
         "backupRetentionDays": 7,
-        "deleteProtection": false
+        "deleteProtection": false,
+        "monitoringInterval": 0,
+        "enablePerformanceInsights": false
       },
       "ecs": {
         "taskCpu": 1024,
@@ -51,7 +53,9 @@
         "instanceCount": 2,
         "engineVersion": "17.4",
         "backupRetentionDays": 30,
-        "deleteProtection": true
+        "deleteProtection": true,
+        "monitoringInterval": 60,
+        "enablePerformanceInsights": true
       },
       "ecs": {
         "taskCpu": 2048,

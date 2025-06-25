@@ -15,6 +15,8 @@ export interface ContextEnvironmentConfig {
     engineVersion?: string;
     backupRetentionDays: number;
     deleteProtection: boolean;
+    monitoringInterval: number;
+    enablePerformanceInsights: boolean;
   };
   ecs: {
     taskCpu: number;

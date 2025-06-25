@@ -13,7 +13,8 @@ COPY ./takserver-docker-*.zip $HOME/
 
 ENV NVM_DIR=/usr/local/nvm
 ENV NODE_VERSION=22
-ENV TAK_VERSION=takserver-docker-5.4-RELEASE-19
+ARG TAK_VERSION=takserver-docker-5.4-RELEASE-19
+ENV TAK_VERSION=${TAK_VERSION}
 
 RUN if [ ! -e "${TAK_VERSION}.zip" ]; then \
         wget "http://tak-server-releases.s3-website.us-gov-east-1.amazonaws.com/${TAK_VERSION}.zip"; \
@@ -23,6 +24,13 @@ RUN unzip "./${TAK_VERSION}.zip" \
     && rm -rf "./${TAK_VERSION}/docker" \
     && mv ./${TAK_VERSION}/tak/* ./ \
     && rm -rf ./takserver-docker-*.zip
+
+RUN if [ -d "branding" ]; then \
+        cd branding \
+        && zip -u ../takserver.war index.html \
+        && zip -u ../takserver.war Marti/login/index.html \
+        && zip -u ../takserver.war Marti/login/partials/login.html; \
+    fi
 
 RUN mkdir -p $NVM_DIR \
     && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash \

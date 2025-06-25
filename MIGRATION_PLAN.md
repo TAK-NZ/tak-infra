@@ -81,25 +81,25 @@ This document outlines the comprehensive migration plan to convert the TAK Infra
 ### Phase 3: Application Service Migration
 **Duration**: 2-3 days
 
-#### 3.1 ECS Service Construct
-- [ ] Migrate ECS task definition
-- [ ] Configure container definitions with environment variables
-- [ ] Set up volume mounts for EFS
-- [ ] Implement secrets integration
-- [ ] Configure logging and monitoring
+#### 3.1 ECS Service Construct ✅
+- [x] Migrate ECS task definition
+- [x] Configure container definitions with environment variables
+- [x] Set up volume mounts for EFS
+- [x] Implement secrets integration
+- [x] Configure logging and monitoring
 
-#### 3.2 Docker Image Management
-- [ ] Use CDK DockerImageAsset for local Docker builds (like auth-infra)
-- [ ] Support generic and tak-nz branded Dockerfiles
-- [ ] Implement build-time arguments for TAK Server version
-- [ ] Remove GitHub Container Registry option - use CDK's built-in ECR capabilities
+#### 3.2 Docker Image Management ✅
+- [x] Use CDK DockerImageAsset for local Docker builds (like auth-infra)
+- [x] Support generic and tak-nz branded Dockerfiles
+- [x] Implement build-time arguments for TAK Server version
+- [x] Remove GitHub Container Registry option - use CDK's built-in ECR capabilities
 
-#### 3.3 Security and IAM
-- [ ] Migrate task and execution roles
-- [ ] Configure IAM policies for secrets access
-- [ ] Set up ECS Exec permissions
-- [ ] Implement KMS permissions for encryption
-- [ ] Configure IPv4/IPv6 dualstack security group rules for all services
+#### 3.3 Security and IAM ✅
+- [x] Migrate task and execution roles
+- [x] Configure IAM policies for secrets access
+- [x] Set up ECS Exec permissions
+- [x] Implement KMS permissions for encryption
+- [x] Configure IPv4/IPv6 dualstack security group rules for all services
 
 ### Phase 4: DNS and Routing
 **Duration**: 1-2 days
@@ -166,6 +166,17 @@ This document outlines the comprehensive migration plan to convert the TAK Infra
 - [ ] Create architecture diagrams
 - [ ] Document configuration options
 - [ ] Create troubleshooting guide
+- [ ] Document TAK admin certificate download procedure:
+  ```bash
+  # After CDK deployment
+  aws secretsmanager get-secret-value --secret-id "TAK-Dev-TakInfra/TAK-Server/Admin-Cert" --query SecretString --output text > admin-cert.p12
+  ```
+- [ ] Document secret naming changes from CloudFormation:
+  - **Old**: `${stackName}/tak-admin-cert`
+  - **New**: `${stackName}/TAK-Server/Admin-Cert` (consistent with AuthInfra patterns)
+- [ ] Document cross-stack reference updates:
+  - **Old CloudFormation**: `coe-auth-${environment}`, `coe-tak-base-${environment}`
+  - **New CDK**: `TAK-${envName}-AuthInfra`, `TAK-${envName}-BaseInfra`
 
 #### 7.2 CI/CD Integration
 - [ ] Update GitHub Actions workflows

@@ -7,7 +7,8 @@ import * as kms from 'aws-cdk-lib/aws-kms';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 
 // Construct imports
-// TODO: Import constructs in Phase 2
+import { TakSecretsManager } from './constructs/secrets-manager';
+// TODO: Import other constructs in Phase 2
 
 // Utility imports
 import { createBaseImportValue, BASE_EXPORT_NAMES } from './cloudformation-imports';
@@ -62,13 +63,27 @@ export class TakInfraStack extends cdk.Stack {
     // IMPORT BASE INFRASTRUCTURE RESOURCES
     // =================
 
-    // TODO: Import VPC, ECS cluster, KMS, S3, Route53, ACM certificate in Phase 2
+    // Import KMS key from base-infra for secrets encryption
+    const kmsKey = kms.Key.fromKeyArn(this, 'ImportedKmsKey', 
+      createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.KMS_KEY)
+    );
+    
+    // =================
+    // SECRETS MANAGEMENT
+    // =================
+
+    // Create TAK Server secrets (admin certificate)
+    const takSecrets = new TakSecretsManager(this, 'TakSecrets', {
+      environment: props.environment,
+      contextConfig: envConfig,
+      kmsKey
+    });
     
     // =================
     // CORE INFRASTRUCTURE
     // =================
 
-    // TODO: Implement TAK infrastructure constructs in Phase 2
+    // TODO: Implement remaining TAK infrastructure constructs in Phase 2
     // - Database (PostgreSQL Aurora)
     // - EFS (File System + Access Points)
     // - Load Balancer (NLB + Target Groups)
