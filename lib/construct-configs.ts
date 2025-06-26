@@ -199,7 +199,7 @@ export interface NetworkConfig {
   /**
    * Hostname for TAK Server
    */
-  hostname?: string;
+  hostname: string;
 
   /**
    * Load balancer (when applicable)

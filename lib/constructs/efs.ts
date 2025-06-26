@@ -33,9 +33,9 @@ export interface EfsProps {
   infrastructure: InfrastructureConfig;
 
   /**
-   * Security groups for EFS access
+   * Security group for EFS access
    */
-  allowAccessFrom: ec2.SecurityGroup[];
+  efsSecurityGroup: ec2.SecurityGroup;
 }
 
 /**
@@ -66,21 +66,8 @@ export class Efs extends Construct {
       RemovalPolicy.RETAIN : RemovalPolicy.DESTROY;
     const throughputMode = efs.ThroughputMode.BURSTING; // Use bursting mode for cost optimization
 
-    // Create security group for EFS
-    const efsSecurityGroup = new ec2.SecurityGroup(this, 'MountTarget', {
-      vpc: props.infrastructure.vpc,
-      description: 'EFS to TAK ECS Service',
-      allowAllOutbound: false
-    });
-
-    // Allow NFS access from specified security groups
-    props.allowAccessFrom.forEach(sg => {
-      efsSecurityGroup.addIngressRule(
-        ec2.Peer.securityGroupId(sg.securityGroupId),
-        ec2.Port.tcp(EFS_CONSTANTS.PORT),
-        'Allow NFS access from ECS tasks'
-      );
-    });
+    // Use provided EFS security group
+    const efsSecurityGroup = props.efsSecurityGroup;
 
     // Build EFS configuration object with file system policy
     const efsConfig: any = {

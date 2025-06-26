@@ -19,11 +19,11 @@ import type { ContextEnvironmentConfig } from '../stack-config';
 import type { 
   InfrastructureConfig,
   SecretsConfig, 
-  StorageConfig,
-  DeploymentConfig,
-  TakServerApplicationConfig 
+  StorageConfig
 } from '../construct-configs';
 import { TAK_SERVER_PORTS } from '../utils/constants';
+import { createAuthImportValue, AUTH_EXPORT_NAMES } from '../cloudformation-imports';
+import { Fn } from 'aws-cdk-lib';
 
 /**
  * Properties for the TAK Server construct
@@ -55,14 +55,16 @@ export interface TakServerProps {
   storage: StorageConfig;
 
   /**
-   * Deployment configuration
+   * Network configuration
    */
-  deployment: DeploymentConfig;
-
-  /**
-   * Application configuration
-   */
-  application: TakServerApplicationConfig;
+  network: {
+    hostedZoneId: string;
+    hostedZoneName: string;
+    sslCertificateArn: string;
+    hostname: string;
+    databaseHostname: string;
+    loadBalancer?: elbv2.ILoadBalancerV2;
+  };
 
   /**
    * Target groups from load balancer
@@ -74,6 +76,11 @@ export interface TakServerProps {
     webtakAdmin: elbv2.NetworkTargetGroup;
     federation: elbv2.NetworkTargetGroup;
   };
+
+  /**
+   * TAK Server FQDN
+   */
+  takFqdn: string;
 }
 
 /**
@@ -284,18 +291,19 @@ export class TakServer extends Construct {
         logGroup
       }),
       environment: {
-        LDAP_DN: props.application.ldap?.baseDn || '',
-        LDAP_SECURE_URL: props.application.ldap?.hostname ? `ldaps://${props.application.ldap.hostname}:636` : '',
+        LDAP_DN: Fn.importValue(createAuthImportValue(props.contextConfig.stackName, AUTH_EXPORT_NAMES.LDAP_BASE_DN)),
+        LDAP_SECURE_URL: Fn.importValue(createAuthImportValue(props.contextConfig.stackName, AUTH_EXPORT_NAMES.LDAPS_ENDPOINT)),
         StackName: Stack.of(this).stackName,
         Environment: props.environment,
         ECS_Cluster_Name: props.infrastructure.ecsCluster.clusterName,
         ECS_Service_Name: `${Stack.of(this).stackName}-Service`,
-        PostgresURL: `postgresql://${props.application.database.hostname}:5432/takserver`,
+        PostgresURL: `postgresql://${props.network.databaseHostname}:5432/takserver`
       },
       secrets: {
         PostgresUsername: ecs.Secret.fromSecretsManager(props.secrets.database, 'username'),
         PostgresPassword: ecs.Secret.fromSecretsManager(props.secrets.database, 'password'),
         ...(props.secrets.takserver.ldapServiceAccount && {
+          LDAP_Username: ecs.Secret.fromSecretsManager(props.secrets.takserver.ldapServiceAccount, 'username'),
           LDAP_Password: ecs.Secret.fromSecretsManager(props.secrets.takserver.ldapServiceAccount, 'password')
         })
       },
@@ -313,7 +321,7 @@ export class TakServer extends Construct {
     };
 
     // Add environment files if S3 key is provided and useConfigFile is enabled
-    if (props.storage.s3.envFileKey && props.deployment.useConfigFile) {
+    if (props.storage.s3.envFileKey && props.contextConfig.takserver.useS3Config) {
       containerDefinitionOptions = {
         ...containerDefinitionOptions,
         environmentFiles: [
@@ -354,7 +362,7 @@ export class TakServer extends Construct {
       healthCheckGracePeriod: Duration.seconds(300),
       desiredCount: props.contextConfig.ecs.desiredCount,
       securityGroups: [props.infrastructure.ecsSecurityGroup],
-      enableExecuteCommand: props.deployment.enableExecute,
+      enableExecuteCommand: props.contextConfig.ecs.enableEcsExec,
       assignPublicIp: false,
       // Configure deployment to maintain availability
       minHealthyPercent: isHighAvailability ? 100 : 50,

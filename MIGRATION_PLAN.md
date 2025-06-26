@@ -101,19 +101,19 @@ This document outlines the comprehensive migration plan to convert the TAK Infra
 - [x] Implement KMS permissions for encryption
 - [x] Configure IPv4/IPv6 dualstack security group rules for all services
 
-### Phase 4: DNS and Routing
+### Phase 4: DNS and Routing ✅ **COMPLETED**
 **Duration**: 1-2 days
 
-#### 4.1 Route53 Integration
-- [ ] Import hosted zone from base-infra
-- [ ] Create Route53 construct following auth-infra pattern
-- [ ] Implement A and AAAA record creation (IPv4/IPv6 dualstack)
-- [ ] Configure DNS aliases for dualstack load balancer
+#### 4.1 Route53 Integration ✅
+- [x] Import hosted zone from base-infra
+- [x] Create Route53 construct following auth-infra pattern
+- [x] Implement A and AAAA record creation (IPv4/IPv6 dualstack)
+- [x] Configure DNS aliases for dualstack load balancer
 
-#### 4.2 SSL Certificate Integration
-- [ ] Import ACM certificate from base-infra
-- [ ] Configure HTTPS listeners
-- [ ] Set up certificate validation
+#### 4.2 SSL Certificate Integration ✅
+- [x] Import ACM certificate from base-infra
+- [x] Configure HTTPS listeners
+- [x] Set up certificate validation
 
 ### Phase 5: Configuration and Environment Management
 **Duration**: 2-3 days

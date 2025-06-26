@@ -43,6 +43,11 @@ export class SecurityGroups extends Construct {
    */
   public readonly database: ec2.SecurityGroup;
 
+  /**
+   * Security group for EFS access
+   */
+  public readonly efs: ec2.SecurityGroup;
+
   constructor(scope: Construct, id: string, props: SecurityGroupsProps) {
     super(scope, id);
 
@@ -85,7 +90,7 @@ export class SecurityGroups extends Construct {
       'Allow Federation traffic from internet'
     );
 
-    // IPv6 rules
+    // IPv6 rules for NLB
     this.nlb.addIngressRule(
       ec2.Peer.anyIpv6(),
       ec2.Port.tcp(TAK_SERVER_PORTS.HTTP),
@@ -115,6 +120,33 @@ export class SecurityGroups extends Construct {
       ec2.Peer.anyIpv6(),
       ec2.Port.tcp(TAK_SERVER_PORTS.FEDERATION),
       'Allow Federation traffic from internet IPv6'
+    );
+
+    // NLB outbound rules for health checks to target groups
+    this.nlb.addEgressRule(
+      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Port.tcp(TAK_SERVER_PORTS.HTTP),
+      'Health check to TAK Server HTTP'
+    );
+    this.nlb.addEgressRule(
+      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Port.tcp(TAK_SERVER_PORTS.COT_TCP),
+      'Health check to TAK Server CoT TCP'
+    );
+    this.nlb.addEgressRule(
+      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Port.tcp(TAK_SERVER_PORTS.API_ADMIN),
+      'Health check to TAK Server API Admin'
+    );
+    this.nlb.addEgressRule(
+      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Port.tcp(TAK_SERVER_PORTS.WEBTAK_ADMIN),
+      'Health check to TAK Server WebTAK Admin'
+    );
+    this.nlb.addEgressRule(
+      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Port.tcp(TAK_SERVER_PORTS.FEDERATION),
+      'Health check to TAK Server Federation'
     );
 
     // Create TAK Server security group
@@ -171,6 +203,20 @@ export class SecurityGroups extends Construct {
       ec2.Peer.securityGroupId(this.takServer.securityGroupId),
       ec2.Port.tcp(DATABASE_CONSTANTS.PORT),
       'Allow PostgreSQL access from TAK Server'
+    );
+
+    // Create EFS security group
+    this.efs = new ec2.SecurityGroup(this, 'EFS', {
+      vpc: props.vpc,
+      description: 'Security group for EFS access',
+      allowAllOutbound: false
+    });
+
+    // EFS inbound rules (IPv4 and IPv6)
+    this.efs.addIngressRule(
+      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Port.tcp(EFS_CONSTANTS.PORT),
+      'Allow NFS access from TAK Server'
     );
   }
 
@@ -234,6 +280,48 @@ export class SecurityGroups extends Construct {
       ec2.Peer.anyIpv6(),
       ec2.Port.tcp(636),
       'Allow LDAPS access IPv6'
+    );
+
+    // TAK-specific outbound rules for federation and signaling
+    securityGroup.addEgressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(8089),
+      'Allow TAK Signaling access'
+    );
+    securityGroup.addEgressRule(
+      ec2.Peer.anyIpv6(),
+      ec2.Port.tcp(8089),
+      'Allow TAK Signaling access IPv6'
+    );
+    securityGroup.addEgressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(9000),
+      'Allow Federation access'
+    );
+    securityGroup.addEgressRule(
+      ec2.Peer.anyIpv6(),
+      ec2.Port.tcp(9000),
+      'Allow Federation access IPv6'
+    );
+    securityGroup.addEgressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(9001),
+      'Allow Federation access'
+    );
+    securityGroup.addEgressRule(
+      ec2.Peer.anyIpv6(),
+      ec2.Port.tcp(9001),
+      'Allow Federation access IPv6'
+    );
+    securityGroup.addEgressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(9102),
+      'Allow FederationHUB access'
+    );
+    securityGroup.addEgressRule(
+      ec2.Peer.anyIpv6(),
+      ec2.Port.tcp(9102),
+      'Allow FederationHUB access IPv6'
     );
 
     // DNS rules

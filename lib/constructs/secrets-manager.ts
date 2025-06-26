@@ -46,9 +46,9 @@ export class TakSecretsManager extends Construct {
     const removalPolicy = props.contextConfig.general.removalPolicy === 'RETAIN' ? 
       RemovalPolicy.RETAIN : RemovalPolicy.DESTROY;
 
-    // Create TAK admin certificate secret (following CloudFormation template pattern)
+    // Create TAK admin certificate secret (following migration guide pattern)
     this.adminCertificate = new secretsmanager.Secret(this, 'AdminCertificate', {
-      secretName: `${stackName}/tak-admin-cert`,
+      secretName: `${stackName}/TAK-Server/Admin-Cert`,
       description: `${stackName} TAK Server Admin key (p12)`,
       encryptionKey: props.kmsKey,
       removalPolicy: removalPolicy
