@@ -34,7 +34,7 @@ export class TakInfraStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: TakInfraStackProps) {
     super(scope, id, {
       ...props,
-      description: 'TAK Server Infrastructure - Database, EFS, Load Balancer, ECS Service',
+      description: 'TAK Server Infrastructure - Central TAK Communication Hub',
     });
 
     // Validate configuration early
@@ -72,31 +72,33 @@ export class TakInfraStack extends cdk.Stack {
 
     // Import KMS key from base-infra for secrets encryption
     const kmsKey = kms.Key.fromKeyArn(this, 'ImportedKmsKey', 
-      createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.KMS_KEY)
+      Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.KMS_KEY))
     );
 
     // Import VPC from base-infra
     const vpc = ec2.Vpc.fromVpcAttributes(this, 'ImportedVpc', {
-      vpcId: createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.VPC_ID),
+      vpcId: Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.VPC_ID)),
       availabilityZones: [region + 'a', region + 'b'],
       privateSubnetIds: [
-        createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.SUBNET_PRIVATE_A),
-        createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.SUBNET_PRIVATE_B)
+        Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.SUBNET_PRIVATE_A)),
+        Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.SUBNET_PRIVATE_B))
       ],
       publicSubnetIds: [
-        createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.SUBNET_PUBLIC_A),
-        createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.SUBNET_PUBLIC_B)
+        Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.SUBNET_PUBLIC_A)),
+        Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.SUBNET_PUBLIC_B))
       ]
     });
 
     // Import ECS cluster from base-infra
-    const ecsCluster = ecs.Cluster.fromClusterArn(this, 'ImportedEcsCluster',
-      createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.ECS_CLUSTER)
-    );
+    const ecsCluster = ecs.Cluster.fromClusterAttributes(this, 'ImportedEcsCluster', {
+      clusterName: `TAK-${stackNameComponent}-BaseInfra`,
+      clusterArn: Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.ECS_CLUSTER)),
+      vpc: vpc
+    });
 
     // Import S3 bucket from base-infra
     const s3Bucket = s3.Bucket.fromBucketArn(this, 'ImportedS3Bucket',
-      createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.S3_BUCKET)
+      Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.S3_BUCKET))
     );
     
     // =================
@@ -200,7 +202,7 @@ export class TakInfraStack extends cdk.Stack {
     // Import LDAP service account secret from auth-infra
     const ldapServiceAccountSecret = secretsmanager.Secret.fromSecretCompleteArn(
       this, 'ImportedLdapSecret',
-      createAuthImportValue(stackNameComponent, AUTH_EXPORT_NAMES.LDAP_SERVICE_USER_SECRET)
+      Fn.importValue(createAuthImportValue(stackNameComponent, AUTH_EXPORT_NAMES.LDAP_SERVICE_USER_SECRET))
     );
 
     // Secrets configuration

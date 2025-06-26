@@ -51,13 +51,42 @@ export class SecurityGroups extends Construct {
   constructor(scope: Construct, id: string, props: SecurityGroupsProps) {
     super(scope, id);
 
-    // Create NLB security group
+    // Create all security groups first
     this.nlb = new ec2.SecurityGroup(this, 'NLB', {
       vpc: props.vpc,
       description: 'Allow TAK Traffic into NLB',
       allowAllOutbound: false
     });
 
+    this.takServer = new ec2.SecurityGroup(this, 'TakServer', {
+      vpc: props.vpc,
+      description: 'Security group for TAK Server ECS tasks',
+      allowAllOutbound: false
+    });
+
+    this.database = new ec2.SecurityGroup(this, 'AuroraDB', {
+      vpc: props.vpc,
+      description: 'Security group for database',
+      allowAllOutbound: false
+    });
+
+    this.efs = new ec2.SecurityGroup(this, 'EFS', {
+      vpc: props.vpc,
+      description: 'Security group for EFS access',
+      allowAllOutbound: false
+    });
+
+    // Now add all the rules with cross-references
+    this.addNlbRules(props);
+    this.addTakServerRules();
+    this.addDatabaseRules();
+    this.addEfsRules();
+  }
+
+  /**
+   * Add NLB security group rules
+   */
+  private addNlbRules(props: SecurityGroupsProps): void {
     // Add inbound rules for all TAK Server ports
     this.nlb.addIngressRule(
       ec2.Peer.anyIpv4(),
@@ -122,40 +151,68 @@ export class SecurityGroups extends Construct {
       'Allow Federation traffic from internet IPv6'
     );
 
-    // NLB outbound rules for health checks to target groups
+    // NLB outbound rules for health checks to VPC (IPv4 and IPv6)
+    const vpcCidrIpv4 = Fn.importValue(createBaseImportValue(props.stackNameComponent, BASE_EXPORT_NAMES.VPC_CIDR_IPV4));
+    const vpcCidrIpv6 = Fn.importValue(createBaseImportValue(props.stackNameComponent, BASE_EXPORT_NAMES.VPC_CIDR_IPV6));
+    
     this.nlb.addEgressRule(
-      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Peer.ipv4(vpcCidrIpv4),
       ec2.Port.tcp(TAK_SERVER_PORTS.HTTP),
-      'Health check to TAK Server HTTP'
+      'Health check to VPC HTTP'
     );
     this.nlb.addEgressRule(
-      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Peer.ipv4(vpcCidrIpv4),
       ec2.Port.tcp(TAK_SERVER_PORTS.COT_TCP),
-      'Health check to TAK Server CoT TCP'
+      'Health check to VPC CoT TCP'
     );
     this.nlb.addEgressRule(
-      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Peer.ipv4(vpcCidrIpv4),
       ec2.Port.tcp(TAK_SERVER_PORTS.API_ADMIN),
-      'Health check to TAK Server API Admin'
+      'Health check to VPC API Admin'
     );
     this.nlb.addEgressRule(
-      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Peer.ipv4(vpcCidrIpv4),
       ec2.Port.tcp(TAK_SERVER_PORTS.WEBTAK_ADMIN),
-      'Health check to TAK Server WebTAK Admin'
+      'Health check to VPC WebTAK Admin'
     );
     this.nlb.addEgressRule(
-      ec2.Peer.securityGroupId(this.takServer.securityGroupId),
+      ec2.Peer.ipv4(vpcCidrIpv4),
       ec2.Port.tcp(TAK_SERVER_PORTS.FEDERATION),
-      'Health check to TAK Server Federation'
+      'Health check to VPC Federation'
     );
+    
+    // IPv6 egress rules
+    this.nlb.addEgressRule(
+      ec2.Peer.ipv6(vpcCidrIpv6),
+      ec2.Port.tcp(TAK_SERVER_PORTS.HTTP),
+      'Health check to VPC HTTP IPv6'
+    );
+    this.nlb.addEgressRule(
+      ec2.Peer.ipv6(vpcCidrIpv6),
+      ec2.Port.tcp(TAK_SERVER_PORTS.COT_TCP),
+      'Health check to VPC CoT TCP IPv6'
+    );
+    this.nlb.addEgressRule(
+      ec2.Peer.ipv6(vpcCidrIpv6),
+      ec2.Port.tcp(TAK_SERVER_PORTS.API_ADMIN),
+      'Health check to VPC API Admin IPv6'
+    );
+    this.nlb.addEgressRule(
+      ec2.Peer.ipv6(vpcCidrIpv6),
+      ec2.Port.tcp(TAK_SERVER_PORTS.WEBTAK_ADMIN),
+      'Health check to VPC WebTAK Admin IPv6'
+    );
+    this.nlb.addEgressRule(
+      ec2.Peer.ipv6(vpcCidrIpv6),
+      ec2.Port.tcp(TAK_SERVER_PORTS.FEDERATION),
+      'Health check to VPC Federation IPv6'
+    );
+  }
 
-    // Create TAK Server security group
-    this.takServer = new ec2.SecurityGroup(this, 'TakServer', {
-      vpc: props.vpc,
-      description: 'Security group for TAK Server ECS tasks',
-      allowAllOutbound: false
-    });
-
+  /**
+   * Add TAK Server security group rules
+   */
+  private addTakServerRules(): void {
     // Allow TAK Server traffic from NLB
     this.takServer.addIngressRule(
       ec2.Peer.securityGroupId(this.nlb.securityGroupId),
@@ -190,29 +247,23 @@ export class SecurityGroups extends Construct {
 
     // TAK Server outbound rules
     this.addTakServerOutboundRules(this.takServer);
+  }
 
-    // Create database security group
-    this.database = new ec2.SecurityGroup(this, 'AuroraDB', {
-      vpc: props.vpc,
-      description: 'Security group for database',
-      allowAllOutbound: false
-    });
-
-    // Database inbound rules
+  /**
+   * Add database security group rules
+   */
+  private addDatabaseRules(): void {
     this.database.addIngressRule(
       ec2.Peer.securityGroupId(this.takServer.securityGroupId),
       ec2.Port.tcp(DATABASE_CONSTANTS.PORT),
       'Allow PostgreSQL access from TAK Server'
     );
+  }
 
-    // Create EFS security group
-    this.efs = new ec2.SecurityGroup(this, 'EFS', {
-      vpc: props.vpc,
-      description: 'Security group for EFS access',
-      allowAllOutbound: false
-    });
-
-    // EFS inbound rules (IPv4 and IPv6)
+  /**
+   * Add EFS security group rules
+   */
+  private addEfsRules(): void {
     this.efs.addIngressRule(
       ec2.Peer.securityGroupId(this.takServer.securityGroupId),
       ec2.Port.tcp(EFS_CONSTANTS.PORT),

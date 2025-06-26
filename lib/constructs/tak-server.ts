@@ -271,14 +271,40 @@ export class TakServer extends Construct {
       }
     });
 
-    // Build Docker image with branding and version
+    // Build Docker image with exclusions to prevent unnecessary rebuilds
     const dockerfileName = `Dockerfile.${props.contextConfig.takserver.branding}`;
     const dockerImageAsset = new ecrAssets.DockerImageAsset(this, 'ServerDockerAsset', {
       directory: '.',
       file: `docker/tak-server/${dockerfileName}`,
       buildArgs: {
         TAK_VERSION: `takserver-docker-${props.contextConfig.takserver.version}`
-      }
+      },
+      // Exclude files that change frequently but don't affect the Docker build
+      exclude: [
+        'node_modules/**',
+        'cdk.out/**',
+        '.cdk.staging/**',
+        '**/*.log',
+        '**/*.tmp',
+        '.git/**',
+        '.vscode/**',
+        '.idea/**',
+        'test/**',
+        'docs/**',
+        'lib/**/*.js',
+        'lib/**/*.d.ts',
+        'lib/**/*.js.map',
+        'bin/**/*.js',
+        'bin/**/*.d.ts',
+        '**/.DS_Store',
+        '**/Thumbs.db',
+        'backup/**',
+        'reference/**',
+        'cloudformation/**',
+        'MIGRATION_PLAN.md',
+        'CHANGELOG.md',
+        'README.md'
+      ]
     });
 
     const containerImage = ecs.ContainerImage.fromDockerImageAsset(dockerImageAsset);
@@ -297,7 +323,10 @@ export class TakServer extends Construct {
         Environment: props.environment,
         ECS_Cluster_Name: props.infrastructure.ecsCluster.clusterName,
         ECS_Service_Name: `${Stack.of(this).stackName}-Service`,
-        PostgresURL: `postgresql://${props.network.databaseHostname}:5432/takserver`
+        PostgresURL: `postgresql://${props.network.databaseHostname}:5432/takserver`,
+        TAKSERVER_QuickConnect_LetsEncrypt_Domain: `${props.contextConfig.takserver.servicename}.${Fn.importValue(props.network.hostedZoneName)}`,
+        TAKSERVER_QuickConnect_LetsEncrypt_CertType: props.contextConfig.takserver.letsEncryptMode || 'staging',
+        TAKSERVER_QuickConnect_LetsEncrypt_Email: props.contextConfig.takserver.letsEncryptEmail || 'admin@tak.nz'
       },
       secrets: {
         PostgresUsername: ecs.Secret.fromSecretsManager(props.secrets.database, 'username'),

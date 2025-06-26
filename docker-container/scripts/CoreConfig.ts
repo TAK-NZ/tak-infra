@@ -46,25 +46,25 @@ const InputConfig = {
 };
 
 const Connector = {
-    EnableAdminUI8443: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8443_EnableAdminUI) || true,
-    EnableNonAdminUI8443: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8443_EnableNonAdminUI) || true,
-    EnableWebtak8443: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak) || true,
-    EnableAdminUI8446: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8446_EnableAdminUI) || true,
-    EnableNonAdminUI8446: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8446_EnableNonAdminUI) || true,
-    EnableWebtak8446: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak) || true
+    EnableAdminUI8443: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8443_EnableAdminUI || 'true'),
+    EnableNonAdminUI8443: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8443_EnableNonAdminUI || 'true'),
+    EnableWebtak8443: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak || 'true'),
+    EnableAdminUI8446: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8446_EnableAdminUI || 'true'),
+    EnableNonAdminUI8446: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8446_EnableNonAdminUI || 'true'),
+    EnableWebtak8446: stringToBoolean(process.env.TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak || 'true')
 };
 
 const LDAP_Auth = {
-    X509groups: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509groups) || true,
-    X509addAnonymous: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509addAnonymous) || false,
-    X509useGroupCache: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509useGroupCache) || true,
-    X509useGroupCacheDefaultActive: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509useGroupCacheDefaultActive) || true,
-    X509checkRevocation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509checkRevocation) || true,
+    X509groups: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509groups || 'true'),
+    X509addAnonymous: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509addAnonymous || 'false'),
+    X509useGroupCache: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509useGroupCache || 'true'),
+    X509useGroupCacheDefaultActive: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509useGroupCacheDefaultActive || 'true'),
+    X509checkRevocation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_X509checkRevocation || 'true'),
     LDAP_Userstring: process.env.TAKSERVER_CoreConfig_Auth_LDAP_Userstring || 'cn={username},ou=users,',
-    LDAP_Updateinterval: parseInt(process.env.TAKSERVER_CoreConfig_Auth_LDAP_Updateinterval) || 60,
+    LDAP_Updateinterval: parseInt(process.env.TAKSERVER_CoreConfig_Auth_LDAP_Updateinterval || 60),
     LDAP_Groupprefix: process.env.TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix || '',
     LDAP_GroupNameExtractorRegex: process.env.TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex || 'CN=(.*?)(?:,|$)',
-    LDAP_NestedGroupLookup: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_LDAP_NestedGroupLookup) || false,
+    LDAP_NestedGroupLookup: stringToBoolean(process.env.TAKSERVER_CoreConfig_Auth_LDAP_NestedGroupLookup || 'false'),
     LDAP_Style: process.env.TAKSERVER_CoreConfig_Auth_LDAP_Style || 'DS',
     LDAP_ServiceAccountDN: process.env.TAKSERVER_CoreConfig_Auth_LDAP_ServiceAccountDN || 'cn=ldapservice,ou=users,',
     LDAP_UserObjectClass: process.env.TAKSERVER_CoreConfig_Auth_LDAP_UserObjectClass || 'user',
@@ -80,13 +80,13 @@ const LDAP_Auth = {
 };
 
 const Federation = {
-    EnableFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableFederation) || true,
-    AllowFederatedDelete: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowFederatedDelete) || false,
-    AllowMissionFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowMissionFederation) || true,
-    AllowDataFeedFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowDataFeedFederation) || true,
-    EnableMissionFederationDisruptionTolerance: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableMissionFederationDisruptionTolerance) || true,
-    MissionFederationDisruptionToleranceRecencySeconds: parseInt(process.env.TAKSERVER_CoreConfig_Federation_MissionFederationDisruptionToleranceRecencySeconds) || 43200,
-    EnableDataPackageAndMissionFileFilter: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableDataPackageAndMissionFileFilter) || false,
+    EnableFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableFederation || 'true'),
+    AllowFederatedDelete: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowFederatedDelete || 'false'),
+    AllowMissionFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowMissionFederation || 'true'),
+    AllowDataFeedFederation: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_AllowDataFeedFederation || 'true'),
+    EnableMissionFederationDisruptionTolerance: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableMissionFederationDisruptionTolerance || 'true'),
+    MissionFederationDisruptionToleranceRecencySeconds: parseInt(process.env.TAKSERVER_CoreConfig_Federation_MissionFederationDisruptionToleranceRecencySeconds || 43200),
+    EnableDataPackageAndMissionFileFilter: stringToBoolean(process.env.TAKSERVER_CoreConfig_Federation_EnableDataPackageAndMissionFileFilter || 'false'),
     Federation_WebBaseUrl: process.env.TAKSERVER_CoreConfig_Federation_WebBaseUrl || 'https://localhost:8443/Marti'
 };
 

@@ -34,6 +34,7 @@ export interface ContextEnvironmentConfig {
     version: string;
     useS3TAKServerConfigFile: boolean;
     letsEncryptMode?: string;
+    letsEncryptEmail?: string;
     enableFederation?: boolean;
     enableCloudWatchMetrics?: boolean;
   };

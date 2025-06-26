@@ -3,7 +3,7 @@
 # Check if TAKSERVER_QuickConnect_LetsEncrypt_Domain is specified and a Let's Encrypt cert is requested
 if [[ -z "${TAKSERVER_QuickConnect_LetsEncrypt_Domain+x}" || \
     -z "${TAKSERVER_QuickConnect_LetsEncrypt_CertType+x}" || \
-    ( "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" != "Production" && "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" != "Staging" ) \
+    ( "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" != "production" && "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" != "staging" ) \
     ]]; then
     echo "ok - TAK Server - Using self-signed certs instead of LetsEncrypt certs"
     mkdir /opt/tak/certs/files/nodomainset || true
@@ -20,9 +20,9 @@ if [ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]; 
 
     # Check if the issuer is from the Let's Encrypt staging environment
     if echo "$ISSUER" | grep -q "STAGING"; then
-        if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Staging" ]; then
+        if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "staging" ]; then
             echo "ok - Certbot - Staging cert exists, Staging cert requested - Nothing to be done"
-        elif [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Production" ]; then
+        elif [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "production" ]; then
             echo "ok - Certbot - Staging cert exists, Production cert requested - Regenerating certs..."
             certbot delete --cert-name ${TAKSERVER_QuickConnect_LetsEncrypt_Domain} --non-interactive    
         else
@@ -33,9 +33,9 @@ if [ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]; 
         fi
     # Check if the issuer is from the Let's Encrypt production environment        
     elif echo "$ISSUER" | grep -q "Let's Encrypt"; then
-        if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Production" ]; then
+        if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "production" ]; then
             echo "ok - Certbot - Production cert exists, Production cert requested - Nothing to be done"
-        elif [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Staging" ]; then
+        elif [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "staging" ]; then
             echo "ok - Certbot - Production cert exists, Staging cert requested - Regenerating certs..."
             certbot delete --cert-name ${TAKSERVER_QuickConnect_LetsEncrypt_Domain} --non-interactive
         else 
@@ -45,10 +45,10 @@ if [ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]; 
             exit 0
         fi
     else
-        if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Production" ]; then
+        if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "production" ]; then
             echo "ok - Certbot - No cert exists, Production cert requested - Regenerating certs..."
             certbot delete --cert-name ${TAKSERVER_QuickConnect_LetsEncrypt_Domain} --non-interactive || true
-        elif [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Staging" ]; then
+        elif [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "staging" ]; then
             echo "ok - Certbot - No cert exists, Staging cert requested - Regenerating certs..."
             certbot delete --cert-name ${TAKSERVER_QuickConnect_LetsEncrypt_Domain} --non-interactive || true
         else
@@ -65,10 +65,11 @@ if [ ! -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" ]
     echo "ok - Certbot - No existing certificates detected - Requesting new one"
 
     # Wait for port TCP/80 to be ready
+    export HostedDomain=${TAKSERVER_QuickConnect_LetsEncrypt_Domain}
     node /opt/tak/scripts/Ensure80.js
 
     CertbotParameter=""
-    if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" != "Production" ]; then
+    if [ "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" != "production" ]; then
         CertbotParameter="--test-cert "
     fi
 

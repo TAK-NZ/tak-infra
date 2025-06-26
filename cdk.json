@@ -44,6 +44,7 @@
         "version": "5.4-RELEASE-19",
         "useS3TAKServerConfigFile": false,
         "letsEncryptMode": "staging",
+        "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
         "enableCloudWatchMetrics": true
       },
@@ -84,6 +85,7 @@
         "version": "5.4-RELEASE-19",
         "useS3TAKServerConfigFile": true,
         "letsEncryptMode": "production",
+        "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
         "enableCloudWatchMetrics": true
       },

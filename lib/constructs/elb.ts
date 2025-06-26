@@ -6,7 +6,8 @@ import {
   aws_ec2 as ec2,
   aws_elasticloadbalancingv2 as elbv2,
   aws_certificatemanager as acm,
-  Duration
+  Duration,
+  Fn
 } from 'aws-cdk-lib';
 import type { ContextEnvironmentConfig } from '../stack-config';
 import type { InfrastructureConfig, NetworkConfig } from '../construct-configs';
@@ -91,7 +92,9 @@ export class Elb extends Construct {
     });
 
     // Import SSL certificate for HTTPS listener
-    const certificate = acm.Certificate.fromCertificateArn(this, 'ImportedCertificate', props.network.sslCertificateArn);
+    const certificate = acm.Certificate.fromCertificateArn(this, 'ImportedCertificate', 
+      Fn.importValue(props.network.sslCertificateArn)
+    );
 
     // Port 443 maps to WebTAK Admin (8446) with SSL termination
     this.loadBalancer.addListener('HttpsListener', {

@@ -44,7 +44,7 @@ if [ ! -f "/opt/tak/certs/files/ca.pem" ]; then
     { yes || :; } | /opt/tak/certs/makeCert.sh client admin
 
     aws secretsmanager put-secret-value \
-        --secret-id ${StackName}/tak-admin-cert \
+        --secret-id ${StackName}/TAK-Server/Admin-Cert \
         --secret-binary fileb://files/admin.p12 || true
 fi
 

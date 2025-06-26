@@ -8,7 +8,8 @@ import { Construct } from 'constructs';
 import {
   aws_route53 as route53,
   aws_route53_targets as targets,
-  aws_elasticloadbalancingv2 as elbv2
+  aws_elasticloadbalancingv2 as elbv2,
+  Fn
 } from 'aws-cdk-lib';
 import type { ContextEnvironmentConfig } from '../stack-config';
 import type { NetworkConfig } from '../construct-configs';
@@ -82,13 +83,13 @@ export class Route53 extends Construct {
 
     // Import the hosted zone from base infrastructure
     this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-      hostedZoneId: props.network.hostedZoneId,
-      zoneName: props.network.hostedZoneName
+      hostedZoneId: Fn.importValue(props.network.hostedZoneId),
+      zoneName: Fn.importValue(props.network.hostedZoneName)
     });
 
     // Calculate full domain names
-    this.takFqdn = `${props.network.hostname}.${props.network.hostedZoneName}`;
-    this.serviceFqdn = `${props.contextConfig.takserver.servicename}.${props.network.hostedZoneName}`;
+    this.takFqdn = `${props.network.hostname}.${Fn.importValue(props.network.hostedZoneName)}`;
+    this.serviceFqdn = `${props.contextConfig.takserver.servicename}.${Fn.importValue(props.network.hostedZoneName)}`;
 
     // Create A record alias for TAK Server (IPv4)
     this.takARecord = new route53.ARecord(this, 'TakARecord', {
