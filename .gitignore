@@ -61,6 +61,7 @@ coverage/
 tak-data/
 takserver-docker-*.zip
 
-# Backup and To-Do directory 
+# Backup, To-Do and Reference directory 
 backup/
 todo/
+reference/

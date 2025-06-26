@@ -164,6 +164,12 @@ This document outlines the comprehensive migration plan to convert the TAK Infra
 - [ ] Create architecture diagrams
 - [ ] Document configuration options
 - [ ] Create troubleshooting guide
+- [ ] Document development environment setup requirements:
+  - Install xmllint for XML validation: `sudo apt install libxml2-utils`
+  - Required for CoreConfig XML schema validation during testing
+- [ ] Document development environment setup requirements:
+  - Install xmllint for XML validation: `sudo apt install libxml2-utils`
+  - Required for CoreConfig XML schema validation during testing
 - [ ] Document TAK admin certificate download procedure:
   ```bash
   # After CDK deployment
@@ -175,6 +181,24 @@ This document outlines the comprehensive migration plan to convert the TAK Infra
 - [ ] Document cross-stack reference updates:
   - **Old CloudFormation**: `coe-auth-${environment}`, `coe-tak-base-${environment}`
   - **New CDK**: `TAK-${envName}-AuthInfra`, `TAK-${envName}-BaseInfra`
+- [ ] **Document dynamic CoreConfig environment variable system**:
+  - **Case sensitivity requirements**: Environment variables must match exact XSD case
+  - **Naming convention**: `TAKSERVER_CoreConfig_{XmlPath}_{AttributeName}`
+  - **Examples**:
+    ```bash
+    # ✅ Correct - matches XSD exactly
+    TAKSERVER_CoreConfig_Auth_X509useGroupCacheDefaultActive="true"
+    TAKSERVER_CoreConfig_Network_Connector_8443_AllowOrigins="https://app.com,https://admin.com"
+    TAKSERVER_CoreConfig_Federation_EnableFederation="true"
+    TAKSERVER_CoreConfig_Repository_Archive="false"
+    
+    # ❌ Wrong - case mismatch will be ignored
+    takserver_coreconfig_auth_x509usegroupcache="true"  # all lowercase
+    TAKSERVER_CORECONFIG_AUTH_X509USEGROUPCACHE="true"  # all uppercase
+    TAKSERVER_CoreConfig_auth_X509UseGroupCache="true"  # inconsistent case
+    ```
+  - **Project defaults**: How to override XSD defaults in `project-defaults.env`
+  - **Three-tier default system**: XSD defaults → Project defaults → User environment variables
 
 #### 7.2 CI/CD Integration
 - [ ] Update GitHub Actions workflows
