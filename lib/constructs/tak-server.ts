@@ -323,7 +323,7 @@ export class TakServer extends Construct {
         Environment: props.environment,
         ECS_Cluster_Name: props.infrastructure.ecsCluster.clusterName,
         ECS_Service_Name: `${Stack.of(this).stackName}-Service`,
-        PostgresURL: `postgresql://${props.network.databaseHostname}:5432/takserver`,
+        PostgresURL: `jdbc:postgresql://${props.network.databaseHostname}:5432/takserver`,
         TAKSERVER_QuickConnect_LetsEncrypt_Domain: `${props.contextConfig.takserver.servicename}.${Fn.importValue(props.network.hostedZoneName)}`,
         TAKSERVER_QuickConnect_LetsEncrypt_CertType: props.contextConfig.takserver.letsEncryptMode || 'staging',
         TAKSERVER_QuickConnect_LetsEncrypt_Email: props.contextConfig.takserver.letsEncryptEmail || 'admin@tak.nz'

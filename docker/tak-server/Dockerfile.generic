@@ -3,7 +3,9 @@ LABEL org.opencontainers.image.source=https://github.com/tak-nz/takserver
 LABEL org.opencontainers.image.description="TAK server for deployment with AWS ECS"
 LABEL org.opencontainers.image.licenses=MIT
 RUN apt update \
-    && apt-get install -y cron emacs-nox net-tools vim certbot curl libxml2-utils unzip zip nodejs awscli jq
+    && apt-get install -y cron emacs-nox net-tools vim certbot curl libxml2-utils unzip zip nodejs awscli jq tini \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV HOME=/opt/tak
 WORKDIR $HOME
@@ -31,6 +33,8 @@ RUN mkdir -p $NVM_DIR \
     && nvm install $NODE_VERSION \
     && nvm alias default $NODE_VERSION \
     && nvm use default \
-    && npm install --save-dev tsx
+    && npm install --save-dev tsx \
+    && chmod +x /opt/tak/scripts/start-tak.sh
 
-ENTRYPOINT ["/bin/bash", "-c", "/opt/tak/scripts/start"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/opt/tak/scripts/start-tak.sh"]
