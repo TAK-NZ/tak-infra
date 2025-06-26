@@ -10,14 +10,18 @@ test('TakInfraStack creates successfully', () => {
     database: { 
       instanceClass: 'db.serverless',
       instanceCount: 1,
-      backupRetentionDays: 7,
-      deleteProtection: false,
+      engineVersion: '17.4',
+      allocatedStorage: 20,
+      maxAllocatedStorage: 100,
+      enablePerformanceInsights: false,
       monitoringInterval: 0,
-      enablePerformanceInsights: false
+      backupRetentionDays: 7,
+      deleteProtection: false
     },
-    ecs: { taskCpu: 1024, taskMemory: 2048, desiredCount: 1 },
-    takserver: { hostname: 'tak', servicename: 'ops', branding: 'generic', version: '5.4-RELEASE-19', useS3Config: false },
-    general: { removalPolicy: 'DESTROY', enableDetailedLogging: true }
+    ecs: { taskCpu: 1024, taskMemory: 2048, desiredCount: 1, enableDetailedLogging: true },
+    takserver: { hostname: 'tak', servicename: 'ops', branding: 'generic', version: '5.4-RELEASE-19', useS3TAKServerConfigFile: false },
+    ecr: { imageRetentionCount: 5, scanOnPush: false },
+    general: { removalPolicy: 'DESTROY', enableDetailedLogging: true, enableContainerInsights: false }
   };
   
   const stack = new TakInfraStack(app, 'TestTakInfraStack', { 

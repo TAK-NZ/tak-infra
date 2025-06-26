@@ -63,7 +63,7 @@ export class TakInfraStack extends cdk.Stack {
     const takServerHostname = envConfig.takserver.hostname;
     const takServerBranding = envConfig.takserver.branding;
     const takServerVersion = envConfig.takserver.version;
-    const useS3ConfigFile = envConfig.takserver.useS3Config;
+    const useS3ConfigFile = envConfig.takserver.useS3TAKServerConfigFile;
     const enableEcsExec = envConfig.ecs.enableEcsExec ?? false;
 
     // =================

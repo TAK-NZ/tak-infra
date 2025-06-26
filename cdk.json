@@ -23,15 +23,18 @@
         "instanceClass": "db.serverless",
         "instanceCount": 1,
         "engineVersion": "17.4",
-        "backupRetentionDays": 7,
-        "deleteProtection": false,
+        "allocatedStorage": 20,
+        "maxAllocatedStorage": 100,
+        "enablePerformanceInsights": false,
         "monitoringInterval": 0,
-        "enablePerformanceInsights": false
+        "backupRetentionDays": 7,
+        "deleteProtection": false
       },
       "ecs": {
         "taskCpu": 1024,
         "taskMemory": 2048,
         "desiredCount": 1,
+        "enableDetailedLogging": true,
         "enableEcsExec": true
       },
       "takserver": {
@@ -39,11 +42,19 @@
         "servicename": "ops",
         "branding": "tak-nz",
         "version": "5.4-RELEASE-19",
-        "useS3Config": false
+        "useS3TAKServerConfigFile": false,
+        "letsEncryptMode": "staging",
+        "enableFederation": true,
+        "enableCloudWatchMetrics": true
+      },
+      "ecr": {
+        "imageRetentionCount": 5,
+        "scanOnPush": false
       },
       "general": {
         "removalPolicy": "DESTROY",
-        "enableDetailedLogging": true
+        "enableDetailedLogging": true,
+        "enableContainerInsights": false
       }
     },
     "prod": {
@@ -52,15 +63,18 @@
         "instanceClass": "db.t4g.large",
         "instanceCount": 2,
         "engineVersion": "17.4",
-        "backupRetentionDays": 30,
-        "deleteProtection": true,
+        "allocatedStorage": 100,
+        "maxAllocatedStorage": 1000,
+        "enablePerformanceInsights": true,
         "monitoringInterval": 60,
-        "enablePerformanceInsights": true
+        "backupRetentionDays": 30,
+        "deleteProtection": true
       },
       "ecs": {
         "taskCpu": 2048,
         "taskMemory": 4096,
         "desiredCount": 2,
+        "enableDetailedLogging": false,
         "enableEcsExec": false
       },
       "takserver": {
@@ -68,11 +82,19 @@
         "servicename": "ops",
         "branding": "tak-nz",
         "version": "5.4-RELEASE-19",
-        "useS3Config": true
+        "useS3TAKServerConfigFile": true,
+        "letsEncryptMode": "production",
+        "enableFederation": true,
+        "enableCloudWatchMetrics": true
+      },
+      "ecr": {
+        "imageRetentionCount": 20,
+        "scanOnPush": true
       },
       "general": {
         "removalPolicy": "RETAIN",
-        "enableDetailedLogging": false
+        "enableDetailedLogging": false,
+        "enableContainerInsights": true
       }
     },
     "tak-defaults": {

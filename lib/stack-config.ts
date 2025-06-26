@@ -13,15 +13,18 @@ export interface ContextEnvironmentConfig {
     instanceClass: string;
     instanceCount: number;
     engineVersion?: string;
+    allocatedStorage: number;
+    maxAllocatedStorage: number;
+    enablePerformanceInsights: boolean;
+    monitoringInterval: number;
     backupRetentionDays: number;
     deleteProtection: boolean;
-    monitoringInterval: number;
-    enablePerformanceInsights: boolean;
   };
   ecs: {
     taskCpu: number;
     taskMemory: number;
     desiredCount: number;
+    enableDetailedLogging: boolean;
     enableEcsExec?: boolean;
   };
   takserver: {
@@ -29,10 +32,18 @@ export interface ContextEnvironmentConfig {
     servicename: string;
     branding: string;
     version: string;
-    useS3Config: boolean;
+    useS3TAKServerConfigFile: boolean;
+    letsEncryptMode?: string;
+    enableFederation?: boolean;
+    enableCloudWatchMetrics?: boolean;
+  };
+  ecr: {
+    imageRetentionCount: number;
+    scanOnPush: boolean;
   };
   general: {
     removalPolicy: string;
     enableDetailedLogging: boolean;
+    enableContainerInsights: boolean;
   };
 }

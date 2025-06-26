@@ -321,7 +321,7 @@ export class TakServer extends Construct {
     };
 
     // Add environment files if S3 key is provided and useConfigFile is enabled
-    if (props.storage.s3.envFileKey && props.contextConfig.takserver.useS3Config) {
+    if (props.storage.s3.envFileKey && props.contextConfig.takserver.useS3TAKServerConfigFile) {
       containerDefinitionOptions = {
         ...containerDefinitionOptions,
         environmentFiles: [
