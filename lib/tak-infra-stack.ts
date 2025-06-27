@@ -161,7 +161,8 @@ export class TakInfraStack extends cdk.Stack {
         hostedZoneName: createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.HOSTED_ZONE_NAME),
         sslCertificateArn: createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.CERTIFICATE_ARN),
         hostname: takServerHostname
-      }
+      },
+      nlbSecurityGroup: securityGroups.nlb
     });
 
     // =================

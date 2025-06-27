@@ -227,6 +227,9 @@ export class TakServer extends Construct {
       }));
     }
 
+    // Grant KMS permissions for secrets encryption
+    props.infrastructure.kmsKey.grantEncrypt(taskRole);
+
     // Add ECS service update permissions (for self-service restarts)
     taskRole.addToPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
@@ -431,8 +434,14 @@ export class TakServer extends Construct {
       containerPort: TAK_SERVER_PORTS.FEDERATION
     }));
 
+    // Update the container environment with the actual service name
+    const containerDef = this.taskDefinition.findContainer('TakServer');
+    if (containerDef) {
+      containerDef.addEnvironment('ECS_Service_Name', this.ecsService.serviceName);
+    }
+
     // Add explicit dependency on database cluster
-    this.ecsService.node.addDependency(props.database);
+    this.ecsService.node.addDependency(props.database);ase);
 
     // Add auto scaling for production
     if (isHighAvailability) {

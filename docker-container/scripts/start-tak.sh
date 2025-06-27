@@ -62,7 +62,7 @@ fi
 # Check if certs for self-enrollment (HTTPS on TCP/8446) exist
 mkdir /opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain} || true
 if [[ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" && \
-    ( "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Production" || "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Staging" ) \
+    ( "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "production" || "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "staging" ) \
     ]]; then
     # Previous LetsEncrypt cert exists, convert it to JKS format
     echo "TAK Server - Converting LetsEncrypt certs to TAK format"

@@ -37,7 +37,10 @@ export interface ELBProps {
    */
   network: NetworkConfig;
 
-
+  /**
+   * NLB security group
+   */
+  nlbSecurityGroup: ec2.ISecurityGroup;
 }
 
 /**
@@ -68,12 +71,13 @@ export class Elb extends Construct {
   constructor(scope: Construct, id: string, props: ELBProps) {
     super(scope, id);
 
-    // Create network load balancer with dualstack IP addressing
+    // Create network load balancer with dualstack IP addressing and security group
     this.loadBalancer = new elbv2.NetworkLoadBalancer(this, 'NLB', {
       loadBalancerName: `${props.contextConfig.stackName.toLowerCase()}-tak`,
       vpc: props.infrastructure.vpc,
       internetFacing: true,
-      ipAddressType: elbv2.IpAddressType.DUAL_STACK
+      ipAddressType: elbv2.IpAddressType.DUAL_STACK,
+      securityGroups: [props.nlbSecurityGroup]
     });
 
     // Create target groups for all TAK Server services
@@ -91,16 +95,10 @@ export class Elb extends Construct {
       defaultTargetGroups: [this.targetGroups.http]
     });
 
-    // Import SSL certificate for HTTPS listener
-    const certificate = acm.Certificate.fromCertificateArn(this, 'ImportedCertificate', 
-      Fn.importValue(props.network.sslCertificateArn)
-    );
-
-    // Port 443 maps to WebTAK Admin (8446) with SSL termination
+    // Port 443 maps to WebTAK Admin (8446) without TLS termination
     this.loadBalancer.addListener('HttpsListener', {
       port: TAK_SERVER_PORTS.HTTPS,
-      protocol: elbv2.Protocol.TLS,
-      certificates: [certificate],
+      protocol: elbv2.Protocol.TCP,
       defaultTargetGroups: [this.targetGroups.webtakAdmin]
     });
 
