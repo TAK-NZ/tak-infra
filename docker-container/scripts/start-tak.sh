@@ -7,8 +7,18 @@
 
 set -euo pipefail
 
-echo "ok - TAK Server - New ECS Task starting..."
-echo "ok - NodeJS - Version: $(node --version)"
+# Signal handler for graceful shutdown
+cleanup_and_exit() {
+    echo "TAK Server - Received shutdown signal, cleaning up..."
+    # Kill background processes gracefully
+    [[ -n "${LETSENCRYPT_PID:-}" ]] && kill -TERM "$LETSENCRYPT_PID" 2>/dev/null || true
+    [[ -n "${CRON_PID:-}" ]] && kill -TERM "$CRON_PID" 2>/dev/null || true
+    # Since TAK server will be the main process, signals will be handled by it directly
+    exit 0
+}
+trap 'cleanup_and_exit' SIGTERM SIGINT
+
+echo "TAK Server - New ECS Task starting..."
 
 # Ensure TAK certs Directory is present
 if [ -d "/opt/tak/certs/files/" ]; then
@@ -16,7 +26,7 @@ if [ -d "/opt/tak/certs/files/" ]; then
 fi
 
 # Attempt to restore Certbot Cronjob
-echo "ok - Certbot - Restoring cronjob"
+echo "Certbot - Restoring cronjob"
 if [ ! -e "/etc/cron.d/certbot" ]; then
     cp /etc/letsencrypt/certbot.cron /etc/cron.d/certbot || true
 fi
@@ -24,12 +34,12 @@ fi
 # Check if TAK certs exist, otherwise generate them
 cd /opt/tak/certs
 if [ ! -f "/opt/tak/certs/files/ca.pem" ]; then
-    echo "ok - TAK Server - Generating new certificates..."
-    echo "ok - TAK Server - CA Country: ${TAKSERVER_CACert_Country:=NZ}"
-    echo "ok - TAK Server - CA State: ${TAKSERVER_CACert_State:=Wellington}"
-    echo "ok - TAK Server - CA City: ${TAKSERVER_CACert_City:=Wellington}"
-    echo "ok - TAK Server - CA Organization: ${TAKSERVER_CACert_Org:=TAK.NZ}"
-    echo "ok - TAK Server - CA Organizational Unit: ${TAKSERVER_CACert_OrgUnit:=TAK.NZ Operations}" 
+    echo "TAK Server - Generating new certificates..."
+    echo "TAK Server - CA Country: ${TAKSERVER_CACert_Country:=NZ}"
+    echo "TAK Server - CA State: ${TAKSERVER_CACert_State:=Wellington}"
+    echo "TAK Server - CA City: ${TAKSERVER_CACert_City:=Wellington}"
+    echo "TAK Server - CA Organization: ${TAKSERVER_CACert_Org:=TAK.NZ}"
+    echo "TAK Server - CA Organizational Unit: ${TAKSERVER_CACert_OrgUnit:=TAK.NZ Operations}" 
     export COUNTRY=${TAKSERVER_CACert_Country}
     export STATE=${TAKSERVER_CACert_State}
     export CITY=${TAKSERVER_CACert_City}
@@ -55,7 +65,7 @@ if [[ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" &&
     ( "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Production" || "${TAKSERVER_QuickConnect_LetsEncrypt_CertType}" == "Staging" ) \
     ]]; then
     # Previous LetsEncrypt cert exists, convert it to JKS format
-    echo "ok - TAK Server - Converting LetsEncrypt certs to TAK format"
+    echo "TAK Server - Converting LetsEncrypt certs to TAK format"
     openssl x509 \
         -text \
         -in "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/fullchain.pem" \
@@ -78,48 +88,57 @@ if [[ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" &&
         -srcstoretype "pkcs12" 
 else 
     # No previous LetsEncrypt cert exists or settings call for none to be used, use the self-signed one instead
-    echo "ok - TAK Server - Using self-signed certs instead of LetsEncrypt certs"
+    echo "TAK Server - Using self-signed certs instead of LetsEncrypt certs"
     cp /opt/tak/certs/files/takserver.jks /opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks || true
 fi
 
 
 # Request LetsEncrypt certs in background
 /opt/tak/scripts/letsencrypt-request-cert.sh &
+LETSENCRYPT_PID=$!
 
 # Download OIDC issuer public certificate if configured
 if [ -n "${TAKSERVER_CoreConfig_OAuthServer_JWKS:-}" ] && [ -n "${TAKSERVER_CoreConfig_OAuthServer_Issuer:-}" ]; then
-    echo "ok - TAK Server - Downloading OIDC issuer public certificate"
+    echo "TAK Server - Downloading OIDC issuer public certificate"
     /opt/tak/scripts/getOIDCIssuerPubKey.sh
 else
-    echo "ok - TAK Server - No OIDC issuer public certificate configured, skipping download"
+    echo "TAK Server - No OIDC issuer public certificate configured, skipping download"
 fi
 
 
-echo "ok - TAK Server - Generating config file"
+echo "TAK Server - Generating config file"
 cd /opt/tak
 #npx tsx /opt/tak/scripts/CoreConfig.ts
 /opt/tak/scripts/createCoreConfig.sh /opt/tak/CoreConfig.xml
 
-echo "ok - TAK Server - Validating config file"
+echo "TAK Server - Validating config file"
 /opt/tak/validateConfig.sh /opt/tak/CoreConfig.xml
 
-echo "ok - TAK Server - Validate DB schema"
+echo "TAK Server - Validate DB schema"
 java -jar /opt/tak/db-utils/SchemaManager.jar validate
 java -jar /opt/tak/db-utils/SchemaManager.jar upgrade
 
-echo "ok - TAK Server - Starting server"
-/opt/tak/configureInDocker.sh init &
+echo "TAK Server - Starting server"
 
-echo "ok - TAK Server - Starting to elevate admin user privileges..."
-SetAdminCommand="java -jar /opt/tak/utils/UserManager.jar certmod -A /opt/tak/certs/files/admin.pem"
-while ! $SetAdminCommand; do
-   echo "not ok - TAK Server - Elevating admin user privileges failed, retrying in 10 seconds..."
-   sleep 10
-done
-echo "ok - TAK Server - Elevating admin user privileges succeeded"
+# Start cron in background
+echo "Certbot - Starting cron for certbot renewals"
+/usr/sbin/cron &
+CRON_PID=$!
 
-echo "ok - TAK Server - New ECS Task successfully started"
+# Start admin user elevation in background
+(
+    sleep 10
+    echo "TAK Server - Starting to elevate admin user privileges..."
+    SetAdminCommand="java -jar /opt/tak/utils/UserManager.jar certmod -A /opt/tak/certs/files/admin.pem"
+    while ! $SetAdminCommand; do
+       echo "TAK Server - Elevating admin user privileges failed, retrying in 10 seconds..."
+       sleep 10
+    done
+    echo "TAK Server - Elevating admin user privileges succeeded"
+) &
 
-# Run cron in foreground
-echo "ok - Certbot - Starting cron for certbot renewals"
-/usr/sbin/cron -f
+echo "TAK Server - New ECS Task successfully started"
+
+# Run TAK server as main process (not in background)
+echo "TAK Server - Starting main TAK server process..."
+exec /opt/tak/configureInDocker.sh init

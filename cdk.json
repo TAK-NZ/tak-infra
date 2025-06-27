@@ -31,8 +31,8 @@
         "deleteProtection": false
       },
       "ecs": {
-        "taskCpu": 1024,
-        "taskMemory": 2048,
+        "taskCpu": 2048,
+        "taskMemory": 4096,
         "desiredCount": 1,
         "enableDetailedLogging": true,
         "enableEcsExec": true
@@ -72,8 +72,8 @@
         "deleteProtection": true
       },
       "ecs": {
-        "taskCpu": 2048,
-        "taskMemory": 4096,
+        "taskCpu": 4096,
+        "taskMemory": 8192,
         "desiredCount": 2,
         "enableDetailedLogging": false,
         "enableEcsExec": false

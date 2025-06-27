@@ -81,6 +81,11 @@ export interface TakServerProps {
    * TAK Server FQDN
    */
   takFqdn: string;
+
+  /**
+   * Database cluster for dependency management
+   */
+  database: any; // Using any to avoid circular import issues
 }
 
 /**
@@ -326,7 +331,8 @@ export class TakServer extends Construct {
         PostgresURL: `jdbc:postgresql://${props.network.databaseHostname}:5432/takserver`,
         TAKSERVER_QuickConnect_LetsEncrypt_Domain: `${props.contextConfig.takserver.servicename}.${Fn.importValue(props.network.hostedZoneName)}`,
         TAKSERVER_QuickConnect_LetsEncrypt_CertType: props.contextConfig.takserver.letsEncryptMode || 'staging',
-        TAKSERVER_QuickConnect_LetsEncrypt_Email: props.contextConfig.takserver.letsEncryptEmail || 'admin@tak.nz'
+        TAKSERVER_QuickConnect_LetsEncrypt_Email: props.contextConfig.takserver.letsEncryptEmail || 'admin@tak.nz',
+        TAKSERVER_CoreConfig_Network_CloudwatchEnable: props.contextConfig.takserver.enableCloudWatchMetrics?.toString() || 'false'
       },
       secrets: {
         PostgresUsername: ecs.Secret.fromSecretsManager(props.secrets.database, 'username'),
@@ -424,6 +430,9 @@ export class TakServer extends Construct {
       containerName: 'TakServer',
       containerPort: TAK_SERVER_PORTS.FEDERATION
     }));
+
+    // Add explicit dependency on database cluster
+    this.ecsService.node.addDependency(props.database);
 
     // Add auto scaling for production
     if (isHighAvailability) {

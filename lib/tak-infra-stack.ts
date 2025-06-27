@@ -231,7 +231,8 @@ export class TakInfraStack extends cdk.Stack {
         loadBalancer: loadBalancer.loadBalancer
       },
       targetGroups: loadBalancer.targetGroups,
-      takFqdn: route53.takFqdn
+      takFqdn: route53.takFqdn,
+      database: database.cluster
     });
     
     // =================

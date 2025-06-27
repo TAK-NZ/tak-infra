@@ -132,6 +132,8 @@ export class Elb extends Construct {
    * Create a target group for TAK Server services
    */
   private createTargetGroup(id: string, port: number, vpc: ec2.IVpc): elbv2.NetworkTargetGroup {
+    const healthCheckPort = port === TAK_SERVER_PORTS.HTTP ? TAK_SERVER_PORTS.WEBTAK_ADMIN : port;
+    
     return new elbv2.NetworkTargetGroup(this, id, {
       vpc: vpc,
       targetType: elbv2.TargetType.IP,
@@ -139,7 +141,7 @@ export class Elb extends Construct {
       protocol: elbv2.Protocol.TCP,
       healthCheck: {
         protocol: elbv2.Protocol.TCP,
-        port: port.toString(),
+        port: healthCheckPort.toString(),
         interval: Duration.seconds(30),
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 2

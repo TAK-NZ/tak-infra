@@ -49,6 +49,77 @@ update_test_files() {
 # Update test files before running tests
 update_test_files
 
+# Validate mandatory sections function
+validate_mandatory_sections() {
+    local xml_file="$1"
+    local missing_sections=()
+    
+    # Check for mandatory sections based on backup/docker-container/scripts/CoreConfig.ts
+    local mandatory_sections=(
+        "network"
+        "auth"
+        "submission"
+        "subscription" 
+        "repository"
+        "repeater"
+        "filter"
+        "buffer"
+        "dissemination"
+        "certificateSigning"
+        "security"
+        "federation"
+        "plugins"
+        "cluster"
+        "vbm"
+    )
+    
+    for section in "${mandatory_sections[@]}"; do
+        if ! grep -q "<$section" "$xml_file"; then
+            missing_sections+=("$section")
+        fi
+    done
+    
+    # Check for mandatory child elements
+    if ! grep -q "<input" "$xml_file"; then
+        missing_sections+=("network/input")
+    fi
+    
+    if ! grep -q "<connector" "$xml_file"; then
+        missing_sections+=("network/connector")
+    fi
+    
+    if ! grep -q "<ldap" "$xml_file"; then
+        missing_sections+=("auth/ldap")
+    fi
+    
+    if ! grep -q "<connection" "$xml_file"; then
+        missing_sections+=("repository/connection")
+    fi
+    
+    if ! grep -q "<tls" "$xml_file"; then
+        missing_sections+=("security/tls")
+    fi
+    
+    if ! grep -q "<federation-server" "$xml_file"; then
+        missing_sections+=("federation/federation-server")
+    fi
+    
+    if ! grep -q "<TAKServerCAConfig" "$xml_file"; then
+        missing_sections+=("certificateSigning/TAKServerCAConfig")
+    fi
+    
+    if ! grep -q "<certificateConfig" "$xml_file"; then
+        missing_sections+=("certificateSigning/certificateConfig")
+    fi
+    
+    if [ ${#missing_sections[@]} -gt 0 ]; then
+        echo "Missing mandatory sections: ${missing_sections[*]}"
+        return 1
+    fi
+    
+    return 0
+}
+
 # Test counter
 TEST_COUNT=0
 PASS_COUNT=0
@@ -87,14 +158,20 @@ run_test() {
     
     # Run the script with custom output path
     if bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > test_output.log 2>&1; then
-        # Validate the generated XML
-        if cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1; then
-            echo "✅ PASS: $test_name"
-            PASS_COUNT=$((PASS_COUNT + 1))
+        # Check for mandatory sections first
+        if validate_mandatory_sections "$TEST_DIR/CoreConfig.xml"; then
+            # Validate the generated XML
+            if cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1; then
+                echo "✅ PASS: $test_name"
+                PASS_COUNT=$((PASS_COUNT + 1))
+            else
+                echo "❌ FAIL: $test_name - XML validation failed"
+                echo "Validation output:"
+                cat "$TEST_DIR/validation.log"
+                FAIL_COUNT=$((FAIL_COUNT + 1))
+            fi
         else
-            echo "❌ FAIL: $test_name - XML validation failed"
-            echo "Validation output:"
-            cat "$TEST_DIR/validation.log"
+            echo "❌ FAIL: $test_name - Missing mandatory sections"
             FAIL_COUNT=$((FAIL_COUNT + 1))
         fi
     else
