@@ -150,10 +150,10 @@ This document outlines the comprehensive migration plan to convert the TAK Infra
 - [ ] Verify security group rules and networking
 
 #### 6.3 End-to-End Testing
-- [ ] Deploy to development environment
-- [ ] Validate TAK Server functionality
-- [ ] Test container deployment and scaling
-- [ ] Verify DNS resolution and SSL certificates
+- [x] Deploy to development environment
+- [x] Validate TAK Server functionality
+- [x] Test container deployment and scaling
+- [x] Verify DNS resolution and SSL certificates
 
 ### Phase 7: Documentation and Deployment
 **Duration**: 1-2 days
@@ -300,29 +300,6 @@ The stack will import the following from auth-infra:
 - Removal policy: RETAIN
 - Enhanced monitoring
 
-## Implementation Checklist
-
-### Pre-Implementation
-- [ ] Document current resource configurations for reference
-- [ ] Identify all dependencies from base-infra and auth-infra
-- [ ] Set up testing environment
-- [ ] Plan new naming conventions
-
-### Implementation Execution
-- [ ] Complete Phase 1: Project Setup
-- [x] Complete Phase 2: Core Infrastructure
-- [ ] Complete Phase 3: Application Service
-- [ ] Complete Phase 4: DNS and Routing
-- [ ] Complete Phase 5: Configuration Management
-- [ ] Complete Phase 6: Testing and Validation
-- [ ] Complete Phase 7: Documentation and Deployment
-
-### Post-Implementation
-- [ ] Validate all functionality in new environment
-- [ ] Update deployment documentation
-- [ ] Train team on new deployment process
-- [ ] Plan eventual decommissioning of old stacks (separate project)
-
 ## Risk Mitigation
 
 ### Implementation Risks
@@ -392,8 +369,8 @@ The stack will import the following from auth-infra:
 
 ### Port Mapping Requirements
 TAK Server requires these specific ports (all must be preserved):
-- 80 (HTTP redirect)
-- 443 (HTTPS/WebTAK)
+- 80 (Certbot)
+- 443 (WebTAK TCP)
 - 8089 (CoT TCP)
 - 8443 (API/Admin)
 - 8446 (WebTAK/Admin)
