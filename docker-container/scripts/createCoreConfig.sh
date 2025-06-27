@@ -249,4 +249,4 @@ cat >> "$OUTPUT_FILE" << EOF
 </Configuration>
 EOF
 
-echo "ok - TAK Server - CoreConfig.xml generated successfully at $OUTPUT_FILE"
+echo "TAK Server - CoreConfig.xml generated successfully at $OUTPUT_FILE"

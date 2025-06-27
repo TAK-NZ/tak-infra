@@ -237,7 +237,7 @@ export class TakServer extends Construct {
         'ecs:UpdateService'
       ],
       resources: [
-        `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:service/${props.infrastructure.ecsCluster.clusterName}/${Stack.of(this).stackName}-Service`
+        `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:service/${props.infrastructure.ecsCluster.clusterName}/${Stack.of(this).stackName}-TakServer`
       ]
     }));
 
@@ -330,7 +330,7 @@ export class TakServer extends Construct {
         StackName: Stack.of(this).stackName,
         Environment: props.environment,
         ECS_Cluster_Name: props.infrastructure.ecsCluster.clusterName,
-        ECS_Service_Name: `${Stack.of(this).stackName}-Service`,
+        ECS_Service_Name: `${Stack.of(this).stackName}-TakServer`,
         PostgresURL: `jdbc:postgresql://${props.network.databaseHostname}:5432/takserver`,
         TAKSERVER_QuickConnect_LetsEncrypt_Domain: `${props.contextConfig.takserver.servicename}.${Fn.importValue(props.network.hostedZoneName)}`,
         TAKSERVER_QuickConnect_LetsEncrypt_CertType: props.contextConfig.takserver.letsEncryptMode || 'staging',
@@ -393,8 +393,9 @@ export class TakServer extends Construct {
       readOnly: false
     });
 
-    // Create ECS service
+    // Create ECS service with predictable name
     this.ecsService = new ecs.FargateService(this, 'Service', {
+      serviceName: `${Stack.of(this).stackName}-TakServer`,
       cluster: props.infrastructure.ecsCluster,
       taskDefinition: this.taskDefinition,
       healthCheckGracePeriod: Duration.seconds(300),
@@ -434,14 +435,8 @@ export class TakServer extends Construct {
       containerPort: TAK_SERVER_PORTS.FEDERATION
     }));
 
-    // Update the container environment with the actual service name
-    const containerDef = this.taskDefinition.findContainer('TakServer');
-    if (containerDef) {
-      containerDef.addEnvironment('ECS_Service_Name', this.ecsService.serviceName);
-    }
-
     // Add explicit dependency on database cluster
-    this.ecsService.node.addDependency(props.database);ase);
+    this.ecsService.node.addDependency(props.database);
 
     // Add auto scaling for production
     if (isHighAvailability) {

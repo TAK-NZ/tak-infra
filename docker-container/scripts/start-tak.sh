@@ -92,6 +92,7 @@ if [ ! -f "/opt/tak/certs/files/ca.pem" ]; then
         exit 1
     fi
 
+    # Store TAK admin certificate in AWS Secrets Manager for secure access
     if ! aws secretsmanager put-secret-value \
         --secret-id "${StackName}/TAK-Server/Admin-Cert" \
         --secret-binary fileb://files/admin.p12 2>/tmp/aws_error.log; then
@@ -116,11 +117,13 @@ if [[ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" &&
         exit 1
     fi
     
+    # Display certificate information for verification
     openssl x509 \
         -text \
         -in "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/fullchain.pem" \
         -noout
 
+    # Convert LetsEncrypt PEM certificates to PKCS12 format
     openssl pkcs12 \
         -export \
         -in "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/fullchain.pem" \
@@ -129,6 +132,10 @@ if [[ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" &&
         -name "${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" \
         -password "pass:atakatak"
 
+    # Remove existing JKS file to prevent keytool from appending
+    rm -f "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks"
+    
+    # Convert PKCS12 keystore to JKS format for TAK Server
     { yes || :; } | keytool \
         -importkeystore \
         -srcstorepass "atakatak" \
