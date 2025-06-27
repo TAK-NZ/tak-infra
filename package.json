@@ -10,8 +10,6 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest",
-    "test:unit": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest test/unit",
-    "test:integration": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest test/integration",
     "test:watch": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest --watch",
     "test:coverage": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest --coverage",
     "cdk": "cdk",

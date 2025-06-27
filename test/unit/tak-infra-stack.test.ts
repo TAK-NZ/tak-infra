@@ -1,35 +1,52 @@
-import * as cdk from 'aws-cdk-lib';
+/**
+ * Unit tests for TAK Infrastructure Stack
+ */
+import { App } from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import { TakInfraStack } from '../../lib/tak-infra-stack';
-import { ContextEnvironmentConfig } from '../../lib/stack-config';
+import { MOCK_CONFIGS } from '../__fixtures__/mock-configs';
 
-test('TakInfraStack creates successfully', () => {
-  const app = new cdk.App();
-  const envConfig: ContextEnvironmentConfig = {
-    stackName: 'Test',
-    database: { 
-      instanceClass: 'db.serverless',
-      instanceCount: 1,
-      engineVersion: '17.4',
-      allocatedStorage: 20,
-      maxAllocatedStorage: 100,
-      enablePerformanceInsights: false,
-      monitoringInterval: 0,
-      backupRetentionDays: 7,
-      deleteProtection: false
-    },
-    ecs: { taskCpu: 1024, taskMemory: 2048, desiredCount: 1, enableDetailedLogging: true },
-    takserver: { hostname: 'tak', servicename: 'ops', branding: 'generic', version: '5.4-RELEASE-19', useS3TAKServerConfigFile: false },
-    ecr: { imageRetentionCount: 5, scanOnPush: false },
-    general: { removalPolicy: 'DESTROY', enableDetailedLogging: true, enableContainerInsights: false }
-  };
-  
-  const stack = new TakInfraStack(app, 'TestTakInfraStack', { 
-    environment: 'dev-test',
-    envConfig
+describe('TakInfraStack', () => {
+  test('should create stack with dev-test configuration', () => {
+    const app = new App();
+    const stack = new TakInfraStack(app, 'TestTakInfraStack', {
+      environment: 'dev-test',
+      envConfig: MOCK_CONFIGS.DEV_TEST
+    });
+    
+    const template = Template.fromStack(stack);
+    expect(template).toBeDefined();
+    
+    // Verify key resources are created
+    template.resourceCountIs('AWS::RDS::DBCluster', 1);
+    template.resourceCountIs('AWS::EFS::FileSystem', 1);
+    template.resourceCountIs('AWS::ElasticLoadBalancingV2::LoadBalancer', 1);
   });
-  const template = Template.fromStack(stack);
-  
-  // Basic test to ensure stack synthesizes without errors
-  expect(template).toBeDefined();
+
+  test('should create stack with prod configuration', () => {
+    const app = new App();
+    const stack = new TakInfraStack(app, 'TestTakInfraStack', {
+      environment: 'prod',
+      envConfig: MOCK_CONFIGS.PROD
+    });
+    
+    const template = Template.fromStack(stack);
+    expect(template).toBeDefined();
+    
+    // Verify production settings
+    template.hasResourceProperties('AWS::RDS::DBCluster', {
+      DeletionProtection: true
+    });
+  });
+
+  test('should validate configuration structure', () => {
+    const config = MOCK_CONFIGS.DEV_TEST;
+    
+    expect(config.stackName).toBeDefined();
+    expect(config.database).toBeDefined();
+    expect(config.ecs).toBeDefined();
+    expect(config.takserver).toBeDefined();
+    expect(config.ecr).toBeDefined();
+    expect(config.general).toBeDefined();
+  });
 });

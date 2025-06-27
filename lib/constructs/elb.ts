@@ -73,7 +73,7 @@ export class Elb extends Construct {
 
     // Create network load balancer with dualstack IP addressing and security group
     this.loadBalancer = new elbv2.NetworkLoadBalancer(this, 'NLB', {
-      loadBalancerName: `${props.contextConfig.stackName.toLowerCase()}-tak`,
+      loadBalancerName: `tak-${props.contextConfig.stackName.toLowerCase()}-tak`,
       vpc: props.infrastructure.vpc,
       internetFacing: true,
       ipAddressType: elbv2.IpAddressType.DUAL_STACK,
@@ -82,11 +82,11 @@ export class Elb extends Construct {
 
     // Create target groups for all TAK Server services
     this.targetGroups = {
-      http: this.createTargetGroup('HttpTargetGroup', TAK_SERVER_PORTS.HTTP, props.infrastructure.vpc),
-      cotTcp: this.createTargetGroup('CotTcpTargetGroup', TAK_SERVER_PORTS.COT_TCP, props.infrastructure.vpc),
-      apiAdmin: this.createTargetGroup('ApiAdminTargetGroup', TAK_SERVER_PORTS.API_ADMIN, props.infrastructure.vpc),
-      webtakAdmin: this.createTargetGroup('WebtakAdminTargetGroup', TAK_SERVER_PORTS.WEBTAK_ADMIN, props.infrastructure.vpc),
-      federation: this.createTargetGroup('FederationTargetGroup', TAK_SERVER_PORTS.FEDERATION, props.infrastructure.vpc)
+      http: this.createTargetGroup('HttpTargetGroup', TAK_SERVER_PORTS.HTTP, props.infrastructure.vpc, props),
+      cotTcp: this.createTargetGroup('CotTcpTargetGroup', TAK_SERVER_PORTS.COT_TCP, props.infrastructure.vpc, props),
+      apiAdmin: this.createTargetGroup('ApiAdminTargetGroup', TAK_SERVER_PORTS.API_ADMIN, props.infrastructure.vpc, props),
+      webtakAdmin: this.createTargetGroup('WebtakAdminTargetGroup', TAK_SERVER_PORTS.WEBTAK_ADMIN, props.infrastructure.vpc, props),
+      federation: this.createTargetGroup('FederationTargetGroup', TAK_SERVER_PORTS.FEDERATION, props.infrastructure.vpc, props)
     };
 
     // Create listeners for all services
@@ -129,10 +129,20 @@ export class Elb extends Construct {
   /**
    * Create a target group for TAK Server services
    */
-  private createTargetGroup(id: string, port: number, vpc: ec2.IVpc): elbv2.NetworkTargetGroup {
+  private createTargetGroup(id: string, port: number, vpc: ec2.IVpc, props: ELBProps): elbv2.NetworkTargetGroup {
     const healthCheckPort = port === TAK_SERVER_PORTS.HTTP ? TAK_SERVER_PORTS.WEBTAK_ADMIN : port;
     
+    // Create readable target group names
+    const nameMap: { [key: string]: string } = {
+      'HttpTargetGroup': 'certbot',
+      'CotTcpTargetGroup': 'cot-tcp',
+      'ApiAdminTargetGroup': 'api-admin',
+      'WebtakAdminTargetGroup': 'webtak-admin',
+      'FederationTargetGroup': 'federation'
+    };
+    
     return new elbv2.NetworkTargetGroup(this, id, {
+      targetGroupName: `tak-${props.contextConfig.stackName.toLowerCase()}-${nameMap[id]}`,
       vpc: vpc,
       targetType: elbv2.TargetType.IP,
       port: port,
