@@ -3,6 +3,7 @@ LABEL org.opencontainers.image.source=https://github.com/tak-nz/takserver
 LABEL org.opencontainers.image.description="TAK server for deployment with AWS ECS"
 LABEL org.opencontainers.image.licenses=MIT
 ARG TAK_VERSION=takserver-docker-5.4-RELEASE-19
+ARG ENVIRONMENT
 RUN apt update \
     && apt-get install -y net-tools netcat \
         tini cron certbot curl libxml2-utils unzip zip awscli jq \
@@ -18,7 +19,7 @@ COPY ./takserver-docker-*.zip $HOME/
 ENV TAK_VERSION=${TAK_VERSION}
 
 RUN if [ ! -e "${TAK_VERSION}.zip" ]; then \
-        wget "http://tak-server-releases.s3-website.us-gov-east-1.amazonaws.com/${TAK_VERSION}.zip"; \
+        aws s3 cp "s3://$(aws cloudformation describe-stacks --stack-name TAK-${ENVIRONMENT}-BaseInfra --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArn`].OutputValue' --output text | sed 's|arn:aws:s3:::|s3://|')/${TAK_VERSION}.zip" "${TAK_VERSION}.zip"; \
     fi \
     && unzip "./${TAK_VERSION}.zip" \
     && rm "./${TAK_VERSION}.zip" \

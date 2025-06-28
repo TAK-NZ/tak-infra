@@ -285,7 +285,8 @@ export class TakServer extends Construct {
       directory: '.',
       file: `docker/tak-server/${dockerfileName}`,
       buildArgs: {
-        TAK_VERSION: `takserver-docker-${props.contextConfig.takserver.version}`
+        TAK_VERSION: `takserver-docker-${props.contextConfig.takserver.version}`,
+        ENVIRONMENT: props.contextConfig.stackName
       },
       // Exclude files that change frequently but don't affect the Docker build
       exclude: [
