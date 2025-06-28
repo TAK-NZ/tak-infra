@@ -9,6 +9,7 @@
 - Public Route 53 hosted zone for your domain
 - Node.js 18+ and npm installed
 - Development tools (see [Development Environment Setup](#development-environment-setup) below)
+- **TAK Server Distribution**: `takserver-docker-<version>.zip` either in repository root OR uploaded to S3 TAK Images bucket
 
 ### **One-Command Deployment**
 ```bash
@@ -141,11 +142,19 @@ git clone <repository-url>
 cd tak-infra
 npm install
 
-# 2. Set environment variables (if using AWS profiles)
+# 2. Prepare TAK Server distribution (choose one option):
+# Option A: Place takserver-docker-<version>.zip in repository root
+# Option B: Upload to S3 TAK Images bucket:
+#   BUCKET_ARN=$(aws cloudformation describe-stacks --stack-name TAK-<n>-BaseInfra \
+#     --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArn`].OutputValue' --output text)
+#   BUCKET_NAME=$(echo $BUCKET_ARN | sed 's|arn:aws:s3:::|s3://|')
+#   aws s3 cp takserver-docker-5.4-RELEASE-19.zip $BUCKET_NAME/
+
+# 3. Set environment variables (if using AWS profiles)
 export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text --profile your-profile)
 export CDK_DEFAULT_REGION=$(aws configure get region --profile your-profile)
 
-# 3. Deploy TAK Server infrastructure
+# 4. Deploy TAK Server infrastructure
 npm run deploy:dev -- --context stackName=YourStackName
 ```
 

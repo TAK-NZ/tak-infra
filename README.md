@@ -80,14 +80,18 @@ This TAK Server infrastructure requires the base infrastructure and authenticati
 - Public Route 53 hosted zone (e.g., `tak.nz`)
 - [Node.js](https://nodejs.org/) and npm installed
 - Development tools: `libxml2-utils` for XML validation (see [Deployment Guide](docs/DEPLOYMENT_GUIDE.md#development-environment-setup))
-- **TAK Server Distribution**: Download `takserver-docker-<version>.zip` from https://tak.gov/products/tak-server and place it in the root directory of this repository
+- **TAK Server Distribution**: Download `takserver-docker-<version>.zip` from https://tak.gov/products/tak-server and either:
+  - Place it in the root directory of this repository, OR
+  - Upload it to the S3 TAK Images bucket (exported as `TAK-<n>-BaseInfra-S3TAKImagesArn`)
 
 ### Installation & Deployment
 
 ```bash
 # 1. Download TAK Server distribution
 # Download takserver-docker-<version>.zip from https://tak.gov/products/tak-server
-# Place the file in the root directory of this repository
+# Either:
+#   - Place the file in the root directory of this repository, OR
+#   - Upload to S3 bucket (see TAK Server Distribution section below)
 
 # 2. Install dependencies
 npm install
@@ -135,6 +139,28 @@ This stack uses **AWS CDK's built-in Docker image assets** for automatic contain
 ### Docker Images Used
 
 1. **TAK Server**: Built from `docker/tak-server/Dockerfile.{branding}`
+
+### TAK Server Distribution
+
+The TAK Server Docker images require the official TAK Server distribution file. You have two options:
+
+#### Option 1: Local Repository (Default)
+Place `takserver-docker-<version>.zip` in the root directory of this repository.
+
+#### Option 2: S3 Bucket (Recommended for CI/CD)
+Upload the TAK Server distribution to the S3 bucket created by BaseInfra:
+
+```bash
+# Get the S3 bucket name from CloudFormation export
+BUCKET_ARN=$(aws cloudformation describe-stacks --stack-name TAK-<n>-BaseInfra \
+  --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArn`].OutputValue' --output text)
+BUCKET_NAME=$(echo $BUCKET_ARN | sed 's|arn:aws:s3:::|s3://|')
+
+# Upload TAK Server distribution
+aws s3 cp takserver-docker-5.4-RELEASE-19.zip $BUCKET_NAME/
+```
+
+**Note**: The Docker build process will automatically check the local repository first, then fall back to downloading from S3 if the file is not found locally.
 
 ### Branding Support
 

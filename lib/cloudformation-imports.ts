@@ -19,6 +19,7 @@ export const BASE_EXPORT_NAMES = {
   KMS_KEY: 'KmsKeyArn',
   KMS_ALIAS: 'KmsAlias',
   S3_BUCKET: 'S3BucketArn',
+  S3_TAK_IMAGES: 'S3TAKImagesArn',
   S3_ID: 'S3-ID',
   CERTIFICATE_ARN: 'CertificateArn',
   HOSTED_ZONE_ID: 'HostedZoneId',
