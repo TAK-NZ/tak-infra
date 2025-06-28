@@ -80,20 +80,25 @@ This TAK Server infrastructure requires the base infrastructure and authenticati
 - Public Route 53 hosted zone (e.g., `tak.nz`)
 - [Node.js](https://nodejs.org/) and npm installed
 - Development tools: `libxml2-utils` for XML validation (see [Deployment Guide](docs/DEPLOYMENT_GUIDE.md#development-environment-setup))
+- **TAK Server Distribution**: Download `takserver-docker-<version>.zip` from https://tak.gov/products/tak-server and place it in the root directory of this repository
 
 ### Installation & Deployment
 
 ```bash
-# 1. Install dependencies
+# 1. Download TAK Server distribution
+# Download takserver-docker-<version>.zip from https://tak.gov/products/tak-server
+# Place the file in the root directory of this repository
+
+# 2. Install dependencies
 npm install
 
-# 2. Bootstrap CDK (first time only)
+# 3. Bootstrap CDK (first time only)
 npx cdk bootstrap --profile your-aws-profile
 
-# 3. Deploy development environment
+# 4. Deploy development environment
 npm run deploy:dev
 
-# 4. Deploy production environment  
+# 5. Deploy production environment  
 npm run deploy:prod
 ```
 
