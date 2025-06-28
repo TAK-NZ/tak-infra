@@ -1,43 +1,53 @@
 {
-    "name": "@TAK-NZ/tak-infra",
-    "type": "module",
-    "private": true,
-    "version": "1.0.0",
-    "description": "TAK Server Layer",
-    "scripts": {
-        "lint": "eslint docker-container/scripts/CoreConfig.ts docker-container/scripts/src/ cloudformation/",
-        "build": "node ./bin/build.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "engines": {
-        "node": ">= 22"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/TAK-NZ/tak-infra.git"
-    },
-    "author": "TAK.NZ - https://tak.nz",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/TAK-NZ/tak-infra/issues"
-    },
-    "homepage": "https://github.com/TAK-NZ/tak-infra#readme",
-    "dependencies": {
-        "@aws-sdk/client-acm": "^3.782.0",
-        "@openaddresses/cloudfriend": "^7.0.0",
-        "@sinclair/typebox": "^0.34.33",
-        "jks-js": "^1.1.4",
-        "json-diff-ts": "^4.2.3",
-        "tsx": "^4.19.3",
-        "typescript": "^5.8.3",
-        "typescript-eslint": "^8.31.0",
-        "xml-js": "^1.6.11"
-    },
-    "devDependencies": {
-        "@openaddresses/batch-alarms": "^4.1.0",
-        "@openaddresses/deploy": "^9.0.0",
-        "@types/node": "^22.15.2",
-        "eslint": "^9.1.1",
-        "eslint-plugin-n": "^17.4.0"
-    }
+  "name": "@tak-nz/tak-infra",
+  "version": "1.0.0",
+  "description": "TAK Server infrastructure for TAK-NZ projects using AWS CDK",
+  "private": true,
+  "bin": {
+    "cdk": "bin/cdk.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest",
+    "test:watch": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest --watch",
+    "test:coverage": "unset CDK_DEFAULT_ACCOUNT && unset CDK_DEFAULT_REGION && jest --coverage",
+    "cdk": "cdk",
+    "clean": "rm -f bin/*.js bin/*.d.ts lib/*.js lib/*.d.ts lib/constructs/*.js lib/constructs/*.d.ts test/*.js test/*.d.ts; rm -rf cdk.out/*",
+    "dev": "npm run build && npm run test",
+    "deploy:dev": "npm run build && cdk deploy --context env=dev-test --no-warnings",
+    "deploy:prod": "npm run build && cdk deploy --context env=prod --no-warnings",
+    "synth:dev": "npm run build && cdk synth --context env=dev-test",
+    "synth:prod": "npm run build && cdk synth --context env=prod",
+    "cdk:diff:dev": "npm run build && cdk diff --context env=dev-test",
+    "cdk:diff:prod": "npm run build && cdk diff --context env=prod",
+    "cdk:bootstrap": "cdk bootstrap"
+  },
+  "engines": {
+    "node": ">= 22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TAK-NZ/tak-infra.git"
+  },
+  "author": "TAK.NZ - https://tak.nz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TAK-NZ/tak-infra/issues"
+  },
+  "homepage": "https://github.com/TAK-NZ/tak-infra#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "22.7.9",
+    "aws-cdk": "2.1017.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.6.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.167.0",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.21"
+  }
 }

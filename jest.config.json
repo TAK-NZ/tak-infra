@@ -1,0 +1,17 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "roots": ["<rootDir>/test"],
+  "testMatch": ["**/*.test.ts"],
+  "testPathIgnorePatterns": [
+    "/node_modules/",
+    "/reference/",
+    "/cdk.out/"
+  ],
+  "coverageReporters": ["text"],
+  "collectCoverageFrom": [
+    "lib/**/*.ts",
+    "!lib/**/*.d.ts"
+  ],
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
+}

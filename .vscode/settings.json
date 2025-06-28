@@ -1,3 +1,0 @@
-{
-    "aws.ecs.openTerminalCommand": "/bin/bash"
-}
