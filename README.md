@@ -7,6 +7,15 @@
 The [Team Awareness Kit (TAK)](https://tak.gov/solutions/emergency) provides Fire, Emergency Management, and First Responders an operationally agnostic tool for improved situational awareness and a common operational picture. 
 This repo deploys the base infrastructure required to deploy a [TAK server](https://tak.gov/solutions/emergency) along with [Authentik](https://goauthentik.io/) as the authentication layer on AWS.
 
+> [!CAUTION]
+> **Legacy Branch - Deploy Tool Version**
+> 
+> This branch contains the OpenAddresses Deploy Tool version of the base infrastructure.
+> 
+> - **Maintenance mode**: Critical bug fixes only
+> - **New features**: Only available in the [main branch (CDK version)](../../../tree/main)
+> - **New deployments**: Consider using the CDK version for future support
+
 ## Pre-Reqs
 
 > [!IMPORTANT]
