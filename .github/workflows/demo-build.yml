@@ -124,6 +124,7 @@ jobs:
               -f docker/tak-server/Dockerfile.${BRANDING} \
               --build-arg TAK_VERSION=takserver-docker-${VERSION} \
               --build-arg ENVIRONMENT=${{ vars.STACK_NAME }} \
+              --rm \
               -t ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.tak-tag }} \
               .
             
