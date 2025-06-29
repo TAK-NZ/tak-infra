@@ -78,6 +78,24 @@ jobs:
           echo "Using ECR repository: $ECR_REPO_URI"
           echo "Building TAK server image with tag: $TAK_TAG"
       
+      - name: Download TAK Server Distribution
+        run: |
+          VERSION=$(jq -r '.context."prod".takserver.version' cdk.json)
+          TAK_FILE="takserver-docker-${VERSION}.zip"
+          
+          if [ ! -f "$TAK_FILE" ]; then
+            echo "📥 Downloading TAK server distribution from S3..."
+            S3_BUCKET_ARN=$(aws cloudformation describe-stacks \
+              --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra \
+              --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArn`].OutputValue' \
+              --output text)
+            S3_BUCKET=$(echo $S3_BUCKET_ARN | sed 's|arn:aws:s3:::|s3://|')
+            aws s3 cp "${S3_BUCKET}/${TAK_FILE}" "${TAK_FILE}"
+            echo "✅ Downloaded ${TAK_FILE}"
+          else
+            echo "✅ TAK server distribution already exists locally"
+          fi
+      
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
