@@ -150,7 +150,7 @@ Upload the TAK Server distribution to the S3 bucket created by BaseInfra:
 ```bash
 # Get the S3 bucket name from CloudFormation export
 BUCKET_ARN=$(aws cloudformation describe-stacks --stack-name TAK-<n>-BaseInfra \
-  --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArn`].OutputValue' --output text)
+  --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArnOutput`].OutputValue' --output text)
 BUCKET_NAME=$(echo $BUCKET_ARN | sed 's|arn:aws:s3:::|s3://|')
 
 # Upload TAK Server distribution

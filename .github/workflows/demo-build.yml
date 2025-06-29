@@ -89,9 +89,15 @@ jobs:
             echo "📥 Downloading TAK server distribution from S3..."
             S3_BUCKET_ARN=$(aws cloudformation describe-stacks \
               --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra \
-              --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArn`].OutputValue' \
+              --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArnOutput`].OutputValue' \
               --output text)
             S3_BUCKET=$(echo $S3_BUCKET_ARN | sed 's|arn:aws:s3:::|s3://|')
+            
+            if [[ -z "$S3_BUCKET_ARN" ]]; then
+              echo "ERROR: S3 TAK Images bucket ARN not found in BaseInfra stack outputs"
+              aws cloudformation describe-stacks --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra --query 'Stacks[0].Outputs[].{Key:OutputKey,Value:OutputValue}' --output table
+              exit 1
+            fi
             aws s3 cp "${S3_BUCKET}/${TAK_FILE}" "${TAK_FILE}"
             echo "✅ Downloaded ${TAK_FILE}"
           else
