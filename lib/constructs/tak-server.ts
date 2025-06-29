@@ -239,7 +239,8 @@ export class TakServer extends Construct {
     taskRole.addToPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
-        'ecs:UpdateService'
+        'ecs:UpdateService',
+        'ecs:DescribeServices'
       ],
       resources: [
         `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:service/${props.infrastructure.ecsCluster.clusterName}/${Stack.of(this).stackName}-TakServer`
