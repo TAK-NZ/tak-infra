@@ -146,7 +146,7 @@ npm install
 # Option A: Place takserver-docker-<version>.zip in repository root
 # Option B: Upload to S3 TAK Images bucket:
 #   BUCKET_ARN=$(aws cloudformation describe-stacks --stack-name TAK-<n>-BaseInfra \
-#     --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArn`].OutputValue' --output text)
+#     --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArnOutput`].OutputValue' --output text)
 #   BUCKET_NAME=$(echo $BUCKET_ARN | sed 's|arn:aws:s3:::|s3://|')
 #   aws s3 cp takserver-docker-5.4-RELEASE-19.zip $BUCKET_NAME/
 
