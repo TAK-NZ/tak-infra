@@ -34,6 +34,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
 
+      - name: Install system dependencies
+        # Required for TAK server XML configuration validation (xmllint)
+        # Note: auth-infra doesn't need this, but tak-infra has XML validation tests
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
