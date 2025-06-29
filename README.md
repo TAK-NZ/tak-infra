@@ -114,8 +114,7 @@ npm run deploy:prod
 - **S3 Bucket** - Configuration storage with KMS encryption (imported from base layer)
 
 ### Compute & Services
-- **ECS Service** - TAK Server container with auto-scaling capabilities
-- **Auto Scaling** - Dynamic scaling based on CPU utilization (production only)
+- **ECS Service** - TAK Server container with fixed desired count (1 for dev-test, 2 for production)
 - **Network Load Balancer** - Layer 4 load balancing for TAK protocols
 - **Target Groups** - HTTP, CoT TCP, API Admin, WebTAK Admin, and Federation endpoints
 
@@ -127,18 +126,16 @@ npm run deploy:prod
 
 ## Docker Image Handling
 
-This stack uses **AWS CDK's built-in Docker image assets** for automatic container image management. CDK handles all Docker image building, ECR repository creation, and image pushing automatically during deployment.
+This stack uses a **hybrid Docker image strategy** that supports both pre-built images from ECR and local Docker building for maximum flexibility.
 
-### How It Works
-
-- **Automatic Building**: CDK builds Docker images from local Dockerfiles during deployment
-- **ECR Integration**: CDK automatically creates ECR repositories and pushes images
-- **Version Management**: Images are tagged with CDK-generated hashes for consistency
-- **No Manual Steps**: No need to manually build or push Docker images
+- **Strategy**: See [Docker Image Strategy Guide](docs/DOCKER_IMAGE_STRATEGY.md) for details
+- **CI/CD Mode**: Uses pre-built images for fast deployments (~8 minutes vs ~20 minutes)
+- **Development Mode**: Builds images locally for flexible development
+- **Automatic Fallback**: Seamlessly switches between modes based on context parameters
 
 ### Docker Images Used
 
-1. **TAK Server**: Built from `docker/tak-server/Dockerfile.{branding}`
+1. **TAK Server**: Built from `docker/tak-server/Dockerfile.{branding}` with version and revision tagging
 
 ### TAK Server Distribution
 
@@ -236,6 +233,7 @@ npm run deploy:dev -- --context branding=generic
 - **[⚡ Quick Reference](docs/QUICK_REFERENCE.md)** - Fast deployment commands and environment comparison
 - **[⚙️ Configuration Guide](docs/PARAMETERS.md)** - Complete configuration management reference
 - **[🔧 TAK Server CoreConfig](docs/TAKSERVER_CORECONFIG.md)** - Dynamic environment variable configuration system
+- **[🐳 Docker Image Strategy](docs/DOCKER_IMAGE_STRATEGY.md)** - Hybrid image strategy for fast CI/CD and flexible development
 
 ## Security Features
 

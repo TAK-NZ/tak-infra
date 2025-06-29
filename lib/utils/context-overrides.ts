@@ -43,5 +43,9 @@ export function applyContextOverrides(
       removalPolicy: app.node.tryGetContext('removalPolicy') || baseConfig.general.removalPolicy,
       enableDetailedLogging: app.node.tryGetContext('enableDetailedLogging') ?? baseConfig.general.enableDetailedLogging,
     },
+    docker: {
+      ...baseConfig.docker,
+      takImageTag: app.node.tryGetContext('takImageTag') ?? baseConfig.docker?.takImageTag,
+    },
   };
 }
