@@ -20,6 +20,7 @@ on:
       - 'docs/**'
       - '*.md'
       - '.gitignore'
+  workflow_call:
   workflow_dispatch:
 
 jobs:
@@ -59,6 +60,15 @@ jobs:
 
       - name: TypeScript compilation check
         run: npx tsc --noEmit --skipLibCheck
+
+      - name: Check for Breaking Changes
+        run: |
+          # Check if override is requested
+          OVERRIDE="false"
+          if [[ "${{ github.event.head_commit.message }}" == *"[force-deploy]"* ]]; then
+            OVERRIDE="true"
+          fi
+          ./scripts/github/check-breaking-changes.sh tak prod $OVERRIDE
 
       - name: Run tests with coverage report
         id: test

@@ -86,6 +86,11 @@ export interface TakServerProps {
    * Database cluster for dependency management
    */
   database: any; // Using any to avoid circular import issues
+
+  /**
+   * Optional container image URI for pre-built images
+   */
+  containerImageUri?: string;
 }
 
 /**
@@ -279,44 +284,51 @@ export class TakServer extends Construct {
       }
     });
 
-    // Build Docker image with exclusions to prevent unnecessary rebuilds
-    const dockerfileName = `Dockerfile.${props.contextConfig.takserver.branding}`;
-    const dockerImageAsset = new ecrAssets.DockerImageAsset(this, 'ServerDockerAsset', {
-      directory: '.',
-      file: `docker/tak-server/${dockerfileName}`,
-      buildArgs: {
-        TAK_VERSION: `takserver-docker-${props.contextConfig.takserver.version}`,
-        ENVIRONMENT: props.contextConfig.stackName
-      },
-      // Exclude files that change frequently but don't affect the Docker build
-      exclude: [
-        'node_modules/**',
-        'cdk.out/**',
-        '.cdk.staging/**',
-        '**/*.log',
-        '**/*.tmp',
-        '.git/**',
-        '.vscode/**',
-        '.idea/**',
-        'test/**',
-        'docs/**',
-        'lib/**/*.js',
-        'lib/**/*.d.ts',
-        'lib/**/*.js.map',
-        'bin/**/*.js',
-        'bin/**/*.d.ts',
-        '**/.DS_Store',
-        '**/Thumbs.db',
-        'backup/**',
-        'reference/**',
-        'cloudformation/**',
-        'MIGRATION_PLAN.md',
-        'CHANGELOG.md',
-        'README.md'
-      ]
-    });
-
-    const containerImage = ecs.ContainerImage.fromDockerImageAsset(dockerImageAsset);
+    // Use container image with fallback strategy
+    let containerImage: ecs.ContainerImage;
+    
+    if (props.containerImageUri) {
+      // Use pre-built image from registry
+      containerImage = ecs.ContainerImage.fromRegistry(props.containerImageUri);
+    } else {
+      // Fall back to building Docker image asset
+      const dockerfileName = `Dockerfile.${props.contextConfig.takserver.branding}`;
+      const dockerImageAsset = new ecrAssets.DockerImageAsset(this, 'ServerDockerAsset', {
+        directory: '.',
+        file: `docker/tak-server/${dockerfileName}`,
+        buildArgs: {
+          TAK_VERSION: `takserver-docker-${props.contextConfig.takserver.version}`,
+          ENVIRONMENT: props.contextConfig.stackName
+        },
+        // Exclude files that change frequently but don't affect the Docker build
+        exclude: [
+          'node_modules/**',
+          'cdk.out/**',
+          '.cdk.staging/**',
+          '**/*.log',
+          '**/*.tmp',
+          '.git/**',
+          '.vscode/**',
+          '.idea/**',
+          'test/**',
+          'docs/**',
+          'lib/**/*.js',
+          'lib/**/*.d.ts',
+          'lib/**/*.js.map',
+          'bin/**/*.js',
+          'bin/**/*.d.ts',
+          '**/.DS_Store',
+          '**/Thumbs.db',
+          'backup/**',
+          'reference/**',
+          'cloudformation/**',
+          'MIGRATION_PLAN.md',
+          'CHANGELOG.md',
+          'README.md'
+        ]
+      });
+      containerImage = ecs.ContainerImage.fromDockerImageAsset(dockerImageAsset);
+    }
 
     // Prepare container definition options
     let containerDefinitionOptions: ecs.ContainerDefinitionOptions = {
@@ -439,19 +451,6 @@ export class TakServer extends Construct {
     // Add explicit dependency on database cluster
     this.ecsService.node.addDependency(props.database);
 
-    // Add auto scaling for production
-    if (isHighAvailability) {
-      const scaling = this.ecsService.autoScaleTaskCount({
-        minCapacity: 1,
-        maxCapacity: 10
-      });
-
-      // Scale based on CPU utilization
-      scaling.scaleOnCpuUtilization('CpuScaling', {
-        targetUtilizationPercent: 70,
-        scaleInCooldown: Duration.minutes(3),
-        scaleOutCooldown: Duration.minutes(1)
-      });
-    }
+    // No autoscaling - use fixed desired count from configuration
   }
 }

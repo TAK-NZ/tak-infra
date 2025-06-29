@@ -1,0 +1,118 @@
+name: Build and Push Docker Images - Demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docker/**'
+      - 'cdk.json'
+  workflow_call:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if version unchanged'
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      tak-tag:
+        description: 'TAK server image tag'
+        value: ${{ jobs.build-images.outputs.tak-tag }}
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild even if version unchanged'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    environment: demo
+    outputs:
+      tak-tag: ${{ steps.tags.outputs.tak-tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup CDK Environment
+        uses: ./.github/actions/setup-cdk
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-DockerBuild
+      
+      - name: Get ECR Repository and Build Tags
+        id: tags
+        run: |
+          # Get ECR repository ARN from BaseInfra exports
+          ECR_REPO_ARN=$(aws cloudformation describe-stacks \
+            --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra \
+            --query 'Stacks[0].Outputs[?OutputKey==`EcrRepoArnOutput`].OutputValue' \
+            --output text)
+          
+          if [[ -z "$ECR_REPO_ARN" ]]; then
+            echo "ERROR: ECR repository ARN not found in BaseInfra stack outputs"
+            exit 1
+          fi
+          
+          # Extract repository name from ARN and build URI
+          ECR_REPO_NAME=$(echo $ECR_REPO_ARN | cut -d'/' -f2)
+          ECR_REPO_URI="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${ECR_REPO_NAME}"
+          
+          VERSION=$(jq -r '.context."dev-test".takserver.version' cdk.json)
+          BRANDING=$(jq -r '.context."dev-test".takserver.branding' cdk.json)
+          REVISION=$(jq -r '.context."dev-test".takserver.buildRevision' cdk.json)
+          
+          if [[ "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
+            TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+            TAK_TAG="tak-${VERSION}-${BRANDING}-r${REVISION}-${TIMESTAMP}"
+          else
+            TAK_TAG="tak-${VERSION}-${BRANDING}-r${REVISION}"
+          fi
+          
+          echo "ecr-repo-uri=$ECR_REPO_URI" >> $GITHUB_OUTPUT
+          echo "tak-tag=$TAK_TAG" >> $GITHUB_OUTPUT
+          echo "Using ECR repository: $ECR_REPO_URI"
+          echo "Building TAK server image with tag: $TAK_TAG"
+      
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+            docker login --username AWS --password-stdin \
+            ${{ steps.tags.outputs.ecr-repo-uri }}
+      
+      - name: Build and Push TAK Server Image
+        run: |
+          # Check if image already exists
+          if aws ecr describe-images --repository-name $(echo ${{ steps.tags.outputs.ecr-repo-uri }} | cut -d'/' -f2) --image-ids imageTag=${{ steps.tags.outputs.tak-tag }} >/dev/null 2>&1; then
+            echo "✅ TAK server image ${{ steps.tags.outputs.tak-tag }} already exists, skipping build"
+          else
+            echo "🔨 Building TAK server image ${{ steps.tags.outputs.tak-tag }}"
+            VERSION=$(jq -r '.context."dev-test".takserver.version' cdk.json)
+            BRANDING=$(jq -r '.context."dev-test".takserver.branding' cdk.json)
+            
+            docker build \
+              -f docker/tak-server/Dockerfile.${BRANDING} \
+              --build-arg TAK_VERSION=takserver-docker-${VERSION} \
+              --build-arg ENVIRONMENT=${{ vars.STACK_NAME }} \
+              -t ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.tak-tag }} \
+              .
+            
+            docker push ${{ steps.tags.outputs.ecr-repo-uri }}:${{ steps.tags.outputs.tak-tag }}
+            echo "✅ TAK server image pushed successfully"
+          fi
+      
+      - name: Output Image Information
+        run: |
+          echo "✅ Successfully built and pushed Docker image:"
+          echo "📦 TAK Server: ${{ steps.tags.outputs.tak-tag }}"
+          echo ""
+          echo "🚀 To deploy with this image, use:"
+          echo "npm run cdk deploy -- \\"
+          echo "  --context usePreBuiltImages=true \\"
+          echo "  --context takImageTag=${{ steps.tags.outputs.tak-tag }}"

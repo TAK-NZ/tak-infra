@@ -47,4 +47,7 @@ export interface ContextEnvironmentConfig {
     enableDetailedLogging: boolean;
     enableContainerInsights: boolean;
   };
+  docker?: {
+    takImageTag?: string;
+  };
 }

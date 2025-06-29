@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { RemovalPolicy, StackProps, Fn, CfnOutput } from 'aws-cdk-lib';
+import { RemovalPolicy, StackProps, Fn, CfnOutput, Token } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as kms from 'aws-cdk-lib/aws-kms';
@@ -216,6 +216,19 @@ export class TakInfraStack extends cdk.Stack {
       }
     };
 
+    // Determine container image strategy
+    const usePreBuiltImages = this.node.tryGetContext('usePreBuiltImages') ?? false;
+    const takImageTag = this.node.tryGetContext('takImageTag');
+    
+    let containerImageUri: string | undefined;
+    if (usePreBuiltImages && takImageTag) {
+      // Get ECR repository ARN from BaseInfra and extract repository name
+      const ecrRepoArn = Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.ECR_REPO));
+      // Extract repository name from ARN (format: arn:aws:ecr:region:account:repository/name)
+      const ecrRepoName = Fn.select(1, Fn.split('/', ecrRepoArn));
+      containerImageUri = `${this.account}.dkr.ecr.${this.region}.amazonaws.com/${Token.asString(ecrRepoName)}:${takImageTag}`;
+    }
+
     // Create ECS service
     const takServerService = new TakServer(this, 'TakServer', {
       environment: props.environment,
@@ -233,7 +246,8 @@ export class TakInfraStack extends cdk.Stack {
       },
       targetGroups: loadBalancer.targetGroups,
       takFqdn: route53.takFqdn,
-      database: database.cluster
+      database: database.cluster,
+      containerImageUri
     });
     
     // =================
