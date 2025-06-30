@@ -241,13 +241,19 @@ export class TakServer extends Construct {
       actions: [
         'ecs:UpdateService',
         'ecs:DescribeServices',
-        'ecs:ListTasks',
         'ecs:DescribeTasks'
       ],
       resources: [
         `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:service/${props.infrastructure.ecsCluster.clusterName}/${Stack.of(this).stackName}-TakServer`,
         `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:task/${props.infrastructure.ecsCluster.clusterName}/*`
       ]
+    }));
+
+    // Add ECS ListTasks permission (requires cluster-level access)
+    taskRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ecs:ListTasks'],
+      resources: [`arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:cluster/${props.infrastructure.ecsCluster.clusterName}`]
     }));
 
     // Add load balancer permissions for Certbot readiness checks
