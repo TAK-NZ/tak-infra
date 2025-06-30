@@ -105,17 +105,19 @@ fi
 # Restore certs for self-enrollment (HTTPS on TCP/8446)
 # Check if certs for self-enrollment (HTTPS on TCP/8446) exist
 mkdir -p "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain:-nodomainset}" || true
-if [[ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" && \
+if [[ -f "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/fullchain.pem" && \
+    -n "${TAKSERVER_QuickConnect_LetsEncrypt_Domain:-}" && \
+    -n "${TAKSERVER_QuickConnect_LetsEncrypt_CertType:-}" && \
     ( "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "production" || "${TAKSERVER_QuickConnect_LetsEncrypt_CertType,,}" == "staging" ) \
     ]]; then
     # Previous LetsEncrypt cert exists, convert it to JKS format
     echo "TAK Server - Converting LetsEncrypt certs to TAK format"
     
-    # Validate certificate files exist
-    if [[ ! -f "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/fullchain.pem" ]]; then
-        echo "Error: LetsEncrypt certificate files not found"
-        exit 1
-    fi
+    # Validate required certificate files exist
+    if [[ ! -f "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/privkey.pem" ]]; then
+        echo "Warning: LetsEncrypt private key not found, using self-signed certificates"
+        cp "/opt/tak/certs/files/takserver.jks" "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks" || true
+    else
     
     # Display certificate information for verification
     openssl x509 \
@@ -135,14 +137,18 @@ if [[ -d "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" &&
     # Remove existing JKS file to prevent keytool from appending
     rm -f "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks"
     
-    # Convert PKCS12 keystore to JKS format for TAK Server
-    { yes || :; } | keytool \
-        -importkeystore \
-        -srcstorepass "atakatak" \
-        -deststorepass "atakatak" \
-        -destkeystore "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks" \
-        -srckeystore "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.p12" \
-        -srcstoretype "pkcs12" 
+        # Convert PKCS12 keystore to JKS format for TAK Server
+        if ! { yes || :; } | keytool \
+            -importkeystore \
+            -srcstorepass "atakatak" \
+            -deststorepass "atakatak" \
+            -destkeystore "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks" \
+            -srckeystore "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.p12" \
+            -srcstoretype "pkcs12"; then
+            echo "Warning: Failed to convert LetsEncrypt certificate to JKS format, using self-signed certificates"
+            cp "/opt/tak/certs/files/takserver.jks" "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/letsencrypt.jks" || true
+        fi
+    fi
 else 
     # No previous LetsEncrypt cert exists or settings call for none to be used, use the self-signed one instead
     echo "TAK Server - Using self-signed certs instead of LetsEncrypt certs"
@@ -150,8 +156,11 @@ else
 fi
 
 
-# Request LetsEncrypt certs in background
-/opt/tak/scripts/letsencrypt-request-cert.sh &
+# Request LetsEncrypt certs in background (with small delay to avoid race conditions)
+(
+    sleep 5
+    /opt/tak/scripts/letsencrypt-request-cert.sh
+) &
 LETSENCRYPT_PID=$!
 
 # Download OIDC issuer public certificate if configured

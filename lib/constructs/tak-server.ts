@@ -240,11 +240,24 @@ export class TakServer extends Construct {
       effect: iam.Effect.ALLOW,
       actions: [
         'ecs:UpdateService',
-        'ecs:DescribeServices'
+        'ecs:DescribeServices',
+        'ecs:ListTasks',
+        'ecs:DescribeTasks'
       ],
       resources: [
-        `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:service/${props.infrastructure.ecsCluster.clusterName}/${Stack.of(this).stackName}-TakServer`
+        `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:service/${props.infrastructure.ecsCluster.clusterName}/${Stack.of(this).stackName}-TakServer`,
+        `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:task/${props.infrastructure.ecsCluster.clusterName}/*`
       ]
+    }));
+
+    // Add load balancer permissions for Certbot readiness checks
+    taskRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'elasticloadbalancing:DescribeTargetGroups',
+        'elasticloadbalancing:DescribeTargetHealth'
+      ],
+      resources: ['*']
     }));
 
     // Grant read access to S3 configuration bucket for environment files
