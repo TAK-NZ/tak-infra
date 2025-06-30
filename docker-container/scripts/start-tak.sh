@@ -3,8 +3,6 @@
 # Build CoreConfig & Associated Cert Generation
 #
 
-. $NVM_DIR/nvm.sh
-
 set -euo pipefail
 
 # Signal handler for graceful shutdown
