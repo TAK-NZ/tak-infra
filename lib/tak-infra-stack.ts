@@ -302,5 +302,19 @@ export class TakInfraStack extends cdk.Stack {
       description: 'EFS File System ID',
       exportName: `${resolvedStackName}-EfsFileSystemId`
     });
+
+    // TAK Server Admin Certificate Secret ARN
+    new CfnOutput(this, 'TakAdminCertSecretArn', {
+      value: takSecrets.adminCertificate.secretArn,
+      description: 'TAK Server Admin Certificate (p12) Secret ARN',
+      exportName: `${resolvedStackName}-TakAdminCertSecretArn`
+    });
+
+    // TAK Service Name (hostname without https://)
+    new CfnOutput(this, 'TakServiceName', {
+      value: route53.serviceFqdn,
+      description: 'TAK Service fully qualified hostname (without https://)',
+      exportName: `${resolvedStackName}-TakServiceName`
+    });
   }
 }
