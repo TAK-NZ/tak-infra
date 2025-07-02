@@ -86,8 +86,20 @@ jobs:
           
           echo "tak-tag=$TAK_TAG" >> $GITHUB_OUTPUT
 
+      - name: Configure Database Context
+        id: db-config
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          if [[ "$COMMIT_MSG" != *"[use-prod-db]"* ]]; then
+            echo "🔄 Using dev-test database settings for faster deployment"
+            echo "db-context=--context instanceClass=db.serverless --context instanceCount=1 --context enablePerformanceInsights=false --context monitoringInterval=0 --context backupRetentionDays=7 --context deleteProtection=false" >> $GITHUB_OUTPUT
+          else
+            echo "🚀 Using production database settings"
+            echo "db-context=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Deploy Demo with Prod Profile
-        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ steps.images.outputs.tak-tag }} --require-approval never
+        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ steps.images.outputs.tak-tag }} ${{ steps.db-config.outputs.db-context }} --require-approval never
 
       - name: Wait for Testing Period
         run: sleep ${{ vars.DEMO_TEST_DURATION || '300' }}
