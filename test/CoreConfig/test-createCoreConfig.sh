@@ -257,17 +257,27 @@ run_test "Boolean Variations" \
     "TAKSERVER_CoreConfig_Auth_X509addAnonymous=False" \
     "TAKSERVER_CoreConfig_Federation_EnableFederation=True"
 
-# Test 10: Empty optional values
+# Test 10: LDAP groupprefix and groupNameExtractorRegex attributes
+run_test "LDAP Group Attributes" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix=cn=tak_" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex=cn=(?:tak_)(.*?)(?:,|$)"
+
+# Test 11: Empty optional values
 run_test "Empty Optional Values" \
-    "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix=" \
     "TAKSERVER_CoreConfig_OAuth_GroupsClaim=" \
     "TAKSERVER_QuickConnect_LetsEncrypt_Domain=nodomainset"
 
-# Test 11: Dynamic attribute support (previously unsupported attributes)
+# Test 12: Dynamic attribute support (previously unsupported attributes)
 run_test "Dynamic Attribute Support" \
     "TAKSERVER_CoreConfig_Network_Connector_8443_AllowOrigins=https://test.com,https://admin.com" \
     "TAKSERVER_CoreConfig_Network_AllowAllOrigins=true" \
     "TAKSERVER_CoreConfig_Repository_Archive=true"
+
+# Test 13: Submission and Subscription explicit attributes
+run_test "Submission/Subscription Attributes" \
+    "TAKSERVER_CoreConfig_Submission_IgnoreStaleMessages=true" \
+    "TAKSERVER_CoreConfig_Submission_ValidateXml=true" \
+    "TAKSERVER_CoreConfig_Subscription_ReloadPersistent=true"
 
 echo "========================================"
 echo "Test Results:"

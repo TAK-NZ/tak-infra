@@ -280,13 +280,13 @@ aws cloudformation describe-stacks --stack-name TAK-Dev-TakInfra \
 ### **Access TAK Admin Certificate**
 ```bash
 # Development environment
-aws secretsmanager get-secret-value --secret-id "TAK-Dev-TakInfra/TAK-Server/Admin-Cert" --query SecretString --output text > admin-cert.p12
+aws secretsmanager get-secret-value --secret-id "TAK-Dev-TakInfra/TAK-Server/Admin-Cert" --query SecretBinary --output text | base64 --decode > admin-cert.p12
 
 # Production environment
-aws secretsmanager get-secret-value --secret-id "TAK-Prod-TakInfra/TAK-Server/Admin-Cert" --query SecretString --output text > admin-cert.p12
+aws secretsmanager get-secret-value --secret-id "TAK-Prod-TakInfra/TAK-Server/Admin-Cert" --query SecretBinary --output text | base64 --decode > admin-cert.p12
 
 # Custom stack name
-aws secretsmanager get-secret-value --secret-id "TAK-{StackName}-TakInfra/TAK-Server/Admin-Cert" --query SecretString --output text > admin-cert.p12
+aws secretsmanager get-secret-value --secret-id "TAK-{StackName}-TakInfra/TAK-Server/Admin-Cert" --query SecretBinary --output text | base64 --decode > admin-cert.p12
 ```
 
 ### **Cleanup**
