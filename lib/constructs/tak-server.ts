@@ -249,11 +249,14 @@ export class TakServer extends Construct {
       ]
     }));
 
-    // Add ECS ListTasks permission (requires cluster-level access)
+    // Add ECS ListTasks permission (requires cluster and container instance access)
     taskRole.addToPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: ['ecs:ListTasks'],
-      resources: [`arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:cluster/${props.infrastructure.ecsCluster.clusterName}`]
+      resources: [
+        `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:cluster/${props.infrastructure.ecsCluster.clusterName}`,
+        `arn:aws:ecs:${Stack.of(this).region}:${Stack.of(this).account}:container-instance/${props.infrastructure.ecsCluster.clusterName}/*`
+      ]
     }));
 
     // Add load balancer permissions for Certbot readiness checks
