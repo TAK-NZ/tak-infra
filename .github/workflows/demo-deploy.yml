@@ -133,4 +133,4 @@ jobs:
         run: npm run cdk synth -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }}
 
       - name: Revert Demo to Dev-Test Profile
-        run: npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ needs.deploy-and-test.outputs.tak-tag }} --require-approval never
+        run: npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ needs.deploy-and-test.outputs.tak-tag }} --context useS3TAKServerConfigFile=true --require-approval never
