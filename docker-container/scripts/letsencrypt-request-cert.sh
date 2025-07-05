@@ -7,7 +7,6 @@ validate_environment() {
     
     [[ -z "${ECS_Cluster_Name:-}" ]] && missing_vars+=("ECS_Cluster_Name")
     [[ -z "${ECS_Service_Name:-}" ]] && missing_vars+=("ECS_Service_Name")
-    [[ -z "${TAKSERVER_QuickConnect_LetsEncrypt_Email:-}" ]] && missing_vars+=("TAKSERVER_QuickConnect_LetsEncrypt_Email")
     
     if [[ ${#missing_vars[@]} -gt 0 ]]; then
         echo "Error: Missing required environment variables: ${missing_vars[*]}"
@@ -65,7 +64,7 @@ validate_certbot_command() {
         return 1
     fi
     
-    if [[ ! "$email" =~ ^[^@]+@[^@]+\.[^@]+$ ]]; then
+    if [[ -n "$email" && "$email" != "admin@example.com" && ! "$email" =~ ^[^@]+@[^@]+\.[^@]+$ ]]; then
         echo "Error: Invalid email format: $email"
         return 1
     fi
@@ -84,16 +83,28 @@ execute_certbot() {
     local email="$2"
     local test_cert_flag="$3"
     
-    local masked_email="${email%%@*}@***"
-    echo "Certbot - Executing: certbot certonly -v ${test_cert_flag}--standalone -d \"$domain\" --email \"$masked_email\" --non-interactive --agree-tos"
-    
-    certbot certonly -v ${test_cert_flag}--standalone \
-        -d "$domain" \
-        --email "$email" \
-        --non-interactive \
-        --agree-tos \
-        --cert-name "$domain" \
-        --deploy-hook /opt/tak/scripts/letsencrypt-deploy-hook-script.sh
+    if [[ -z "$email" || "$email" == "admin@example.com" ]]; then
+        echo "Certbot - Executing: certbot certonly -v ${test_cert_flag}--standalone -d \"$domain\" --register-unsafely-without-email --non-interactive --agree-tos"
+        
+        certbot certonly -v ${test_cert_flag}--standalone \
+            -d "$domain" \
+            --register-unsafely-without-email \
+            --non-interactive \
+            --agree-tos \
+            --cert-name "$domain" \
+            --deploy-hook /opt/tak/scripts/letsencrypt-deploy-hook-script.sh
+    else
+        local masked_email="${email%%@*}@***"
+        echo "Certbot - Executing: certbot certonly -v ${test_cert_flag}--standalone -d \"$domain\" --email \"$masked_email\" --non-interactive --agree-tos"
+        
+        certbot certonly -v ${test_cert_flag}--standalone \
+            -d "$domain" \
+            --email "$email" \
+            --non-interactive \
+            --agree-tos \
+            --cert-name "$domain" \
+            --deploy-hook /opt/tak/scripts/letsencrypt-deploy-hook-script.sh
+    fi
 }
 
 # Validate environment before proceeding
