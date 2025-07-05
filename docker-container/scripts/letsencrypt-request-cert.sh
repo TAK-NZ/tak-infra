@@ -205,8 +205,7 @@ check_ecs_service_ready() {
         # Step 3: Find the HTTP target group (certbot target group)
         local target_group_arn
         if ! target_group_arn=$(aws elbv2 describe-target-groups \
-            --names "tak-*-certbot" \
-            --query 'TargetGroups[0].TargetGroupArn' \
+            --query 'TargetGroups[?contains(TargetGroupName, `certbot`)].TargetGroupArn | [0]' \
             --output text 2>/tmp/aws_error.log); then
             
             echo "Warning: Failed to find certbot target group"
