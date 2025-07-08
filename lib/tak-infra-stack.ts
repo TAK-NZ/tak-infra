@@ -98,7 +98,7 @@ export class TakInfraStack extends cdk.Stack {
 
     // Import S3 bucket from base-infra
     const s3Bucket = s3.Bucket.fromBucketArn(this, 'ImportedS3Bucket',
-      Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.S3_BUCKET))
+      Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.S3_ENV_CONFIG))
     );
     
     // =================
