@@ -6,12 +6,14 @@ import {
   aws_ec2 as ec2,
   aws_elasticloadbalancingv2 as elbv2,
   aws_certificatemanager as acm,
+  aws_s3 as s3,
   Duration,
   Fn
 } from 'aws-cdk-lib';
 import type { ContextEnvironmentConfig } from '../stack-config';
 import type { InfrastructureConfig, NetworkConfig } from '../construct-configs';
 import { TAK_SERVER_PORTS } from '../utils/constants';
+import { createBaseImportValue, BASE_EXPORT_NAMES } from '../cloudformation-imports';
 
 /**
  * Properties for the ELB construct
@@ -121,6 +123,16 @@ export class Elb extends Construct {
       port: TAK_SERVER_PORTS.FEDERATION,
       defaultTargetGroups: [this.targetGroups.federation]
     });
+
+    // Import S3 logs bucket from BaseInfra
+    const logsBucket = s3.Bucket.fromBucketArn(this, 'ImportedLogsBucket',
+      Fn.importValue(createBaseImportValue(props.contextConfig.stackName, BASE_EXPORT_NAMES.S3_ALB_LOGS))
+    );
+
+    // Enable NLB access logging
+    this.loadBalancer.setAttribute('access_logs.s3.enabled', 'true');
+    this.loadBalancer.setAttribute('access_logs.s3.bucket', logsBucket.bucketName);
+    this.loadBalancer.setAttribute('access_logs.s3.prefix', `TAK-${props.contextConfig.stackName}-TakInfra`);
 
     // Store the DNS name
     this.dnsName = this.loadBalancer.loadBalancerDnsName;
