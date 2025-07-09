@@ -23,21 +23,21 @@ npx cdk deploy --context env=prod --profile your-aws-profile
 ## Environment Comparison
 
 ### Development Environment (`dev-test`)
-- ✅ **Cost optimized** (~$91/month)
+- ✅ **Cost optimized** (~$65 USD/month)
 - ✅ **Same core functionality** as production
 - ✅ **Perfect for development** and testing
 - ✅ **Aurora Serverless v2** (pay-per-use scaling)
 - ❌ **Single AZ deployment** (potential downtime during maintenance)
 - ❌ **Basic monitoring** (limited insights)
-- ❌ **Single ECS task** (no auto-scaling)
+- ❌ **Single ECS task** (fixed scaling)
 
 ### Production Environment (`prod`)
 - ✅ **High availability** (Multi-AZ deployment)
 - ✅ **Enhanced monitoring** (Performance Insights, Container Insights)
 - ✅ **Production-grade database** (dedicated instances)
-- ✅ **Auto-scaling** (ECS service scaling)
+- ✅ **Fixed task count** (reliable performance)
 - ✅ **Data protection** (retention policies)
-- ❌ **Higher cost** (~$390/month)
+- ❌ **Higher cost** (~$285 USD/month)
 
 ## Configuration Override Examples
 
@@ -70,35 +70,35 @@ npm run deploy:dev -- \
 | **ECR Repositories** | 1 | 1 | TAK Server image |
 | **CloudWatch Logs** | Basic | Enhanced | Retention and insights |
 
-## Cost Breakdown (Estimated for ap-southeast-2)
+## Cost Breakdown (Estimated USD for ap-southeast-2)
 
 ### TAK Server Infrastructure Only
 
-#### Development Environment (~$91/month)
-- **Aurora Serverless v2**: ~$25/month (0.5 ACU average)
-- **ECS Fargate**: ~$35/month (2048 CPU, 4096 MB, 1 task)
-- **Network Load Balancer**: ~$18/month
-- **EFS Storage**: ~$3/month
-- **Other Services**: ~$10/month (logs, secrets, etc.)
+#### Development Environment (~$65 USD/month)
+- **Aurora Serverless v2**: ~$18 USD/month (0.5 ACU average)
+- **ECS Fargate**: ~$25 USD/month (2048 CPU, 4096 MB, 1 task)
+- **Network Load Balancer**: ~$16 USD/month
+- **EFS Storage**: ~$3 USD/month (minimal usage)
+- **Other Services**: ~$3 USD/month (logs, secrets, ECR)
 
-#### Production Environment (~$390/month)
-- **Aurora Multi-AZ**: ~$200/month (2 × db.t4g.large)
-- **ECS Fargate**: ~$140/month (4096 CPU, 8192 MB, 2 tasks)
-- **Network Load Balancer**: ~$18/month
-- **Enhanced Features**: ~$20/month (monitoring, insights)
-- **Other Services**: ~$12/month (logs, secrets, etc.)
+#### Production Environment (~$285 USD/month)
+- **Aurora Multi-AZ**: ~$145 USD/month (2 × db.t4g.large)
+- **ECS Fargate**: ~$100 USD/month (4096 CPU, 8192 MB, 1 task)
+- **Network Load Balancer**: ~$16 USD/month
+- **Enhanced Features**: ~$15 USD/month (monitoring, insights)
+- **Other Services**: ~$9 USD/month (logs, secrets, ECR)
 
 ### Complete TAK Deployment (BaseInfra + AuthInfra + TakInfra)
 
-#### Development Environment (~$220/month)
-- **BaseInfra**: ~$44/month (VPC, ECS cluster, S3, KMS, ACM)
-- **AuthInfra**: ~$85/month (Authentik, LDAP, Aurora, Redis)
-- **TakInfra**: ~$91/month (TAK Server, Aurora, EFS)
+#### Development Environment (~$194 USD/month)
+- **BaseInfra**: ~$44 USD/month (VPC, ECS cluster, S3, KMS, ACM)
+- **AuthInfra**: ~$85 USD/month (Authentik, LDAP, Aurora, Redis)
+- **TakInfra**: ~$65 USD/month (TAK Server, Aurora, EFS)
 
-#### Production Environment (~$778/month)
-- **BaseInfra**: ~$143/month (VPC, ECS cluster, S3, KMS, ACM, VPC endpoints)
-- **AuthInfra**: ~$245/month (Authentik HA, LDAP, Aurora Multi-AZ, Redis cluster)
-- **TakInfra**: ~$390/month (TAK Server HA, Aurora Multi-AZ, enhanced monitoring)
+#### Production Environment (~$673 USD/month)
+- **BaseInfra**: ~$143 USD/month (VPC, ECS cluster, S3, KMS, ACM, VPC endpoints)
+- **AuthInfra**: ~$245 USD/month (Authentik HA, LDAP, Aurora Multi-AZ, Redis cluster)
+- **TakInfra**: ~$285 USD/month (TAK Server HA, Aurora Multi-AZ, enhanced monitoring)
 
 ## Development Workflow
 
@@ -130,7 +130,7 @@ npm run cdk:bootstrap       # Bootstrap CDK
 ### Choose Production Environment if:
 - 🏢 **Production TAK Server workloads**
 - 🔒 **High availability required**
-- ⚡ **Auto-scaling needed**
+- ⚡ **Consistent performance needed**
 - 👥 **Serving real users**
 - 📊 **Monitoring/insights required**
 - 💾 **Data protection critical**

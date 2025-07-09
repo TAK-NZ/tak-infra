@@ -31,11 +31,11 @@ npm run deploy:prod
 
 | Environment | Stack Name | Domain | TAK Infra Cost* | Complete Stack Cost** | Features |
 |-------------|------------|--------|----------------|----------------------|----------|
-| **dev-test** | `TAK-Dev-TakInfra` | `tak.dev.tak.nz` | ~$91 | ~$220 | Cost-optimized, Aurora Serverless v2 |
-| **prod** | `TAK-Prod-TakInfra` | `tak.tak.nz` | ~$390 | ~$778 | High availability, multi-AZ deployment |
+| **dev-test** | `TAK-Dev-TakInfra` | `tak.dev.tak.nz` | ~$65 USD | ~$194 USD | Cost-optimized, Aurora Serverless v2 |
+| **prod** | `TAK-Prod-TakInfra` | `tak.tak.nz` | ~$285 USD | ~$673 USD | High availability, multi-AZ deployment |
 
 *TAK Server Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra)  
-Estimated AWS costs for ap-southeast-2, excluding data transfer and usage
+Estimated AWS costs (USD) for ap-southeast-2, excluding data transfer and usage
 
 ---
 
@@ -192,7 +192,7 @@ This **upgrades the existing** `TAK-Demo-TakInfra` stack to:
 - **Aurora with dedicated instances** (high performance)
 - **Multi-AZ deployment** (high availability)
 - **Production-grade monitoring** and logging
-- **Enhanced ECS resources** with auto-scaling
+- **Enhanced ECS resources** with higher CPU/memory allocation
 - **Resource retention policies** (data protection)
 
 ### **Environment Downgrade (prod → dev-test)**

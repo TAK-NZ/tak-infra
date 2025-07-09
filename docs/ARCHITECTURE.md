@@ -27,7 +27,7 @@ The TAK Server Infrastructure provides centralized TAK communication services wi
 #### 1. TAK Server Application
 - **Technology**: Java-based TAK Server running in ECS Fargate
 - **Purpose**: Central TAK communication hub for situational awareness
-- **Scaling**: Auto-scaling based on CPU utilization (production only)
+- **Scaling**: Fixed desired count (1 for dev-test, 1 for production)
 - **Storage**: Persistent data in Aurora PostgreSQL, certificates in EFS
 
 #### 2. Database Layer
@@ -199,12 +199,12 @@ The infrastructure implements a layered security model with dedicated security g
 - **Authentication Infrastructure**: LDAP service and user management
 - **CloudFormation Exports**: Cross-stack resource sharing
 
-## Scalability and Performance
+## Resource Allocation and Performance
 
-### 1. Auto Scaling (Production)
-- **ECS Service**: Auto-scaling based on CPU utilization
-- **Database**: Aurora auto-scaling for serverless configurations
-- **Target Capacity**: 1-10 tasks based on demand
+### 1. Resource Allocation
+- **ECS Service**: Fixed desired count based on environment configuration
+- **Database**: Aurora auto-scaling for serverless configurations (dev-test only)
+- **Task Count**: 1 task for both environments
 
 ### 2. High Availability
 - **Multi-AZ**: Database and ECS service deployment across availability zones

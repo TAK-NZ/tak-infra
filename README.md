@@ -10,18 +10,6 @@ This repository deploys the TAK Server infrastructure layer for a complete TAK d
 
 It is specifically targeted at the deployment of [TAK.NZ](https://tak.nz) via a CI/CD pipeline. Nevertheless others interested in deploying a similar infrastructure can do so by adapting the configuration items.
 
-> [!CAUTION]
-> **New Deployment Tool**
-> 
-> This is the new [AWS CDK](https://aws.amazon.com/cdk/) version of the TAK Server Infrastructure Layer. It is **not compatible** with the [previous version](../../tree/legacy) that uses the [OpenAddresses Deploy Tool](https://github.com/openaddresses/deploy).
-> 
-> **For new deployments:**
-> - Choose either CDK **OR** Deploy Tool for your entire stack - both approaches cannot be mixed
-> - CDK versions are not yet available for all stack layers - verify complete CDK coverage before choosing this approach
-> - Existing Deploy Tool deployments can remain unchanged - no migration required
-> 
-> **When to choose CDK:** All future feature enhancements and updates will only be made to the CDK version. New deployments should use CDK when all required stack layers are available.
-
 ### Architecture Layers
 
 This TAK Server infrastructure requires the base infrastructure and authentication infrastructure layers. Layers can be deployed in multiple independent environments. As an example:
@@ -32,12 +20,6 @@ This TAK Server infrastructure requires the base infrastructure and authenticati
 
 ┌─────────────────────────────────┐    ┌─────────────────────────────────┐
 │         CloudTAK                │    │         CloudTAK                │
-│    CloudFormation Stack         │    │    CloudFormation Stack         │
-└─────────────────────────────────┘    └─────────────────────────────────┘
-                │                                        │
-                ▼                                        ▼
-┌─────────────────────────────────┐    ┌─────────────────────────────────┐
-│        VideoInfra               │    │        VideoInfra               │
 │    CloudFormation Stack         │    │    CloudFormation Stack         │
 └─────────────────────────────────┘    └─────────────────────────────────┘
                 │                                        │
@@ -66,10 +48,9 @@ This TAK Server infrastructure requires the base infrastructure and authenticati
 | **BaseInfra** | [`base-infra`](https://github.com/TAK-NZ/base-infra)  | Foundation: VPC, ECS, S3, KMS, ACM |
 | **AuthInfra** | [`auth-infra`](https://github.com/TAK-NZ/auth-infra) | SSO via Authentik, LDAP |
 | **TakInfra** | `tak-infra` (this repo) | TAK Server |
-| **VideoInfra** | [`video-infra`](https://github.com/TAK-NZ/video-infra) | Video Server based on Mediamtx |
-| **CloudTAK** | [`CloudTAK`](https://github.com/TAK-NZ/CloudTAK) | CloudTAK web interface and ETL |
+| **CloudTAK** | [`CloudTAK`](https://github.com/TAK-NZ/CloudTAK) | CloudTAK web interface, ETL, and media services |
 
-**Deployment Order**: BaseInfra must be deployed first, followed by AuthInfra, then TakInfra, VideoInfra, and finally CloudTAK. Each layer imports outputs from the layer below via CloudFormation exports.
+**Deployment Order**: BaseInfra must be deployed first, followed by AuthInfra, then TakInfra, and finally CloudTAK. Each layer imports outputs from the layer below via CloudFormation exports.
 
 ## Quick Start
 
@@ -145,7 +126,7 @@ The TAK Server Docker images require the official TAK Server distribution file. 
 Place `takserver-docker-<version>.zip` in the root directory of this repository.
 
 #### Option 2: S3 Bucket (Recommended for CI/CD)
-Upload the TAK Server distribution to the S3 bucket created by BaseInfra:
+Upload the [TAK Server distribution](https://tak.gov/products/tak-server) to the S3 bucket created by BaseInfra:
 
 ```bash
 # Get the S3 bucket name from CloudFormation export
@@ -176,13 +157,12 @@ Docker images are built with the TAK Server version specified in configuration:
 
 ## Available Environments
 
-| Environment | Stack Name | Description | Domain | TAK Infra Cost* | Complete Stack Cost** |
-|-------------|------------|-------------|--------|----------------|----------------------|
-| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | `tak.dev.tak.nz` | ~$91 | ~$220 |
-| `prod` | `TAK-Prod-TakInfra` | High-availability production | `tak.tak.nz` | ~$390 | ~$778 |
+| Environment | Stack Name | Description | Domain | Monthly Cost* |
+|-------------|------------|-------------|--------|----------------|
+| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | `tak.dev.tak.nz` | ~$65 USD |
+| `prod` | `TAK-Prod-TakInfra` | High-availability production | `tak.tak.nz` | ~$285 USD |
 
-*TAK Server Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra)  
-Estimated AWS costs for ap-southeast-2, excluding data processing and storage usage
+*Estimated AWS costs (USD) for ap-southeast-2, excluding data transfer and storage usage
 
 ## Development Workflow
 

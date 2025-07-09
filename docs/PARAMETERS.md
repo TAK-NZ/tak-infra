@@ -113,11 +113,11 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
 
 | Environment | Stack Name | Description | TAK Infra Cost* | Complete Stack Cost** |
 |-------------|------------|-------------|----------------|----------------------|
-| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | ~$91 | ~$220 |
-| `prod` | `TAK-Prod-TakInfra` | High-availability production | ~$390 | ~$778 |
+| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | ~$65 USD | ~$194 USD |
+| `prod` | `TAK-Prod-TakInfra` | High-availability production | ~$285 USD | ~$673 USD |
 
 *TAK Server Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra)  
-Estimated AWS costs for ap-southeast-2, excluding data processing and storage usage
+Estimated AWS costs (USD) for ap-southeast-2, excluding data processing and storage usage
 
 ### **Key Configuration Differences**
 
@@ -127,7 +127,7 @@ Estimated AWS costs for ap-southeast-2, excluding data processing and storage us
 | **Database Storage** | `20GB` initial, `100GB` max | `100GB` initial, `1000GB` max | Storage capacity |
 | **Performance Insights** | `false` | `true` | Database monitoring |
 | **ECS Resources** | `2048 CPU, 4096 MB` | `4096 CPU, 8192 MB` | Performance |
-| **ECS Tasks** | `1` task | `2` tasks | High availability |
+| **ECS Tasks** | `1` task | `1` task | Same task count |
 | **ECS Exec** | `true` (debugging) | `false` (security) | Development access |
 | **Container Insights** | `false` | `true` | ECS monitoring |
 | **S3 Config File** | `false` | `true` | Advanced configuration |
@@ -159,7 +159,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 |-----------|-------------|----------|------|
 | `taskCpu` | CPU units for ECS tasks | `2048` | `4096` |
 | `taskMemory` | Memory (MB) for ECS tasks | `4096` | `8192` |
-| `desiredCount` | Desired number of running tasks | `1` | `2` |
+| `desiredCount` | Desired number of running tasks | `1` | `1` |
 | `enableDetailedLogging` | Enable detailed application logging | `true` | `false` |
 | `enableEcsExec` | Enable ECS exec for debugging | `true` | `false` |
 
@@ -215,10 +215,10 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 ## **Cost Optimization**
 
 ### **Development Environment Optimizations**
-- **Aurora Serverless v2**: Pay-per-use database scaling (~$45/month savings)
-- **Single ECS Task**: Minimal compute allocation (~$30/month savings)
-- **No Performance Insights**: Reduces database monitoring costs
-- **Container Insights Disabled**: Reduces CloudWatch costs
+- **Aurora Serverless v2**: Pay-per-use database scaling (~$127 USD/month savings vs prod)
+- **Single ECS Task**: Minimal compute allocation (~$75 USD/month savings vs prod)
+- **No Performance Insights**: Reduces database monitoring costs (~$7 USD/month savings)
+- **Container Insights Disabled**: Reduces CloudWatch costs (~$8 USD/month savings)
 
 ### **Production Environment Features**
 - **High Availability**: Multi-AZ database and ECS deployment
