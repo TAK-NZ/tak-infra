@@ -122,6 +122,7 @@ jobs:
             
             docker build \
               -f docker/tak-server/Dockerfile.${BRANDING} \
+              --platform linux/amd64 \
               --build-arg TAK_VERSION=takserver-docker-${VERSION} \
               --build-arg ENVIRONMENT=${{ vars.STACK_NAME }} \
               --no-cache \
