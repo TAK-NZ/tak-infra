@@ -28,6 +28,7 @@ export function applyContextOverrides(
       monitoringInterval: parseContextNumber(app.node.tryGetContext('monitoringInterval')) ?? baseConfig.database.monitoringInterval,
       backupRetentionDays: parseContextNumber(app.node.tryGetContext('backupRetentionDays')) ?? baseConfig.database.backupRetentionDays,
       deleteProtection: parseContextBoolean(app.node.tryGetContext('deleteProtection')) ?? baseConfig.database.deleteProtection,
+      enableCloudWatchLogs: parseContextBoolean(app.node.tryGetContext('enableCloudWatchLogs')) ?? baseConfig.database.enableCloudWatchLogs,
     },
     ecs: {
       ...baseConfig.ecs,
@@ -39,10 +40,11 @@ export function applyContextOverrides(
     },
     takserver: {
       ...baseConfig.takserver,
-      hostname: app.node.tryGetContext('takServerHostname') ?? baseConfig.takserver.hostname,
-      servicename: app.node.tryGetContext('takServerServicename') ?? baseConfig.takserver.servicename,
+      hostname: app.node.tryGetContext('hostname') ?? baseConfig.takserver.hostname,
+      servicename: app.node.tryGetContext('servicename') ?? baseConfig.takserver.servicename,
       branding: app.node.tryGetContext('branding') ?? baseConfig.takserver.branding,
-      version: app.node.tryGetContext('takServerVersion') ?? baseConfig.takserver.version,
+      version: app.node.tryGetContext('version') ?? baseConfig.takserver.version,
+      buildRevision: parseContextNumber(app.node.tryGetContext('buildRevision')) ?? baseConfig.takserver.buildRevision,
       useS3TAKServerConfigFile: parseContextBoolean(app.node.tryGetContext('useS3TAKServerConfigFile')) ?? baseConfig.takserver.useS3TAKServerConfigFile,
       letsEncryptMode: app.node.tryGetContext('letsEncryptMode') ?? baseConfig.takserver.letsEncryptMode,
       letsEncryptEmail: app.node.tryGetContext('letsEncryptEmail') ?? baseConfig.takserver.letsEncryptEmail,

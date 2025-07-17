@@ -19,6 +19,7 @@ export interface ContextEnvironmentConfig {
     monitoringInterval: number;
     backupRetentionDays: number;
     deleteProtection: boolean;
+    enableCloudWatchLogs?: boolean;
   };
   ecs: {
     taskCpu: number;
@@ -32,6 +33,7 @@ export interface ContextEnvironmentConfig {
     servicename: string;
     branding: string;
     version: string;
+    buildRevision?: number;
     useS3TAKServerConfigFile: boolean;
     letsEncryptMode?: string;
     letsEncryptEmail?: string;
