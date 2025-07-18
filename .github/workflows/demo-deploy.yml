@@ -40,12 +40,12 @@ jobs:
       - name: Setup CDK Environment
         uses: ./.github/actions/setup-cdk
         with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-role-arn: ${{ secrets.DEMO_AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.DEMO_AWS_REGION }}
           role-session-name: GitHubActions-Demo
 
       - name: Validate CDK Synthesis (Prod Profile)
-        run: npm run cdk synth -- --context envType=prod --context stackName=${{ vars.STACK_NAME }}
+        run: npm run cdk synth -- --context envType=prod --context stackName=${{ vars.DEMO_STACK_NAME }}
 
       - name: Validate Change Set
         run: |
@@ -53,7 +53,7 @@ jobs:
           if [[ "${{ github.event.head_commit.message }}" == *"[force-deploy]"* ]]; then
             echo "🚨 Force deploy detected - skipping change set validation"
           else
-            ./scripts/github/validate-changeset.sh TAK-${{ vars.STACK_NAME }}-TakInfra
+            ./scripts/github/validate-changeset.sh TAK-${{ vars.DEMO_STACK_NAME }}-TakInfra
           fi
 
   # Deploy demo environment with production configuration for testing
@@ -71,8 +71,8 @@ jobs:
       - name: Setup CDK Environment
         uses: ./.github/actions/setup-cdk
         with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-role-arn: ${{ secrets.DEMO_AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.DEMO_AWS_REGION }}
           role-session-name: GitHubActions-Demo
 
       - name: Extract Image Tags
@@ -99,7 +99,7 @@ jobs:
           fi
 
       - name: Deploy Demo with Prod Profile
-        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ steps.images.outputs.tak-tag }} ${{ steps.db-config.outputs.db-context }} --require-approval never
+        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.DEMO_STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ steps.images.outputs.tak-tag }} --context useS3TAKServerConfigFile=true ${{ steps.db-config.outputs.db-context }} --require-approval never
 
       - name: Wait for Testing Period
         run: sleep ${{ vars.DEMO_TEST_DURATION || '300' }}
@@ -109,7 +109,7 @@ jobs:
           echo "Placeholder for automated tests"
           # TODO: Add health checks and integration tests
           # Health check URL should be retrieved from BaseInfra stack outputs
-          # curl -f https://$(aws cloudformation describe-stacks --stack-name TAK-${{ vars.STACK_NAME }}-BaseInfra --query 'Stacks[0].Outputs[?OutputKey==`DomainNameOutput`].OutputValue' --output text)/health || exit 1
+          # curl -f https://$(aws cloudformation describe-stacks --stack-name TAK-${{ vars.DEMO_STACK_NAME }}-BaseInfra --query 'Stacks[0].Outputs[?OutputKey==`DomainNameOutput`].OutputValue' --output text)/health || exit 1
 
   # Always revert demo environment back to dev-test configuration
   # Ensures demo environment is left in a consistent state regardless of test results
@@ -125,12 +125,12 @@ jobs:
       - name: Setup CDK Environment
         uses: ./.github/actions/setup-cdk
         with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-role-arn: ${{ secrets.DEMO_AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.DEMO_AWS_REGION }}
           role-session-name: GitHubActions-Demo
 
       - name: Validate CDK Synthesis (Dev-Test Profile)
-        run: npm run cdk synth -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }}
+        run: npm run cdk synth -- --context envType=dev-test --context stackName=${{ vars.DEMO_STACK_NAME }}
 
       - name: Revert Demo to Dev-Test Profile
-        run: npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ needs.deploy-and-test.outputs.tak-tag }} --context useS3TAKServerConfigFile=true --require-approval never
+        run: npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.DEMO_STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ needs.deploy-and-test.outputs.tak-tag }} --context useS3TAKServerConfigFile=true --require-approval never

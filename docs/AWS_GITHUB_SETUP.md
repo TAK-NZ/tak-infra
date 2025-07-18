@@ -8,6 +8,8 @@ This guide covers setting up GitHub Actions for the TakInfra repository, buildin
 - Route 53 DNS setup
 - GitHub OIDC Identity Provider and IAM roles
 
+> **Note:** The organization variables and secrets configured in BaseInfra will be used for both environments.
+
 ## 3. GitHub Environment Setup for TakInfra
 
 ### 3.1 Create Environments
@@ -27,19 +29,6 @@ In your TakInfra GitHub repository, go to **Settings → Environments** and crea
        - Add rule: "main"
    - **Environment variables:**
      - `DEMO_TEST_DURATION`: `300` (wait time in seconds, default 5 minutes)
-     - `STACK_NAME`: `Demo`
-
-### 3.2 Configure Environment Secrets
-
-**For `production` environment:**
-- `AWS_ACCOUNT_ID`: `111111111111`
-- `AWS_ROLE_ARN`: `arn:aws:iam::111111111111:role/GitHubActions-TAK-Role`
-- `AWS_REGION`: `ap-southeast-6`
-
-**For `demo` environment:**
-- `AWS_ACCOUNT_ID`: `222222222222`
-- `AWS_ROLE_ARN`: `arn:aws:iam::222222222222:role/GitHubActions-TAK-Role`
-- `AWS_REGION`: `ap-southeast-2`
 
 ## 4. Branch Protection Setup
 
@@ -64,36 +53,24 @@ In your TakInfra GitHub repository, go to **Settings → Environments** and crea
 - Secrets Manager secret deletions
 - TAK server configuration changes
 
-### 5.2 Override Mechanism
+### 5.2 Implementation
+
+TakInfra uses the same breaking change detection system as BaseInfra:
+
+1. **Stage 1 (PR Level)**: CDK diff analysis during pull requests - fast feedback
+2. **Stage 2 (Deploy Level)**: CloudFormation change set validation before demo deployment - comprehensive validation
+
+### 5.3 Override Mechanism
 
 To deploy breaking changes intentionally:
 
-1. **Include `[force-deploy]` in commit message**:
-```bash
-git commit -m "feat: upgrade PostgreSQL engine version [force-deploy]"
-```
-
+1. **Include `[force-deploy]` in commit message**
 2. **The workflows will detect the override and proceed with deployment**
+3. **Use with caution** - ensure dependent stacks are updated accordingly
 
 ## 6. GitHub Actions Workflows
 
 ### 6.1 Workflow Architecture
-
-```mermaid
-graph TD
-    A[Push to main] --> B[CDK Tests]
-    A --> C[Build Demo Images]
-    B --> D[Validate Prod Config]
-    D --> E[Deploy & Test]
-    C --> E
-    E --> F[Revert to Dev-Test]
-    
-    G[Create v* tag] --> H[CDK Tests]
-    G --> I[Build Prod Images]
-    H --> J[Manual Approval]
-    I --> J
-    J --> K[Deploy Production]
-```
 
 ### 6.2 Demo Testing Workflow (`demo-deploy.yml`)
 
@@ -108,11 +85,6 @@ graph TD
 4. **deploy-and-test**: Deploy with prod profile and run tests
 5. **revert-to-dev-test**: Always revert to dev-test configuration
 
-**Flow:**
-```
-Push → [Tests + Build Images + Validate Prod] → Deploy & Test → Revert
-```
-
 ### 6.3 Production Deployment Workflow (`production-deploy.yml`)
 
 **Triggers:**
@@ -123,11 +95,6 @@ Push → [Tests + Build Images + Validate Prod] → Deploy & Test → Revert
 1. **test**: Run CDK unit tests
 2. **build-images**: Build TAK server Docker images for production
 3. **deploy-production**: Deploy to production with built images (requires approval)
-
-**Flow:**
-```
-Tag v* → [Tests + Build Images] → Deploy Production
-```
 
 ### 6.4 Build Workflows
 
@@ -143,22 +110,26 @@ Tag v* → [Tests + Build Images] → Deploy Production
 - Builds TAK server image with production configuration
 - Pushes to production ECR repository
 
-### 6.5 Required Secrets and Variables
+### 6.5 Required Organization Secrets and Variables
 
-**Environment Secrets (per environment):**
+**Organization Secrets (configured in BaseInfra):**
 
-| Secret | Description | Example |
+| Secret | Description | Used For |
 |--------|-------------|----------|
-| `AWS_ACCOUNT_ID` | AWS account ID | `123456789012` |
-| `AWS_ROLE_ARN` | GitHub Actions IAM role ARN | `arn:aws:iam::123456789012:role/GitHubActions-TAK-Role` |
-| `AWS_REGION` | AWS deployment region | `ap-southeast-2` |
+| `DEMO_AWS_ACCOUNT_ID` | Demo AWS account ID | Demo environment |
+| `DEMO_AWS_ROLE_ARN` | Demo GitHub Actions IAM role ARN | Demo environment |
+| `DEMO_AWS_REGION` | Demo AWS deployment region | Demo environment |
+| `PROD_AWS_ACCOUNT_ID` | Production AWS account ID | Production environment |
+| `PROD_AWS_ROLE_ARN` | Production GitHub Actions IAM role ARN | Production environment |
+| `PROD_AWS_REGION` | Production AWS deployment region | Production environment |
 
-**Environment Variables:**
+**Organization Variables (configured in BaseInfra):**
 
-| Variable | Environment | Description | Example | Required |
-|----------|-------------|-------------|---------|----------|
-| `STACK_NAME` | demo, prod | Stack name suffix | `Demo`, `Prod` | ✅ |
-| `DEMO_TEST_DURATION` | demo | Test wait time in seconds | `300` | ❌ |
+| Variable | Description | Used For |
+|----------|-------------|----------|
+| `DEMO_STACK_NAME` | Stack name suffix for demo | Demo environment |
+| `DEMO_TEST_DURATION` | Test wait time in seconds | Demo environment |
+| `DEMO_R53_ZONE_NAME` | Demo Route53 zone name | Demo environment |
 
 ## 7. Composite Actions
 
@@ -172,27 +143,20 @@ Location: `.github/actions/setup-cdk/action.yml`
 - AWS credentials configuration
 - Dependency installation
 
-**Usage:**
-```yaml
-- name: Setup CDK Environment
-  uses: ./.github/actions/setup-cdk
-  with:
-    aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-    aws-region: ${{ secrets.AWS_REGION }}
-    role-session-name: GitHubActions-Demo
-```
+**Benefits:**
+- Consistent setup across all workflows
+- Easier maintenance and updates
+- Reduced workflow file size
+- Centralized Node.js and AWS configuration
+
+
 
 ## 8. Verification
 
 Test the TakInfra setup:
 
-1. **Demo Testing:** Push to `main` branch → Should deploy demo with prod profile → Wait → Run tests → Revert to dev-test profile
-2. **Production:** Create and push version tag:
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-   → Should require approval → Deploy after approval
+1. **Demo Testing:** Push to `main` branch - Should deploy demo with prod profile, wait, run tests, and revert to dev-test profile
+2. **Production:** Create and push version tag (v1.0.0) - Should require approval before deployment
 
 ### 8.1 Deployment Flow
 
@@ -206,6 +170,11 @@ Push to main → Tests → Demo (prod profile) → Wait → Tests → Demo (dev-
 Tag v* → Tests → Production (prod profile) [requires approval]
 ```
 
+**Benefits:**
+- Cost optimization: Demo runs dev-test profile between deployments
+- Risk mitigation: Both profiles tested in demo before production
+- Separation: Independent workflows for demo testing vs production deployment
+
 ## 9. Troubleshooting
 
 ### 9.1 Common Workflow Issues
@@ -214,11 +183,13 @@ Tag v* → Tests → Production (prod profile) [requires approval]
 
 | Issue | Symptoms | Solution |
 |-------|----------|----------|
-| **Missing Secrets** | `Error: Could not assume role` | Verify environment secrets are set correctly |
-| **Missing Variables** | `Error: Required variable not set` | Ensure `STACK_NAME` is configured |
+| **Missing Secrets** | Error: Could not assume role | Verify organization secrets are set correctly |
+| **Missing Variables** | Error: Required variable not set | Ensure organization variables are configured |
 | **Breaking Changes** | Workflow stops at validation | Use `[force-deploy]` in commit message or fix changes |
 | **Image Build Fails** | Docker build errors | Check Dockerfile and TAK server version |
-| **CDK Synthesis Fails** | `cdk synth` command fails | Verify cdk.json context values |
+| **CDK Synthesis Fails** | CDK synth command fails | Verify cdk.json context values |
+| **Deployment Timeout** | Job runs for hours | Check AWS resources and add timeout settings |
+| **Composite Action Error** | Can't find action.yml | Ensure checkout step runs before composite action |
 | **TAK Server Download** | S3 download errors | Verify BaseInfra S3 bucket exists and contains TAK server zip |
 
 ### 9.2 TAK Server Specific Issues
@@ -230,20 +201,34 @@ Tag v* → Tests → Production (prod profile) [requires approval]
 - **Configuration Errors:** Check TAK server configuration in docker-container/scripts/
 - **Certificate Issues:** Verify Let's Encrypt configuration for production
 
-**Debug Commands:**
+**Troubleshooting Steps:**
 
-```bash
-# Check TAK server version
-jq -r '.context."dev-test".takserver.version' cdk.json
+1. Check TAK server version in cdk.json
+2. Verify stack status in CloudFormation console
+3. Review stack events for specific error messages
+4. Confirm ECR images are built and tagged correctly
+5. Test database connectivity through AWS console
+6. Check ECS service logs for container startup issues
 
-# Verify S3 bucket contents
-aws s3 ls s3://$(aws cloudformation describe-stacks --stack-name TAK-Demo-BaseInfra --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArn`].OutputValue' --output text | sed 's|arn:aws:s3:::|s3://|')/
+### 9.3 Breaking Change Detection
 
-# Test TAK server image
-docker run --rm -it <ecr-repo-uri>:<tag> /bin/bash
-```
+**Understanding Breaking Changes:**
 
-### 9.3 Dependencies on BaseInfra and AuthInfra
+The system detects these critical changes:
+- Database cluster replacements
+- EFS file system modifications
+- Network Load Balancer changes
+- Security group modifications
+- TAK server configuration changes
+
+**Override Process:**
+
+1. **Review the change:** Understand impact and plan downtime
+2. **Add override flag:** Include `[force-deploy]` in commit message
+3. **Monitor deployment:** Watch for issues during deployment
+4. **Verify functionality:** Test all services after deployment
+
+### 9.4 Dependencies on BaseInfra and AuthInfra
 
 **Required BaseInfra Resources:**
 - VPC and networking (subnets, security groups)
@@ -258,17 +243,5 @@ docker run --rm -it <ecr-repo-uri>:<tag> /bin/bash
 - Redis cluster (for session management)
 - Application Load Balancer (for OIDC integration)
 - Secrets Manager secrets (for database credentials)
-
-**Verification Commands:**
-```bash
-# Check BaseInfra stack
-aws cloudformation describe-stacks --stack-name TAK-Demo-BaseInfra
-
-# Check AuthInfra stack
-aws cloudformation describe-stacks --stack-name TAK-Demo-AuthInfra
-
-# Verify database connectivity
-aws rds describe-db-clusters --db-cluster-identifier tak-demo-postgres
-```
 
 Ensure both BaseInfra and AuthInfra are deployed and stable before deploying TakInfra changes.
