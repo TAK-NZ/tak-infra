@@ -98,6 +98,15 @@ if [ ! -f "/opt/tak/certs/files/ca.pem" ]; then
         echo "AWS CLI Error:"
         cat /tmp/aws_error.log
     fi
+    
+    # Store CA certificate in AWS Secrets Manager as text
+    if ! aws secretsmanager put-secret-value \
+        --secret-id "${StackName}/TAK-Server/FederateCA" \
+        --secret-string file://files/ca.pem 2>/tmp/aws_error.log; then
+        echo "Warning: Failed to store CA certificate in Secrets Manager"
+        echo "AWS CLI Error:"
+        cat /tmp/aws_error.log
+    fi
 fi
 
 # Restore certs for self-enrollment (HTTPS on TCP/8446)
@@ -172,11 +181,31 @@ fi
 
 echo "TAK Server - Generating config file"
 cd /opt/tak
-#npx tsx /opt/tak/scripts/CoreConfig.ts
-if ! /opt/tak/scripts/createCoreConfig.sh /opt/tak/CoreConfig.xml; then
+
+# Ensure persistent config directory exists
+mkdir -p /opt/tak/persistent-config
+
+# Check if a persistent config file already exists
+if [ -f "/opt/tak/persistent-config/CoreConfig.xml" ]; then
+    echo "TAK Server - Found existing persistent configuration, will merge with environment settings"
+else
+    echo "TAK Server - No existing configuration found, creating new one"
+fi
+
+# Generate CoreConfig.xml in the persistent directory with merging
+if ! /opt/tak/scripts/createCoreConfig.sh /opt/tak/persistent-config/CoreConfig.xml; then
     echo "Error: Failed to generate CoreConfig.xml"
     exit 1
 fi
+
+# Create symbolic link to the persistent config file
+if [ -f "/opt/tak/CoreConfig.xml" ] && [ ! -L "/opt/tak/CoreConfig.xml" ]; then
+    # Backup any existing file before replacing with symlink
+    mv /opt/tak/CoreConfig.xml /opt/tak/CoreConfig.xml.bak
+fi
+
+# Create or update the symbolic link
+ln -sf /opt/tak/persistent-config/CoreConfig.xml /opt/tak/CoreConfig.xml
 
 echo "TAK Server - Validating config file"
 if ! /opt/tak/validateConfig.sh /opt/tak/CoreConfig.xml; then

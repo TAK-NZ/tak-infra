@@ -289,6 +289,18 @@ aws secretsmanager get-secret-value --secret-id "TAK-Prod-TakInfra/TAK-Server/Ad
 aws secretsmanager get-secret-value --secret-id "TAK-{StackName}-TakInfra/TAK-Server/Admin-Cert" --query SecretBinary --output text | base64 --decode > admin-cert.p12
 ```
 
+### **Access Federate CA Certificate**
+```bash
+# Development environment
+aws secretsmanager get-secret-value --secret-id "TAK-Dev-TakInfra/TAK-Server/FederateCA" --query SecretString --output text > federation-ca.pem
+
+# Production environment
+aws secretsmanager get-secret-value --secret-id "TAK-Prod-TakInfra/TAK-Server/FederateCA" --query SecretString --output text > federation-ca.pem
+
+# Custom stack name
+aws secretsmanager get-secret-value --secret-id "TAK-{StackName}-TakInfra/TAK-Server/FederateCA" --query SecretString --output text > federation-ca.pem
+```
+
 ### **Cleanup**
 ```bash
 # Destroy development environment

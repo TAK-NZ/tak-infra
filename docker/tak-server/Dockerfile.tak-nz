@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.licenses=MIT
 ARG TAK_VERSION=takserver-docker-5.4-RELEASE-19
 RUN apt update \
     && apt-get install -y net-tools netcat \
-        tini cron certbot curl libxml2-utils unzip zip awscli jq \
+        tini cron certbot curl libxml2-utils xmlstarlet unzip zip awscli jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

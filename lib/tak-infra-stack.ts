@@ -196,7 +196,8 @@ export class TakInfraStack extends cdk.Stack {
       efs: {
         fileSystemId: efs.fileSystem.fileSystemId,
         takCertsAccessPointId: efs.takCertsAccessPoint.accessPointId,
-        letsEncryptAccessPointId: efs.letsEncryptAccessPoint.accessPointId
+        letsEncryptAccessPointId: efs.letsEncryptAccessPoint.accessPointId,
+        takConfigAccessPointId: efs.takConfigAccessPoint.accessPointId
       }
     };
 
@@ -211,6 +212,7 @@ export class TakInfraStack extends cdk.Stack {
       database: database.masterSecret,
       takserver: {
         adminCertificate: takSecrets.adminCertificate,
+        federateCACertificate: takSecrets.federateCACertificate,
         ldapServiceAccount: ldapServiceAccountSecret,
         oauthConfig: undefined // Will be set if OAuth is configured
       }
@@ -308,6 +310,13 @@ export class TakInfraStack extends cdk.Stack {
       value: takSecrets.adminCertificate.secretArn,
       description: 'TAK Server Admin Certificate (p12) Secret ARN',
       exportName: `${resolvedStackName}-TakAdminCertSecretArn`
+    });
+    
+    // TAK Server Federate CA Certificate Secret ARN
+    new CfnOutput(this, 'TakFederateCACertSecretArn', {
+      value: takSecrets.federateCACertificate.secretArn,
+      description: 'TAK Server Federate CA Certificate (PEM) Secret ARN',
+      exportName: `${resolvedStackName}-TakFederateCACertSecretArn`
     });
 
     // TAK Service Name (hostname without https://)

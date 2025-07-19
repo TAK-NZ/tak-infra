@@ -39,6 +39,11 @@ export class TakSecretsManager extends Construct {
    */
   public readonly adminCertificate: secretsmanager.Secret;
 
+  /**
+   * Federate Certificate Authority (PEM) secret
+   */
+  public readonly federateCACertificate: secretsmanager.Secret;
+
   constructor(scope: Construct, id: string, props: SecretsManagerProps) {
     super(scope, id);
 
@@ -50,6 +55,14 @@ export class TakSecretsManager extends Construct {
     this.adminCertificate = new secretsmanager.Secret(this, 'AdminCertificate', {
       secretName: `${stackName}/TAK-Server/Admin-Cert`,
       description: `${stackName} TAK Server Admin key (p12)`,
+      encryptionKey: props.kmsKey,
+      removalPolicy: removalPolicy
+    });
+    
+    // Create Federate CA certificate secret (PEM format)
+    this.federateCACertificate = new secretsmanager.Secret(this, 'FederateCACertificate', {
+      secretName: `${stackName}/TAK-Server/FederateCA`,
+      description: `${stackName} Federate Certificate Authority (pem)`,
       encryptionKey: props.kmsKey,
       removalPolicy: removalPolicy
     });

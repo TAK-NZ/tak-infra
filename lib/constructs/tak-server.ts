@@ -142,6 +142,9 @@ export class TakServer extends Construct {
     if (props.secrets.takserver.adminCertificate) {
       props.secrets.takserver.adminCertificate.grantRead(executionRole);
     }
+    if (props.secrets.takserver.federateCACertificate) {
+      props.secrets.takserver.federateCACertificate.grantRead(executionRole);
+    }
 
     // Add cross-stack secret access (corrected naming)
     const stackNameComponent = props.contextConfig.stackName;
@@ -215,7 +218,8 @@ export class TakServer extends Construct {
       resources: [
         `arn:aws:elasticfilesystem:${Stack.of(this).region}:${Stack.of(this).account}:file-system/${props.storage.efs.fileSystemId}`,
         `arn:aws:elasticfilesystem:${Stack.of(this).region}:${Stack.of(this).account}:access-point/${props.storage.efs.takCertsAccessPointId}`,
-        `arn:aws:elasticfilesystem:${Stack.of(this).region}:${Stack.of(this).account}:access-point/${props.storage.efs.letsEncryptAccessPointId}`
+        `arn:aws:elasticfilesystem:${Stack.of(this).region}:${Stack.of(this).account}:access-point/${props.storage.efs.letsEncryptAccessPointId}`,
+        `arn:aws:elasticfilesystem:${Stack.of(this).region}:${Stack.of(this).account}:access-point/${props.storage.efs.takConfigAccessPointId}`
       ]
     }));
 
@@ -228,6 +232,19 @@ export class TakServer extends Construct {
         ],
         resources: [
           `arn:aws:secretsmanager:${Stack.of(this).region}:${Stack.of(this).account}:secret:${Stack.of(this).stackName}/TAK-Server/Admin-Cert*`
+        ]
+      }));
+    }
+    
+    // Add permissions for federate CA certificate management
+    if (props.secrets.takserver.federateCACertificate) {
+      taskRole.addToPolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'secretsmanager:PutSecretValue'
+        ],
+        resources: [
+          `arn:aws:secretsmanager:${Stack.of(this).region}:${Stack.of(this).account}:secret:${Stack.of(this).stackName}/TAK-Server/FederateCA*`
         ]
       }));
     }
@@ -302,6 +319,18 @@ export class TakServer extends Construct {
         transitEncryption: 'ENABLED',
         authorizationConfig: {
           accessPointId: props.storage.efs.letsEncryptAccessPointId,
+          iam: 'ENABLED'
+        }
+      }
+    });
+    
+    this.taskDefinition.addVolume({
+      name: 'tak-config',
+      efsVolumeConfiguration: {
+        fileSystemId: props.storage.efs.fileSystemId,
+        transitEncryption: 'ENABLED',
+        authorizationConfig: {
+          accessPointId: props.storage.efs.takConfigAccessPointId,
           iam: 'ENABLED'
         }
       }
@@ -426,6 +455,12 @@ export class TakServer extends Construct {
     container.addMountPoints({
       containerPath: '/etc/letsencrypt',
       sourceVolume: 'letsencrypt',
+      readOnly: false
+    });
+    
+    container.addMountPoints({
+      containerPath: '/opt/tak/persistent-config',
+      sourceVolume: 'tak-config',
       readOnly: false
     });
 

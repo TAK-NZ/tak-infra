@@ -57,6 +57,11 @@ export class Efs extends Construct {
    */
   public readonly letsEncryptAccessPoint: efs.AccessPoint;
 
+  /**
+   * The EFS access point for TAK configuration files
+   */
+  public readonly takConfigAccessPoint: efs.AccessPoint;
+
   constructor(scope: Construct, id: string, props: EfsProps) {
     super(scope, id);
 
@@ -127,6 +132,21 @@ export class Efs extends Construct {
         gid: '0'
       },
       path: '/etc/letsencrypt',
+      createAcl: {
+        ownerUid: '0',
+        ownerGid: '0',
+        permissions: '0777'
+      }
+    });
+    
+    // Create access point for TAK configuration files
+    this.takConfigAccessPoint = new efs.AccessPoint(this, 'EFSAccessPointTakConfig', {
+      fileSystem: this.fileSystem,
+      posixUser: {
+        uid: '0',
+        gid: '0'
+      },
+      path: '/opt/tak/persistent-config',
       createAcl: {
         ownerUid: '0',
         ownerGid: '0',
