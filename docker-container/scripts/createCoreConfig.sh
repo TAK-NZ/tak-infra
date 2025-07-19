@@ -29,6 +29,7 @@ declare -A ENV_DRIVEN_SETTINGS=()
 # Define explicit XPath mappings for complex paths
 # Format: "ENV_VAR_NAME" -> "/Configuration/path/to/element[@attr='value']/@targetAttr"
 declare -A XPATH_MAPPINGS=(
+    # Network settings
     ["TAKSERVER_CoreConfig_Network_CloudwatchEnable"]="/Configuration/network/@cloudwatchEnable"
     ["TAKSERVER_CoreConfig_Network_AllowAllOrigins"]="/Configuration/network/@allowAllOrigins"
     ["TAKSERVER_CoreConfig_Network_EnableHSTS"]="/Configuration/network/@enableHSTS"
@@ -41,12 +42,16 @@ declare -A XPATH_MAPPINGS=(
     ["TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak"]="/Configuration/network/connector[@port='8446']/@enableWebtak"
     ["TAKSERVER_CoreConfig_Network_Connector_8446_EnableNonAdminUI"]="/Configuration/network/connector[@port='8446']/@enableNonAdminUI"
     ["TAKSERVER_CoreConfig_Network_Announce_Enable"]="/Configuration/network/announce/@enable"
+    
+    # Auth settings
     ["TAKSERVER_CoreConfig_Auth_Default"]="/Configuration/auth/@default"
     ["TAKSERVER_CoreConfig_Auth_X509groups"]="/Configuration/auth/@x509groups"
     ["TAKSERVER_CoreConfig_Auth_X509addAnonymous"]="/Configuration/auth/@x509addAnonymous"
     ["TAKSERVER_CoreConfig_Auth_X509useGroupCache"]="/Configuration/auth/@x509useGroupCache"
     ["TAKSERVER_CoreConfig_Auth_X509useGroupCacheDefaultActive"]="/Configuration/auth/@x509useGroupCacheDefaultActive"
     ["TAKSERVER_CoreConfig_Auth_X509checkRevocation"]="/Configuration/auth/@x509checkRevocation"
+    
+    # LDAP settings
     ["TAKSERVER_CoreConfig_Auth_LDAP_Userstring"]="/Configuration/auth/ldap/@userstring"
     ["TAKSERVER_CoreConfig_Auth_LDAP_Updateinterval"]="/Configuration/auth/ldap/@updateinterval"
     ["TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix"]="/Configuration/auth/ldap/@groupprefix"
@@ -67,6 +72,25 @@ declare -A XPATH_MAPPINGS=(
     ["TAKSERVER_CoreConfig_Auth_LDAP_EnableConnectionPool"]="/Configuration/auth/ldap/@enableConnectionPool"
     ["TAKSERVER_CoreConfig_Auth_LDAP_DnAttributeName"]="/Configuration/auth/ldap/@dnAttributeName"
     ["TAKSERVER_CoreConfig_Auth_LDAP_NameAttr"]="/Configuration/auth/ldap/@nameAttr"
+    
+    # Federation settings
+    ["TAKSERVER_CoreConfig_Federation_EnableFederation"]="/Configuration/federation/@enableFederation"
+    ["TAKSERVER_CoreConfig_Federation_WebBaseUrl"]="/Configuration/federation/federation-server/@webBaseUrl"
+    ["TAKSERVER_CoreConfig_Federation_Server_TLS_Context"]="/Configuration/federation/federation-server/@TLSVersion"
+    
+    # Submission/Subscription settings
+    ["TAKSERVER_CoreConfig_Submission_IgnoreStaleMessages"]="/Configuration/submission/@ignoreStaleMessages"
+    ["TAKSERVER_CoreConfig_Submission_ValidateXml"]="/Configuration/submission/@validateXml"
+    ["TAKSERVER_CoreConfig_Subscription_ReloadPersistent"]="/Configuration/subscription/@reloadPersistent"
+    
+    # Security settings
+    ["TAKSERVER_CoreConfig_Security_TLS_Context"]="/Configuration/security/tls/@context"
+    
+    # OAuth settings
+    ["TAKSERVER_CoreConfig_Auth_Oauth_OauthAddAnonymous"]="/Configuration/auth/oauth/@oauthAddAnonymous"
+    ["TAKSERVER_CoreConfig_Auth_Oauth_OauthUseGroupCache"]="/Configuration/auth/oauth/@oauthUseGroupCache"
+    ["TAKSERVER_CoreConfig_Auth_Oauth_GroupsClaim"]="/Configuration/auth/oauth/@groupsClaim"
+    ["TAKSERVER_CoreConfig_Auth_Oauth_UsernameClaim"]="/Configuration/auth/oauth/@usernameClaim"
 )
 
 # Helper function to get XPath for an environment variable
@@ -80,7 +104,36 @@ get_xpath_for_env() {
     fi
     
     # Default fallback for simple paths
-    echo "/Configuration/${env_var#TAKSERVER_CoreConfig_}"
+    # This is a best-effort approach and may not work for complex paths
+    local path="${env_var#TAKSERVER_CoreConfig_}"
+    
+    # Convert underscores in path components to slashes for XML hierarchy
+    local xml_path="${path//\_/\/}"
+    
+    # Find the last component which might contain an attribute
+    local last_component="${xml_path##*/}"
+    local prefix_path="${xml_path%/*}"
+    
+    # If there's no slash, the entire path is the last component
+    if [[ "$xml_path" == "$last_component" ]]; then
+        prefix_path=""
+    else
+        prefix_path="$prefix_path/"
+    fi
+    
+    # Check if the last component has an underscore which might indicate an attribute
+    if [[ "$last_component" == *_* ]]; then
+        # Extract attribute name (after last underscore)
+        local attr_name="${last_component##*_}"
+        # Extract element name (before last underscore)
+        local elem_name="${last_component%_*}"
+        echo "/Configuration/$prefix_path$elem_name/@$attr_name"
+    else
+        echo "/Configuration/$xml_path"
+    fi
+    
+    # Log warning for unmapped variables to help with debugging
+    echo "Warning: No explicit XPath mapping for $env_var, using best-effort conversion" >&2
 }
 
 # Helper function to record environment-driven settings
@@ -124,11 +177,24 @@ get_env_value() {
         record_env_setting "$xpath" "$env_path"
     fi
     
+    # Validate value based on type
     if [[ "$type" == "boolean" ]]; then
-        string_to_boolean "$env_value"
-    else
-        echo "$env_value"
+        # Convert to proper boolean
+        env_value=$(string_to_boolean "$env_value")
+    elif [[ "$type" == "integer" ]]; then
+        # Validate integer
+        if ! [[ "$env_value" =~ ^[0-9]+$ ]]; then
+            echo "Warning: Value '$env_value' for $env_path is not a valid integer, using default '$xsd_default'" >&2
+            env_value="$xsd_default"
+        fi
+    elif [[ "$type" == "url" ]]; then
+        # Basic URL validation
+        if ! [[ "$env_value" =~ ^https?:// ]]; then
+            echo "Warning: Value '$env_value' for $env_path does not appear to be a valid URL" >&2
+        fi
     fi
+    
+    echo "$env_value"
 }
 
 # Add attribute only if different from XSD default
@@ -154,6 +220,15 @@ check_existing_file() {
             echo "Found existing valid CoreConfig.xml, will merge with environment settings"
             # Create a backup of the existing file
             cp "$OUTPUT_FILE" "${OUTPUT_FILE}.bak"
+            
+            # Validate against schema if available
+            if [[ -f "/opt/tak/CoreConfig.xsd" ]]; then
+                echo "Validating existing CoreConfig.xml against schema..."
+                if ! xmlstarlet val -q -s "/opt/tak/CoreConfig.xsd" "$OUTPUT_FILE" 2>/dev/null; then
+                    echo "Warning: Existing CoreConfig.xml does not validate against schema"
+                    echo "Will attempt to fix during merge process"
+                fi
+            fi
         else
             echo "Warning: Existing CoreConfig.xml is not valid XML, creating new file"
         fi
@@ -169,6 +244,38 @@ safe_xml_update() {
     local file="$3"
     local error_file="/tmp/xmlstarlet_error.log"
     
+    # Check if the target node exists
+    if ! xmlstarlet sel -t -v "count($xpath)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+        echo "Warning: XPath $xpath does not exist in the configuration file"
+        echo "Will attempt to create the necessary structure"
+        
+        # Try to determine parent path and create it
+        local parent_path=$(echo "$xpath" | sed -E 's|/[^/]+$||')
+        local node_name=$(echo "$xpath" | sed -E 's|.*/([^/]+)$|\1|' | sed -E 's|@||')
+        
+        if [[ "$xpath" == */\@* ]]; then
+            # This is an attribute, try to create parent element
+            local element_path=$(echo "$xpath" | sed -E 's|/@[^/]+$||')
+            local attr_name=$(echo "$xpath" | sed -E 's|.*/@([^/]+)$|\1|')
+            
+            # Check if parent element exists
+            if ! xmlstarlet sel -t -v "count($element_path)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+                echo "Warning: Parent element for $xpath does not exist, cannot update"
+                return 1
+            fi
+            
+            # Add the attribute
+            if ! xmlstarlet ed --inplace -s "$element_path" -t attr -n "$attr_name" -v "$value" "$file" 2>"$error_file"; then
+                echo "Warning: Failed to create attribute $attr_name"
+                echo "xmlstarlet error:"
+                cat "$error_file"
+                return 1
+            fi
+            return 0
+        fi
+    fi
+    
+    # Update the existing node
     if ! xmlstarlet ed --inplace -u "$xpath" -v "$value" "$file" 2>"$error_file"; then
         echo "Warning: Failed to update $xpath in configuration file"
         echo "xmlstarlet error:"
@@ -190,9 +297,32 @@ update_array_element() {
     
     # Check if the element exists
     if xmlstarlet sel -t -v "count($base_xpath[@$id_attr='$id_value'])" "$file" 2>/dev/null | grep -q "^0$"; then
-        # Element doesn't exist, need to create it
-        echo "Warning: Array element $base_xpath[@$id_attr='$id_value'] not found, cannot update"
-        return 1
+        # Element doesn't exist, try to create it
+        echo "Array element $base_xpath[@$id_attr='$id_value'] not found, attempting to create it"
+        
+        # Get parent element path
+        local parent_path=$(echo "$base_xpath" | sed -E 's|/[^/]+$||')
+        local element_name=$(echo "$base_xpath" | sed -E 's|.*/([^/]+)$|\1|')
+        
+        # Check if parent exists
+        if ! xmlstarlet sel -t -v "count($parent_path)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+            echo "Warning: Parent element $parent_path does not exist, cannot create array element"
+            return 1
+        fi
+        
+        # Create the element with identifier attribute
+        if ! xmlstarlet ed --inplace -s "$parent_path" -t elem -n "$element_name" \
+                -i "$parent_path/$element_name[last()]" -t attr -n "$id_attr" -v "$id_value" \
+                -i "$parent_path/$element_name[last()]" -t attr -n "$target_attr" -v "$new_value" \
+                "$file" 2>"$error_file"; then
+            echo "Warning: Failed to create array element $base_xpath[@$id_attr='$id_value']"
+            echo "xmlstarlet error:"
+            cat "$error_file"
+            return 1
+        fi
+        
+        echo "Successfully created array element $base_xpath[@$id_attr='$id_value']"
+        return 0
     fi
     
     # Update the existing element
@@ -206,6 +336,13 @@ update_array_element() {
     return 0
 }
 
+# Enable debug mode if requested
+DEBUG=${DEBUG:-false}
+if [[ "${DEBUG,,}" == "true" ]]; then
+    set -x
+    echo "Debug mode enabled"
+fi
+
 # Set commonly used values
 LETSENCRYPT_DOMAIN=$(get_env_value "TAKSERVER_QuickConnect_LetsEncrypt_Domain" "nodomainset")
 SERVER_ID=$(cat /proc/sys/kernel/random/uuid)
@@ -217,6 +354,14 @@ cp /tmp/AmazonRootCA1.jks /opt/tak/certs/files/aws-acm-root.jks
 
 # Check for existing file
 check_existing_file
+
+# Print environment variables that will affect configuration (debug only)
+if [[ "${DEBUG,,}" == "true" ]]; then
+    echo "Environment variables affecting CoreConfig.xml:"
+    env | grep -E "^TAKSERVER_CoreConfig_" | sort
+    echo "Default values from project-defaults.env:"
+    env | grep -E "^TAKSERVER_CoreConfig_.*_DEFAULT" | sort
+fi
 
 # Generate temporary CoreConfig.xml
 cat > "$TEMP_FILE" << EOF
