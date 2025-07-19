@@ -54,7 +54,7 @@ export class TakSecretsManager extends Construct {
     // Create TAK admin certificate secret (following migration guide pattern)
     this.adminCertificate = new secretsmanager.Secret(this, 'AdminCertificate', {
       secretName: `${stackName}/TAK-Server/Admin-Cert`,
-      description: `${stackName} TAK Server Admin key (p12)`,
+      description: `TAK Server Admin key (p12)`,
       encryptionKey: props.kmsKey,
       removalPolicy: removalPolicy
     });
@@ -62,7 +62,7 @@ export class TakSecretsManager extends Construct {
     // Create Federate CA certificate secret (PEM format)
     this.federateCACertificate = new secretsmanager.Secret(this, 'FederateCACertificate', {
       secretName: `${stackName}/TAK-Server/FederateCA`,
-      description: `${stackName} Federate Certificate Authority (pem)`,
+      description: `Federate Certificate Authority (pem)`,
       encryptionKey: props.kmsKey,
       removalPolicy: removalPolicy
     });
