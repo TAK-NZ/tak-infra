@@ -59,6 +59,11 @@ export interface SecretsConfig {
      * TAK admin certificate (p12) secret
      */
     adminCertificate?: secretsmanager.ISecret;
+    
+    /**
+     * Federate Certificate Authority (PEM) secret
+     */
+    federateCACertificate?: secretsmanager.ISecret;
   };
 }
 
@@ -104,6 +109,11 @@ export interface StorageConfig {
      * EFS Let's Encrypt access point ID
      */
     letsEncryptAccessPointId: string;
+    
+    /**
+     * EFS TAK config access point ID
+     */
+    takConfigAccessPointId: string;
   };
 }
 

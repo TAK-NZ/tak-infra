@@ -89,14 +89,56 @@ if [ ! -f "/opt/tak/certs/files/ca.pem" ]; then
         echo "Error: Failed to generate admin certificate"
         exit 1
     fi
+fi
 
+# Upload certificates to AWS Secrets Manager using file hashes as client request tokens
+# The client-request-token parameter ensures certificates are only uploaded if they were 
+# changed or did not exist in AWS Secrets Manager
+echo "TAK Server - Uploading certificates to AWS Secrets Manager"
+
+# Upload admin certificate if it exists
+if [ -f "/opt/tak/certs/files/admin.p12" ]; then
+    # Generate SHA-256 hash of the admin certificate file as client request token
+    ADMIN_CERT_HASH=$(sha256sum "/opt/tak/certs/files/admin.p12" | cut -d' ' -f1)
+    
     # Store TAK admin certificate in AWS Secrets Manager for secure access
     if ! aws secretsmanager put-secret-value \
         --secret-id "${StackName}/TAK-Server/Admin-Cert" \
-        --secret-binary fileb://files/admin.p12 2>/tmp/aws_error.log; then
-        echo "Warning: Failed to store admin certificate in Secrets Manager"
-        echo "AWS CLI Error:"
-        cat /tmp/aws_error.log
+        --secret-binary fileb:///opt/tak/certs/files/admin.p12 \
+        --client-request-token "${ADMIN_CERT_HASH}" 2>/tmp/aws_error.log; then
+        # Check if error is due to duplicate client request token (no change needed)
+        if grep -q "ClientRequestTokenConflictException" /tmp/aws_error.log; then
+            echo "TAK Server - Admin certificate unchanged, skipping update"
+        else
+            echo "Warning: Failed to store admin certificate in Secrets Manager"
+            echo "AWS CLI Error:"
+            cat /tmp/aws_error.log
+        fi
+    else
+        echo "TAK Server - Successfully updated admin certificate in Secrets Manager"
+    fi
+fi
+
+# Upload CA certificate if it exists
+if [ -f "/opt/tak/certs/files/ca.pem" ]; then
+    # Generate SHA-256 hash of the CA certificate file as client request token
+    CA_CERT_HASH=$(sha256sum "/opt/tak/certs/files/ca.pem" | cut -d' ' -f1)
+    
+    # Store CA certificate in AWS Secrets Manager as text
+    if ! aws secretsmanager put-secret-value \
+        --secret-id "${StackName}/TAK-Server/FederateCA" \
+        --secret-string file:///opt/tak/certs/files/ca.pem \
+        --client-request-token "${CA_CERT_HASH}" 2>/tmp/aws_error.log; then
+        # Check if error is due to duplicate client request token (no change needed)
+        if grep -q "ClientRequestTokenConflictException" /tmp/aws_error.log; then
+            echo "TAK Server - CA certificate unchanged, skipping update"
+        else
+            echo "Warning: Failed to store CA certificate in Secrets Manager"
+            echo "AWS CLI Error:"
+            cat /tmp/aws_error.log
+        fi
+    else
+        echo "TAK Server - Successfully updated CA certificate in Secrets Manager"
     fi
 fi
 
@@ -172,17 +214,39 @@ fi
 
 echo "TAK Server - Generating config file"
 cd /opt/tak
-#npx tsx /opt/tak/scripts/CoreConfig.ts
-if ! /opt/tak/scripts/createCoreConfig.sh /opt/tak/CoreConfig.xml; then
+
+# Ensure persistent config directory exists
+mkdir -p /opt/tak/persistent-config
+
+# Check if a persistent config file already exists
+if [ -f "/opt/tak/persistent-config/CoreConfig.xml" ]; then
+    echo "TAK Server - Found existing persistent configuration, will merge with environment settings"
+else
+    echo "TAK Server - No existing configuration found, creating new one"
+fi
+
+# Generate CoreConfig.xml in the persistent directory with merging
+if ! /opt/tak/scripts/createCoreConfig.sh /opt/tak/persistent-config/CoreConfig.xml; then
     echo "Error: Failed to generate CoreConfig.xml"
     exit 1
 fi
+
+# Create symbolic link to the persistent config file
+if [ -f "/opt/tak/CoreConfig.xml" ] && [ ! -L "/opt/tak/CoreConfig.xml" ]; then
+    # Backup any existing file before replacing with symlink
+    mv /opt/tak/CoreConfig.xml /opt/tak/CoreConfig.xml.bak
+fi
+
+# Create or update the symbolic link
+ln -sf /opt/tak/persistent-config/CoreConfig.xml /opt/tak/CoreConfig.xml
 
 echo "TAK Server - Validating config file"
 if ! /opt/tak/validateConfig.sh /opt/tak/CoreConfig.xml; then
     echo "Error: CoreConfig.xml validation failed"
     exit 1
 fi
+
+
 
 # Database operations with retry logic
 echo "TAK Server - Validate DB schema"
