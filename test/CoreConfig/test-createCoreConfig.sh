@@ -259,21 +259,20 @@ run_test "Boolean Variations" \
 
 # Test 10: LDAP groupprefix and groupNameExtractorRegex attributes
 run_test "LDAP Group Attributes" \
-    "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix=cn=tak_" \
-    "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex=cn=(?:tak_)(.*?)(?:,|$)"
+    "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix=tak_" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex=^tak_(.*)$"
 
 # Test 11: Empty optional values
 run_test "Empty Optional Values" \
-    "TAKSERVER_CoreConfig_OAuth_GroupsClaim=" \
-    "TAKSERVER_QuickConnect_LetsEncrypt_Domain=nodomainset"
+    "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix=" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex="
 
-# Test 12: Dynamic attribute support (previously unsupported attributes)
+# Test 12: Dynamic attribute support
 run_test "Dynamic Attribute Support" \
-    "TAKSERVER_CoreConfig_Network_Connector_8443_AllowOrigins=https://test.com,https://admin.com" \
-    "TAKSERVER_CoreConfig_Network_AllowAllOrigins=true" \
-    "TAKSERVER_CoreConfig_Repository_Archive=true"
+    "TAKSERVER_CoreConfig_Security_TLS_Context=TLSv1.2" \
+    "TAKSERVER_CoreConfig_Federation_Server_TLS_Context=TLSv1.3"
 
-# Test 13: Submission and Subscription explicit attributes
+# Test 13: Submission/Subscription attributes
 run_test "Submission/Subscription Attributes" \
     "TAKSERVER_CoreConfig_Submission_IgnoreStaleMessages=true" \
     "TAKSERVER_CoreConfig_Submission_ValidateXml=true" \
@@ -283,13 +282,13 @@ echo "========================================"
 echo "Test Results:"
 echo "Total Tests: $TEST_COUNT"
 echo "Passed: $PASS_COUNT"
-echo "Failed: $FAIL_COUNT"
+echo "Failed: $((TEST_COUNT - PASS_COUNT))"
 echo "========================================"
 
-if [ $FAIL_COUNT -eq 0 ]; then
+if [ $PASS_COUNT -eq $TEST_COUNT ]; then
     echo "🎉 All tests passed!"
     exit 0
 else
-    echo "💥 Some tests failed!"
+    echo "❌ Some tests failed"
     exit 1
 fi

@@ -33,6 +33,7 @@ describe('EFS Construct', () => {
     expect(efs.fileSystem).toBeDefined();
     expect(efs.takCertsAccessPoint).toBeDefined();
     expect(efs.letsEncryptAccessPoint).toBeDefined();
+    expect(efs.takConfigAccessPoint).toBeDefined();
 
     const template = Template.fromStack(stack);
     template.hasResourceProperties('AWS::EFS::FileSystem', {
@@ -51,6 +52,6 @@ describe('EFS Construct', () => {
     });
 
     const template = Template.fromStack(stack);
-    template.resourceCountIs('AWS::EFS::AccessPoint', 2);
+    template.resourceCountIs('AWS::EFS::AccessPoint', 3);
   });
 });
