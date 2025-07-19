@@ -4,6 +4,16 @@
 
 TAK Server supports dynamic configuration through environment variables that override XML configuration values. This system allows runtime configuration changes without modifying XML files, making it ideal for containerized deployments and CI/CD pipelines.
 
+## Configuration Persistence and Priority
+
+TAK Server uses a persistent storage system for CoreConfig.xml that preserves manual configuration changes across container replacements. Configuration values are applied in the following priority order:
+
+1. **Built-in Values**: Core system settings like PostgreSQL database connection details
+2. **CoreConfig Environment Variables**: Values set through the environment variable system
+3. **Manual Configuration**: Changes made directly to CoreConfig.xml through the admin interface
+
+> **Note**: Manual configuration changes will persist across container replacements unless overridden by a CoreConfig environment variable with the same path and attribute name.
+
 ## Environment Variable System
 
 ### Case Sensitivity Requirements

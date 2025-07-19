@@ -249,8 +249,8 @@ export class TakServer extends Construct {
       }));
     }
 
-    // Grant KMS permissions for secrets encryption
-    props.infrastructure.kmsKey.grantEncrypt(taskRole);
+    // Grant KMS permissions for secrets encryption and decryption
+    props.infrastructure.kmsKey.grantEncryptDecrypt(taskRole);
 
     // Add ECS service update permissions (for self-service restarts)
     taskRole.addToPolicy(new iam.PolicyStatement({
