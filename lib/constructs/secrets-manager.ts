@@ -44,6 +44,11 @@ export class TakSecretsManager extends Construct {
    */
   public readonly federateCACertificate: secretsmanager.Secret;
 
+  /**
+   * WebTAK OIDC client secret (optional)
+   */
+  public readonly webTakOidcClientSecret?: secretsmanager.Secret;
+
   constructor(scope: Construct, id: string, props: SecretsManagerProps) {
     super(scope, id);
 
@@ -66,5 +71,15 @@ export class TakSecretsManager extends Construct {
       encryptionKey: props.kmsKey,
       removalPolicy: removalPolicy
     });
+
+    // Create WebTAK OIDC client secret if WebTAK OIDC is enabled
+    if (props.contextConfig.webtak?.enableOidc) {
+      this.webTakOidcClientSecret = new secretsmanager.Secret(this, 'WebTakOidcClientSecret', {
+        secretName: `${stackName}/TAK-Server/WebTAK-OIDC-Client-Secret`,
+        description: `WebTAK OIDC Client Secret`,
+        encryptionKey: props.kmsKey,
+        removalPolicy: removalPolicy
+      });
+    }
   }
 }

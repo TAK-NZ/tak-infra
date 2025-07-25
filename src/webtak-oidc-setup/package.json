@@ -1,0 +1,12 @@
+{
+  "name": "webtak-oidc-setup",
+  "version": "1.0.0",
+  "description": "WebTAK OIDC setup Lambda function",
+  "main": "index.js",
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.848.0",
+    "axios": "^1.7.7",
+    "form-data": "^4.0.1",
+    "dotenv": "^16.4.5"
+  }
+}

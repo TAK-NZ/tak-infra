@@ -64,6 +64,24 @@ export interface SecretsConfig {
      * Federate Certificate Authority (PEM) secret
      */
     federateCACertificate?: secretsmanager.ISecret;
+
+    /**
+     * WebTAK OIDC configuration
+     */
+    webTakOidc?: {
+      clientId: string;
+      clientSecret: string;
+      issuer: string;
+      authorizeUrl: string;
+      tokenUrl: string;
+      userInfoUrl: string;
+      jwksUri: string;
+    };
+
+    /**
+     * WebTAK OIDC client secret (stored in Secrets Manager)
+     */
+    webTakOidcClientSecret?: secretsmanager.ISecret;
   };
 }
 
