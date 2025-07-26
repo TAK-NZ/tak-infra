@@ -139,7 +139,7 @@ describe('WebTakOidcSetup', () => {
           PROVIDER_NAME: 'TAK-WebTAK',
           APPLICATION_NAME: 'WebTAK',
           APPLICATION_SLUG: 'tak-webtak',
-          LAUNCH_URL: 'https://ops.tak.nz',
+          LAUNCH_URL: 'https://ops.tak.nz/login/auth',
           OPEN_IN_NEW_TAB: 'true',
           APPLICATION_DESCRIPTION: 'Web-based geospatial collaboration platform (Legacy system).',
         },

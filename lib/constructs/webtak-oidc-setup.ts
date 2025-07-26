@@ -38,7 +38,7 @@ export class WebTakOidcSetup extends Construct {
     const applicationSlug = webTakConfig?.applicationSlug || 'tak-webtak';
     const openInNewTab = webTakConfig?.openInNewTab ?? true;
     const description = webTakConfig?.description || 'Web-based geospatial collaboration platform (Legacy system).';
-    const redirectUri = `${webTakUrl}/login/redirect`;
+    const redirectUris = [`${webTakUrl}:8446/login/redirect`, `${webTakUrl}/login/redirect`];
 
     // Create Lambda function for Authentik OIDC setup
     const setupLambda = new nodejs.NodejsFunction(this, 'SetupLambda', {
@@ -69,8 +69,8 @@ export class WebTakOidcSetup extends Construct {
         PROVIDER_NAME: providerName,
         APPLICATION_NAME: applicationName,
         APPLICATION_SLUG: applicationSlug,
-        REDIRECT_URIS: JSON.stringify([redirectUri]),
-        LAUNCH_URL: webTakUrl,
+        REDIRECT_URIS: JSON.stringify(redirectUris),
+        LAUNCH_URL: `${webTakUrl}/login/auth`,
         OPEN_IN_NEW_TAB: openInNewTab ? 'true' : 'false',
         APPLICATION_DESCRIPTION: description,
         ...(webTakConfig?.authenticationFlowName ? { AUTHENTICATION_FLOW_NAME: webTakConfig.authenticationFlowName } : {}),
@@ -125,8 +125,8 @@ export class WebTakOidcSetup extends Construct {
         providerName: providerName,
         applicationName: applicationName,
         applicationSlug: applicationSlug,
-        redirectUris: JSON.stringify([redirectUri]),
-        launchUrl: webTakUrl,
+        redirectUris: JSON.stringify(redirectUris),
+        launchUrl: `${webTakUrl}/login/auth`,
         groupName: webTakConfig?.groupName || '',
         UpdateTimestamp: Date.now().toString()
       },
