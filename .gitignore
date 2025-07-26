@@ -12,6 +12,8 @@ node_modules
 !cloudformation/**/*.js
 # Keep docker container scripts (intentional JS files)
 !docker-container/**/*.js
+# Keep Lambda function source files
+!src/**/*.js
 
 # CDK asset staging directory
 .cdk.staging
