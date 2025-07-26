@@ -48,7 +48,8 @@
         "letsEncryptMode": "staging",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true
+        "enableCloudWatchMetrics": true,
+        "ldapGroupPrefix": "tak_"
       },
       "ecr": {
         "imageRetentionCount": 5,
@@ -58,6 +59,21 @@
         "removalPolicy": "DESTROY",
         "enableDetailedLogging": true,
         "enableContainerInsights": false
+      },
+      "webtak": {
+        "enableOidc": true,
+        "providerName": "TAK-WebTAK",
+        "applicationName": "WebTAK",
+        "applicationSlug": "tak-webtak",
+        "openInNewTab": true,
+        "authenticationFlowName": "",
+        "authorizationFlowName": "default-provider-authorization-implicit-consent",
+        "invalidationFlowName": "default-provider-invalidation-flow",
+        "groupName": "Team Awareness Kit",
+        "description": "Web-based geospatial collaboration platform (Legacy system).",
+        "iconPath": "src/webtak-oidc-setup/tak-logo.png",
+        "signingKeyName": "authentik Self-signed Certificate",
+        "useTakServerLoginPage": false
       }
     },
     "prod": {
@@ -91,7 +107,8 @@
         "letsEncryptMode": "production",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true
+        "enableCloudWatchMetrics": true,
+        "ldapGroupPrefix": "tak_"
       },
       "ecr": {
         "imageRetentionCount": 20,
@@ -101,6 +118,21 @@
         "removalPolicy": "RETAIN",
         "enableDetailedLogging": false,
         "enableContainerInsights": true
+      },
+      "webtak": {
+        "enableOidc": true,
+        "providerName": "TAK-WebTAK",
+        "applicationName": "WebTAK",
+        "applicationSlug": "tak-webtak",
+        "openInNewTab": true,
+        "authenticationFlowName": "",
+        "authorizationFlowName": "default-provider-authorization-implicit-consent",
+        "invalidationFlowName": "default-provider-invalidation-flow",
+        "groupName": "Team Awareness Kit",
+        "description": "Web-based geospatial collaboration platform (Legacy system).",
+        "iconPath": "src/webtak-oidc-setup/tak-logo.png",
+        "signingKeyName": "authentik Self-signed Certificate",
+        "useTakServerLoginPage": false
       }
     },
     "tak-defaults": {

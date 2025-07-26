@@ -49,6 +49,22 @@ update_test_files() {
 # Update test files before running tests
 update_test_files
 
+# Validate OAuth TrustAllCerts attribute
+validate_oauth_trustallcerts() {
+    local xml_file="$1"
+    
+    # Check if TrustAllCerts environment variable is set to true
+    if [[ "${TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts,,}" == "true" ]]; then
+        # Verify the attribute exists in the XML
+        if ! grep -q 'trustAllCerts="true"' "$xml_file"; then
+            echo "Missing trustAllCerts='true' attribute in OAuth authServer element"
+            return 1
+        fi
+    fi
+    
+    return 0
+}
+
 # Validate mandatory sections function
 validate_mandatory_sections() {
     local xml_file="$1"
@@ -159,7 +175,7 @@ run_test() {
     # Run the script with custom output path
     if bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > test_output.log 2>&1; then
         # Check for mandatory sections first
-        if validate_mandatory_sections "$TEST_DIR/CoreConfig.xml"; then
+        if validate_mandatory_sections "$TEST_DIR/CoreConfig.xml" && validate_oauth_trustallcerts "$TEST_DIR/CoreConfig.xml"; then
             # Validate the generated XML
             if cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1; then
                 echo "✅ PASS: $test_name"
@@ -187,6 +203,7 @@ run_test() {
     # Unset test variables
     unset TAKSERVER_QuickConnect_LetsEncrypt_Domain
     unset TAKSERVER_CoreConfig_OAuthServer_Name
+    unset TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts
     unset TAKSERVER_CoreConfig_Federation_EnableFederation
     unset TAKSERVER_CoreConfig_Auth_LDAP_Userstring
     unset TAKSERVER_CoreConfig_Network_Connector_8443_EnableAdminUI
@@ -257,7 +274,19 @@ run_test "Boolean Variations" \
     "TAKSERVER_CoreConfig_Auth_X509addAnonymous=False" \
     "TAKSERVER_CoreConfig_Federation_EnableFederation=True"
 
-# Test 10: LDAP groupprefix and groupNameExtractorRegex attributes
+# Test 10: OAuth with TrustAllCerts
+run_test "OAuth with TrustAllCerts" \
+    "TAKSERVER_CoreConfig_OAuthServer_Name=TrustAllTest" \
+    "TAKSERVER_CoreConfig_OAuthServer_Issuer=https://oauth.example.com" \
+    "TAKSERVER_CoreConfig_OAuthServer_ClientId=trust-client" \
+    "TAKSERVER_CoreConfig_OAuthServer_Secret=trust-secret" \
+    "TAKSERVER_CoreConfig_OAuthServer_RedirectUri=https://tak.example.com/oauth" \
+    "TAKSERVER_CoreConfig_OAuthServer_Scope=openid" \
+    "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint=https://oauth.example.com/auth" \
+    "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint=https://oauth.example.com/token" \
+    "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts=true"
+
+# Test 11: LDAP groupprefix and groupNameExtractorRegex attributes
 run_test "LDAP Group Attributes" \
     "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix=tak_" \
     "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex=^tak_(.*)$"

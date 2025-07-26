@@ -39,6 +39,7 @@ export interface ContextEnvironmentConfig {
     letsEncryptEmail?: string;
     enableFederation?: boolean;
     enableCloudWatchMetrics?: boolean;
+    ldapGroupPrefix?: string;
   };
   ecr: {
     imageRetentionCount: number;
@@ -51,5 +52,20 @@ export interface ContextEnvironmentConfig {
   };
   docker?: {
     takImageTag?: string;
+  };
+  webtak?: {
+    enableOidc?: boolean;
+    providerName?: string;
+    applicationName?: string;
+    applicationSlug?: string;
+    openInNewTab?: boolean;
+    authenticationFlowName?: string;
+    authorizationFlowName?: string;
+    invalidationFlowName?: string;
+    groupName?: string;
+    description?: string;
+    iconPath?: string;
+    signingKeyName?: string;
+    useTakServerLoginPage?: boolean;
   };
 }

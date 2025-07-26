@@ -400,7 +400,28 @@ export class TakServer extends Construct {
         TAKSERVER_QuickConnect_LetsEncrypt_Domain: `${props.contextConfig.takserver.servicename}.${Fn.importValue(props.network.hostedZoneName)}`,
         TAKSERVER_QuickConnect_LetsEncrypt_CertType: props.contextConfig.takserver.letsEncryptMode || 'staging',
         TAKSERVER_QuickConnect_LetsEncrypt_Email: props.contextConfig.takserver.letsEncryptEmail || 'admin@tak.nz',
-        TAKSERVER_CoreConfig_Network_CloudwatchEnable: props.contextConfig.takserver.enableCloudWatchMetrics?.toString() || 'false'
+        TAKSERVER_CoreConfig_Network_CloudwatchEnable: props.contextConfig.takserver.enableCloudWatchMetrics?.toString() || 'false',
+        // LDAP Group Prefix Configuration
+        ...(props.contextConfig.takserver.ldapGroupPrefix && {
+          TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix: `cn=${props.contextConfig.takserver.ldapGroupPrefix}`,
+          TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex: `cn=${props.contextConfig.takserver.ldapGroupPrefix}(.*?)(?:,|$)`
+        }),
+        // WebTAK OIDC Configuration
+        ...(props.contextConfig.webtak?.enableOidc && props.secrets.takserver.webTakOidc && {
+          TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage: (props.contextConfig.webtak?.useTakServerLoginPage ?? true).toString(),
+          TAKSERVER_CoreConfig_OAuth_UsernameClaim: 'preferred_username',
+          //TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache: 'true',
+          //TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts: 'false',
+          TAKSERVER_CoreConfig_OAuthServer_Name: props.contextConfig.takserver.branding === 'tak-nz' ? 'TAK.NZ Account' : 'SSO Account',
+          TAKSERVER_CoreConfig_OAuthServer_Scope: 'openid profile',
+          TAKSERVER_CoreConfig_OAuthServer_Issuer: '/opt/tak/certs/files/oauth-public-key.pem',
+          TAKSERVER_CoreConfig_OAuthServer_JWKS: props.secrets.takserver.webTakOidc.jwksUri,
+          TAKSERVER_CoreConfig_OAuthServer_ClientId: props.secrets.takserver.webTakOidc.clientId,
+          TAKSERVER_CoreConfig_OAuthServer_RedirectUri: `https://${props.contextConfig.takserver.servicename}.${Fn.importValue(props.network.hostedZoneName)}/login/redirect`,
+          TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint: props.secrets.takserver.webTakOidc.authorizeUrl,
+          TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint: props.secrets.takserver.webTakOidc.tokenUrl
+          
+        })
       },
       secrets: {
         PostgresUsername: ecs.Secret.fromSecretsManager(props.secrets.database, 'username'),
@@ -408,6 +429,10 @@ export class TakServer extends Construct {
         ...(props.secrets.takserver.ldapServiceAccount && {
           LDAP_Username: ecs.Secret.fromSecretsManager(props.secrets.takserver.ldapServiceAccount, 'username'),
           LDAP_Password: ecs.Secret.fromSecretsManager(props.secrets.takserver.ldapServiceAccount, 'password')
+        }),
+        // WebTAK OIDC Client Secret
+        ...(props.contextConfig.webtak?.enableOidc && props.secrets.takserver.webTakOidcClientSecret && {
+          TAKSERVER_CoreConfig_OAuthServer_Secret: ecs.Secret.fromSecretsManager(props.secrets.takserver.webTakOidcClientSecret)
         })
       },
       healthCheck: {

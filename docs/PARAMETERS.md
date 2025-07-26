@@ -191,6 +191,23 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `enableDetailedLogging` | Enable detailed CloudWatch logging | `true` | `false` |
 | `enableContainerInsights` | Enable ECS Container Insights | `false` | `true` |
 
+### **WebTAK OIDC Configuration**
+| Parameter | Description | dev-test | prod |
+|-----------|-------------|----------|------|
+| `enableOidc` | Enable WebTAK OIDC integration | `true` | `true` |
+| `providerName` | OIDC provider name in Authentik | `TAK-WebTAK` | `TAK-WebTAK` |
+| `applicationName` | Application name in Authentik | `WebTAK` | `WebTAK` |
+| `applicationSlug` | Application slug for URLs | `tak-webtak` | `tak-webtak` |
+| `useTakServerLoginPage` | Use TAK Server login page | `false` | `false` |
+| `openInNewTab` | Open application in new tab | `true` | `true` |
+| `authenticationFlowName` | Authentik authentication flow | `""` | `""` |
+| `authorizationFlowName` | Authentik authorization flow | `default-provider-authorization-implicit-consent` | `default-provider-authorization-implicit-consent` |
+| `invalidationFlowName` | Authentik invalidation flow | `default-provider-invalidation-flow` | `default-provider-invalidation-flow` |
+| `groupName` | LDAP group for WebTAK access | `Team Awareness Kit` | `Team Awareness Kit` |
+| `description` | Application description | `Web-based geospatial collaboration platform (Legacy system).` | `Web-based geospatial collaboration platform (Legacy system).` |
+| `iconPath` | Path to application icon | `src/webtak-oidc-setup/tak-logo.png` | `src/webtak-oidc-setup/tak-logo.png` |
+| `signingKeyName` | Authentik signing key name | `authentik Self-signed Certificate` | `authentik Self-signed Certificate` |
+
 ---
 
 ## **Security Considerations**

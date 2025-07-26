@@ -44,6 +44,8 @@ export const AUTH_EXPORT_NAMES = {
   LDAP_BASE_DN: 'LdapBaseDn',
   LDAP_SERVICE_USER_SECRET: 'AuthentikLdapServiceUserArn',
   LDAPS_ENDPOINT: 'LdapsEndpoint',
+  AUTHENTIK_ADMIN_SECRET: 'AuthentikAdminTokenArn',
+  AUTHENTIK_URL: 'AuthentikUrl',
 } as const;
 
 /**

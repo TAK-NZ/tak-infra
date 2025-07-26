@@ -6,6 +6,8 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as kms from 'aws-cdk-lib/aws-kms';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as nodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 
 // Construct imports
 import { TakSecretsManager } from './constructs/secrets-manager';
@@ -15,6 +17,7 @@ import { SecurityGroups } from './constructs/security-groups';
 import { Elb } from './constructs/elb';
 import { Route53 } from './constructs/route53';
 import { TakServer } from './constructs/tak-server';
+import { WebTakOidcSetup } from './constructs/webtak-oidc-setup';
 
 // Utility imports
 import { createBaseImportValue, BASE_EXPORT_NAMES, createAuthImportValue, AUTH_EXPORT_NAMES } from './cloudformation-imports';
@@ -207,6 +210,32 @@ export class TakInfraStack extends cdk.Stack {
       Fn.importValue(createAuthImportValue(stackNameComponent, AUTH_EXPORT_NAMES.LDAP_SERVICE_USER_SECRET))
     );
 
+    // Import Authentik admin secret from auth-infra
+    const authentikAdminSecret = secretsmanager.Secret.fromSecretCompleteArn(
+      this, 'ImportedAuthentikAdminSecret',
+      Fn.importValue(createAuthImportValue(stackNameComponent, AUTH_EXPORT_NAMES.AUTHENTIK_ADMIN_SECRET))
+    );
+
+    // Import Authentik URL from auth-infra
+    const authentikUrl = Fn.importValue(createAuthImportValue(stackNameComponent, AUTH_EXPORT_NAMES.AUTHENTIK_URL));
+
+    // Set up WebTAK OIDC if enabled
+    let webTakOidcSetup: WebTakOidcSetup | undefined;
+    if (envConfig.webtak?.enableOidc) {
+      // Use the same URL as TakServiceUrl
+      const webTakUrl = route53.getServiceUrl();
+      
+      webTakOidcSetup = new WebTakOidcSetup(this, 'WebTakOidcSetup', {
+        stackConfig: envConfig,
+        authentikAdminSecret,
+        authentikUrl,
+        webTakUrl,
+        webTakOidcClientSecret: takSecrets.webTakOidcClientSecret
+      });
+
+
+    }
+
     // Secrets configuration
     const secrets: SecretsConfig = {
       database: database.masterSecret,
@@ -214,7 +243,17 @@ export class TakInfraStack extends cdk.Stack {
         adminCertificate: takSecrets.adminCertificate,
         federateCACertificate: takSecrets.federateCACertificate,
         ldapServiceAccount: ldapServiceAccountSecret,
-        oauthConfig: undefined // Will be set if OAuth is configured
+        oauthConfig: undefined, // Will be set if OAuth is configured
+        webTakOidc: webTakOidcSetup ? {
+          clientId: webTakOidcSetup.clientId,
+          clientSecret: webTakOidcSetup.clientSecret,
+          issuer: webTakOidcSetup.issuer,
+          authorizeUrl: webTakOidcSetup.authorizeUrl,
+          tokenUrl: webTakOidcSetup.tokenUrl,
+          userInfoUrl: webTakOidcSetup.userInfoUrl,
+          jwksUri: webTakOidcSetup.jwksUri
+        } : undefined,
+        webTakOidcClientSecret: takSecrets.webTakOidcClientSecret
       }
     };
 
@@ -325,5 +364,26 @@ export class TakInfraStack extends cdk.Stack {
       description: 'TAK Service fully qualified hostname (without https://)',
       exportName: `${resolvedStackName}-TakServiceName`
     });
+
+    // WebTAK OIDC outputs (if enabled)
+    if (webTakOidcSetup) {
+      new CfnOutput(this, 'WebTakOidcClientId', {
+        value: webTakOidcSetup.clientId,
+        description: 'WebTAK OIDC Client ID',
+        exportName: `${resolvedStackName}-WebTakOidcClientId`
+      });
+
+      new CfnOutput(this, 'WebTakOidcIssuer', {
+        value: webTakOidcSetup.issuer,
+        description: 'WebTAK OIDC Issuer URL',
+        exportName: `${resolvedStackName}-WebTakOidcIssuer`
+      });
+
+      new CfnOutput(this, 'WebTakOidcAuthorizeUrl', {
+        value: webTakOidcSetup.authorizeUrl,
+        description: 'WebTAK OIDC Authorization URL',
+        exportName: `${resolvedStackName}-WebTakOidcAuthorizeUrl`
+      });
+    }
   }
 }

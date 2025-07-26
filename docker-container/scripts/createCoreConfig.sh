@@ -91,6 +91,29 @@ declare -A XPATH_MAPPINGS=(
     ["TAKSERVER_CoreConfig_Auth_Oauth_OauthUseGroupCache"]="/Configuration/auth/oauth/@oauthUseGroupCache"
     ["TAKSERVER_CoreConfig_Auth_Oauth_GroupsClaim"]="/Configuration/auth/oauth/@groupsClaim"
     ["TAKSERVER_CoreConfig_Auth_Oauth_UsernameClaim"]="/Configuration/auth/oauth/@usernameClaim"
+    ["TAKSERVER_CoreConfig_OAuth_OauthAddAnonymous"]="/Configuration/auth/oauth/@oauthAddAnonymous"
+    ["TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache"]="/Configuration/auth/oauth/@oauthUseGroupCache"
+    ["TAKSERVER_CoreConfig_OAuth_LoginWithEmail"]="/Configuration/auth/oauth/@loginWithEmail"
+    ["TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage"]="/Configuration/auth/oauth/@useTakServerLoginPage"
+    ["TAKSERVER_CoreConfig_OAuth_ReadOnlyGroup"]="/Configuration/auth/oauth/@readOnlyGroup"
+    ["TAKSERVER_CoreConfig_OAuth_ReadGroupSuffix"]="/Configuration/auth/oauth/@readGroupSuffix"
+    ["TAKSERVER_CoreConfig_OAuth_WriteGroupSuffix"]="/Configuration/auth/oauth/@writeGroupSuffix"
+    ["TAKSERVER_CoreConfig_OAuth_GroupsClaim"]="/Configuration/auth/oauth/@groupsClaim"
+    ["TAKSERVER_CoreConfig_OAuth_UsernameClaim"]="/Configuration/auth/oauth/@usernameClaim"
+    ["TAKSERVER_CoreConfig_OAuth_Groupprefix"]="/Configuration/auth/oauth/@groupprefix"
+    
+    # OAuth Server settings
+    ["TAKSERVER_CoreConfig_OAuthServer_Name"]="/Configuration/auth/oauth/authServer/@name"
+    ["TAKSERVER_CoreConfig_OAuthServer_Issuer"]="/Configuration/auth/oauth/authServer/@issuer"
+    ["TAKSERVER_CoreConfig_OAuthServer_ClientId"]="/Configuration/auth/oauth/authServer/@clientId"
+    ["TAKSERVER_CoreConfig_OAuthServer_Secret"]="/Configuration/auth/oauth/authServer/@secret"
+    ["TAKSERVER_CoreConfig_OAuthServer_RedirectUri"]="/Configuration/auth/oauth/authServer/@redirectUri"
+    ["TAKSERVER_CoreConfig_OAuthServer_Scope"]="/Configuration/auth/oauth/authServer/@scope"
+    ["TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint"]="/Configuration/auth/oauth/authServer/@authEndpoint"
+    ["TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint"]="/Configuration/auth/oauth/authServer/@tokenEndpoint"
+    ["TAKSERVER_CoreConfig_OAuthServer_AccessTokenName"]="/Configuration/auth/oauth/authServer/@accessTokenName"
+    ["TAKSERVER_CoreConfig_OAuthServer_RefreshTokenName"]="/Configuration/auth/oauth/authServer/@refreshTokenName"
+    ["TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts"]="/Configuration/auth/oauth/authServer/@trustAllCerts"
 )
 
 # Helper function to get XPath for an environment variable
@@ -237,6 +260,13 @@ check_existing_file() {
     fi
 }
 
+# Convert XPath to namespace-aware version using local-name()
+namespace_aware_xpath() {
+    local xpath="$1"
+    # Convert /Configuration/element to /*[local-name()='Configuration']/*[local-name()='element']
+    echo "$xpath" | sed -E 's|/([^/@\[]+)|/*[local-name()="\1"]|g'
+}
+
 # Function to safely update XML with error handling
 safe_xml_update() {
     local xpath="$1"
@@ -244,28 +274,28 @@ safe_xml_update() {
     local file="$3"
     local error_file="/tmp/xmlstarlet_error.log"
     
+    # Convert to namespace-aware XPath
+    local ns_xpath=$(namespace_aware_xpath "$xpath")
+    
     # Check if the target node exists
-    if ! xmlstarlet sel -t -v "count($xpath)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+    if ! xmlstarlet sel -t -v "count($ns_xpath)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
         echo "Warning: XPath $xpath does not exist in the configuration file"
         echo "Will attempt to create the necessary structure"
-        
-        # Try to determine parent path and create it
-        local parent_path=$(echo "$xpath" | sed -E 's|/[^/]+$||')
-        local node_name=$(echo "$xpath" | sed -E 's|.*/([^/]+)$|\1|' | sed -E 's|@||')
         
         if [[ "$xpath" == */\@* ]]; then
             # This is an attribute, try to create parent element
             local element_path=$(echo "$xpath" | sed -E 's|/@[^/]+$||')
             local attr_name=$(echo "$xpath" | sed -E 's|.*/@([^/]+)$|\1|')
+            local ns_element_path=$(namespace_aware_xpath "$element_path")
             
             # Check if parent element exists
-            if ! xmlstarlet sel -t -v "count($element_path)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+            if ! xmlstarlet sel -t -v "count($ns_element_path)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
                 echo "Warning: Parent element for $xpath does not exist, cannot update"
                 return 1
             fi
             
             # Add the attribute
-            if ! xmlstarlet ed --inplace -s "$element_path" -t attr -n "$attr_name" -v "$value" "$file" 2>"$error_file"; then
+            if ! xmlstarlet ed --inplace -s "$ns_element_path" -t attr -n "$attr_name" -v "$value" "$file" 2>"$error_file"; then
                 echo "Warning: Failed to create attribute $attr_name"
                 echo "xmlstarlet error:"
                 cat "$error_file"
@@ -276,7 +306,7 @@ safe_xml_update() {
     fi
     
     # Update the existing node
-    if ! xmlstarlet ed --inplace -u "$xpath" -v "$value" "$file" 2>"$error_file"; then
+    if ! xmlstarlet ed --inplace -u "$ns_xpath" -v "$value" "$file" 2>"$error_file"; then
         echo "Warning: Failed to update $xpath in configuration file"
         echo "xmlstarlet error:"
         cat "$error_file"
@@ -295,25 +325,29 @@ update_array_element() {
     local file="$6"            # File to update
     local error_file="/tmp/xmlstarlet_error.log"
     
+    # Convert to namespace-aware XPath
+    local ns_base_xpath=$(namespace_aware_xpath "$base_xpath")
+    
     # Check if the element exists
-    if xmlstarlet sel -t -v "count($base_xpath[@$id_attr='$id_value'])" "$file" 2>/dev/null | grep -q "^0$"; then
+    if xmlstarlet sel -t -v "count($ns_base_xpath[@$id_attr='$id_value'])" "$file" 2>/dev/null | grep -q "^0$"; then
         # Element doesn't exist, try to create it
         echo "Array element $base_xpath[@$id_attr='$id_value'] not found, attempting to create it"
         
         # Get parent element path
         local parent_path=$(echo "$base_xpath" | sed -E 's|/[^/]+$||')
         local element_name=$(echo "$base_xpath" | sed -E 's|.*/([^/]+)$|\1|')
+        local ns_parent_path=$(namespace_aware_xpath "$parent_path")
         
         # Check if parent exists
-        if ! xmlstarlet sel -t -v "count($parent_path)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+        if ! xmlstarlet sel -t -v "count($ns_parent_path)" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
             echo "Warning: Parent element $parent_path does not exist, cannot create array element"
             return 1
         fi
         
         # Create the element with identifier attribute
-        if ! xmlstarlet ed --inplace -s "$parent_path" -t elem -n "$element_name" \
-                -i "$parent_path/$element_name[last()]" -t attr -n "$id_attr" -v "$id_value" \
-                -i "$parent_path/$element_name[last()]" -t attr -n "$target_attr" -v "$new_value" \
+        if ! xmlstarlet ed --inplace -s "$ns_parent_path" -t elem -n "$element_name" \
+                -i "$ns_parent_path/$element_name[last()]" -t attr -n "$id_attr" -v "$id_value" \
+                -i "$ns_parent_path/$element_name[last()]" -t attr -n "$target_attr" -v "$new_value" \
                 "$file" 2>"$error_file"; then
             echo "Warning: Failed to create array element $base_xpath[@$id_attr='$id_value']"
             echo "xmlstarlet error:"
@@ -326,7 +360,7 @@ update_array_element() {
     fi
     
     # Update the existing element
-    if ! xmlstarlet ed --inplace -u "$base_xpath[@$id_attr='$id_value']/@$target_attr" -v "$new_value" "$file" 2>"$error_file"; then
+    if ! xmlstarlet ed --inplace -u "$ns_base_xpath[@$id_attr='$id_value']/@$target_attr" -v "$new_value" "$file" 2>"$error_file"; then
         echo "Warning: Failed to update array element $base_xpath[@$id_attr='$id_value']/@$target_attr"
         echo "xmlstarlet error:"
         cat "$error_file"
@@ -572,6 +606,51 @@ if [[ -n "$EXISTING_FILE" ]]; then
     
     if ! safe_xml_update "/Configuration/auth/ldap/@serviceAccountCredential" "${LDAP_Password}" "$OUTPUT_FILE"; then
         echo "Warning: Failed to update LDAP password, continuing with existing value"
+    fi
+    
+    # Always recreate OAuth section from environment variables (ignore existing config)
+    oauth_server_name=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Name" "")
+    
+    # Remove existing OAuth section if it exists
+    if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'])" "$OUTPUT_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+        echo "Removing existing OAuth section to recreate from environment variables"
+        xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']" "$OUTPUT_FILE" 2>/dev/null
+    fi
+    
+    # Create OAuth section if OAuth server is configured
+    if [[ -n "$oauth_server_name" ]]; then
+        echo "Creating OAuth section from environment variables"
+        
+        # Create OAuth element using xmlstarlet
+        if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='auth']" -t elem -n "oauth" "$OUTPUT_FILE" 2>/dev/null; then
+            echo "Warning: Failed to create OAuth element"
+        else
+            # Add OAuth attributes
+            [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "oauthUseGroupCache" -v "true" "$OUTPUT_FILE" 2>/dev/null
+            [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_LoginWithEmail" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "loginWithEmail" -v "true" "$OUTPUT_FILE" 2>/dev/null
+            [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "useTakServerLoginPage" -v "true" "$OUTPUT_FILE" 2>/dev/null
+            [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "usernameClaim" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")" "$OUTPUT_FILE" 2>/dev/null
+            [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuth_Groupprefix" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "groupprefix" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuth_Groupprefix" "")" "$OUTPUT_FILE" 2>/dev/null
+            
+            # Create authServer element
+            if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']" -t elem -n "authServer" "$OUTPUT_FILE" 2>/dev/null; then
+                echo "Warning: Failed to create authServer element"
+            else
+                # Add authServer attributes
+                xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "name" -v "$oauth_server_name" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "issuer" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "clientId" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "secret" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "redirectUri" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "scope" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "authEndpoint" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "tokenEndpoint" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")" "$OUTPUT_FILE" 2>/dev/null
+                [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "trustAllCerts" -v "true" "$OUTPUT_FILE" 2>/dev/null
+                echo "OAuth section created successfully from environment variables"
+            fi
+        fi
+    else
+        echo "No OAuth server configured - OAuth section will not be created"
     fi
     
     # Apply environment-driven settings
