@@ -608,6 +608,30 @@ if [[ -n "$EXISTING_FILE" ]]; then
         echo "Warning: Failed to update LDAP password, continuing with existing value"
     fi
     
+    # Add OAuth section if OAuth server is configured and doesn't exist
+    oauth_server_name=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Name" "")
+    if [[ -n "$oauth_server_name" ]]; then
+        # Check if OAuth section already exists
+        if ! xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'])" "$OUTPUT_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+            echo "Creating OAuth section in existing configuration"
+            
+            # Extract OAuth section from template file
+            if xmlstarlet sel -t -c "/Configuration/auth/oauth" "$TEMP_FILE" 2>/dev/null > /tmp/oauth_section.xml; then
+                # Insert OAuth section into existing file after ldap element
+                if ! xmlstarlet ed --inplace -a "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='ldap']" -t elem -n "oauth_placeholder" "$OUTPUT_FILE" 2>/dev/null; then
+                    echo "Warning: Failed to create OAuth placeholder"
+                else
+                    # Replace placeholder with actual OAuth content
+                    sed -i "s|<oauth_placeholder/>|$(cat /tmp/oauth_section.xml | sed 's/&/\\&/g')|" "$OUTPUT_FILE"
+                    echo "OAuth section added successfully"
+                fi
+                rm -f /tmp/oauth_section.xml
+            else
+                echo "Warning: Failed to extract OAuth section from template"
+            fi
+        fi
+    fi
+    
     # Apply environment-driven settings
     for xpath in "${!ENV_DRIVEN_SETTINGS[@]}"; do
         env_var="${ENV_DRIVEN_SETTINGS[$xpath]}"
