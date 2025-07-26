@@ -615,20 +615,53 @@ if [[ -n "$EXISTING_FILE" ]]; then
         if ! xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'])" "$OUTPUT_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
             echo "Creating OAuth section in existing configuration"
             
-            # Extract OAuth section from template file
-            if xmlstarlet sel -t -c "/Configuration/auth/oauth" "$TEMP_FILE" 2>/dev/null > /tmp/oauth_section.xml; then
-                # Insert OAuth section into existing file after ldap element
-                if ! xmlstarlet ed --inplace -a "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='ldap']" -t elem -n "oauth_placeholder" "$OUTPUT_FILE" 2>/dev/null; then
-                    echo "Warning: Failed to create OAuth placeholder"
+            # Create OAuth element using xmlstarlet
+            if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='auth']" -t elem -n "oauth" "$OUTPUT_FILE" 2>/dev/null; then
+                echo "Warning: Failed to create OAuth element"
+            else
+                # Add OAuth attributes
+                [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "oauthUseGroupCache" -v "true" "$OUTPUT_FILE" 2>/dev/null
+                [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_LoginWithEmail" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "loginWithEmail" -v "true" "$OUTPUT_FILE" 2>/dev/null
+                [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "useTakServerLoginPage" -v "true" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "usernameClaim" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")" "$OUTPUT_FILE" 2>/dev/null
+                [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuth_Groupprefix" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "groupprefix" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuth_Groupprefix" "")" "$OUTPUT_FILE" 2>/dev/null
+                
+                # Create authServer element
+                if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']" -t elem -n "authServer" "$OUTPUT_FILE" 2>/dev/null; then
+                    echo "Warning: Failed to create authServer element"
                 else
-                    # Replace placeholder with actual OAuth content
-                    sed -i "s|<oauth_placeholder/>|$(cat /tmp/oauth_section.xml | sed 's/&/\\&/g')|" "$OUTPUT_FILE"
+                    # Add authServer attributes
+                    xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "name" -v "$oauth_server_name" "$OUTPUT_FILE" 2>/dev/null
+                    [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "issuer" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" "$OUTPUT_FILE" 2>/dev/null
+                    [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "clientId" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" "$OUTPUT_FILE" 2>/dev/null
+                    [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "secret" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" "$OUTPUT_FILE" 2>/dev/null
+                    [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "redirectUri" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" "$OUTPUT_FILE" 2>/dev/null
+                    [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "scope" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" "$OUTPUT_FILE" 2>/dev/null
+                    [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "authEndpoint" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" "$OUTPUT_FILE" 2>/dev/null
+                    [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "tokenEndpoint" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")" "$OUTPUT_FILE" 2>/dev/null
+                    [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "trustAllCerts" -v "true" "$OUTPUT_FILE" 2>/dev/null
                     echo "OAuth section added successfully"
                 fi
-                rm -f /tmp/oauth_section.xml
-            else
-                echo "Warning: Failed to extract OAuth section from template"
             fi
+        fi
+    fi
+    
+    # Update existing OAuth section attributes if OAuth is configured
+    if [[ -n "$oauth_server_name" ]]; then
+        # Check if OAuth section exists and update attributes
+        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'])" "$OUTPUT_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+            echo "Updating existing OAuth section attributes"
+            
+            # Update OAuth attributes
+            [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage" "false" "boolean")" == "true" ]] && safe_xml_update "/Configuration/auth/oauth/@useTakServerLoginPage" "true" "$OUTPUT_FILE"
+            [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")" ]] && safe_xml_update "/Configuration/auth/oauth/@usernameClaim" "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")" "$OUTPUT_FILE"
+            
+            # Update authServer attributes
+            [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" ]] && safe_xml_update "/Configuration/auth/oauth/authServer/@redirectUri" "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" "$OUTPUT_FILE"
+            [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" ]] && safe_xml_update "/Configuration/auth/oauth/authServer/@clientId" "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" "$OUTPUT_FILE"
+            [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" ]] && safe_xml_update "/Configuration/auth/oauth/authServer/@authEndpoint" "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" "$OUTPUT_FILE"
+            [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")" ]] && safe_xml_update "/Configuration/auth/oauth/authServer/@tokenEndpoint" "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")" "$OUTPUT_FILE"
+            [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" ]] && safe_xml_update "/Configuration/auth/oauth/authServer/@scope" "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" "$OUTPUT_FILE"
         fi
     fi
     

@@ -410,6 +410,7 @@ export class TakServer extends Construct {
         ...(props.contextConfig.webtak?.enableOidc && props.secrets.takserver.webTakOidc && {
           TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage: 'true',
           TAKSERVER_CoreConfig_OAuth_UsernameClaim: 'preferred_username',
+          TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache: 'true',
           TAKSERVER_CoreConfig_OAuthServer_Name: props.contextConfig.takserver.branding === 'tak-nz' ? 'TAK.NZ Account' : 'SSO Account',
           TAKSERVER_CoreConfig_OAuthServer_Scope: 'openid profile',
           TAKSERVER_CoreConfig_OAuthServer_Issuer: '/opt/tak/certs/files/oauth-public-key.pem',
@@ -417,7 +418,8 @@ export class TakServer extends Construct {
           TAKSERVER_CoreConfig_OAuthServer_ClientId: props.secrets.takserver.webTakOidc.clientId,
           TAKSERVER_CoreConfig_OAuthServer_RedirectUri: `https://${props.contextConfig.takserver.servicename}.${Fn.importValue(props.network.hostedZoneName)}/login/redirect`,
           TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint: props.secrets.takserver.webTakOidc.authorizeUrl,
-          TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint: props.secrets.takserver.webTakOidc.tokenUrl
+          TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint: props.secrets.takserver.webTakOidc.tokenUrl,
+          TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts: 'true'
         })
       },
       secrets: {
