@@ -213,6 +213,7 @@ npm run deploy:dev -- --context branding=generic
 - **[⚡ Quick Reference](docs/QUICK_REFERENCE.md)** - Fast deployment commands and environment comparison
 - **[⚙️ Configuration Guide](docs/PARAMETERS.md)** - Complete configuration management reference
 - **[🔧 TAK Server CoreConfig](docs/TAKSERVER_CORECONFIG.md)** - Dynamic environment variable configuration system
+- **[🔐 WebTAK OIDC Integration](docs/WEBTAK_OIDC.md)** - Single sign-on authentication setup with Authentik
 - **[🐳 Docker Image Strategy](docs/DOCKER_IMAGE_STRATEGY.md)** - Hybrid image strategy for fast CI/CD and flexible development
 
 ## Security Features
