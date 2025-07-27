@@ -608,35 +608,71 @@ if [[ -n "$EXISTING_FILE" ]]; then
         echo "Warning: Failed to update LDAP password, continuing with existing value"
     fi
     
-    # Always recreate OAuth section from environment variables (ignore existing config)
+    # Force re-apply all CDK environment variables and secrets on every restart
+    echo "Force applying all CDK environment variables to existing configuration"
+    
+    # Core infrastructure settings
+    [[ -n "$StackName" ]] && safe_xml_update "/Configuration/network/@cloudwatchName" "$StackName" "$OUTPUT_FILE"
+    
+    # LDAP settings from CDK
+    [[ -n "$LDAP_DN" ]] && safe_xml_update "/Configuration/auth/ldap/@userstring" "cn={username},ou=users,$LDAP_DN" "$OUTPUT_FILE"
+    [[ -n "$LDAP_DN" ]] && safe_xml_update "/Configuration/auth/ldap/@serviceAccountDN" "cn=ldapservice,ou=users,$LDAP_DN" "$OUTPUT_FILE"
+    [[ -n "$LDAP_DN" ]] && safe_xml_update "/Configuration/auth/ldap/@groupBaseRDN" "ou=groups,$LDAP_DN" "$OUTPUT_FILE"
+    [[ -n "$LDAP_DN" ]] && safe_xml_update "/Configuration/auth/ldap/@userBaseRDN" "ou=users,$LDAP_DN" "$OUTPUT_FILE"
+    
+    # LDAP Group Prefix Configuration from CDK
+    ldap_group_prefix=$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix" "")
+    if [[ -n "$ldap_group_prefix" ]]; then
+        echo "Applying LDAP group prefix: $ldap_group_prefix"
+        safe_xml_update "/Configuration/auth/ldap/@groupprefix" "$ldap_group_prefix" "$OUTPUT_FILE"
+    fi
+    
+    ldap_group_regex=$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex" "")
+    if [[ -n "$ldap_group_regex" ]]; then
+        echo "Applying LDAP group name extractor regex: $ldap_group_regex"
+        safe_xml_update "/Configuration/auth/ldap/@groupNameExtractorRegex" "$ldap_group_regex" "$OUTPUT_FILE"
+    fi
+    
+    # CloudWatch settings from CDK
+    cloudwatch_enable=$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false")
+    safe_xml_update "/Configuration/network/@cloudwatchEnable" "$cloudwatch_enable" "$OUTPUT_FILE"
+    
+    # Let's Encrypt settings from CDK
+    letsencrypt_domain=$(get_env_value "TAKSERVER_QuickConnect_LetsEncrypt_Domain" "")
+    if [[ -n "$letsencrypt_domain" ]]; then
+        safe_xml_update "/Configuration/network/connector[@port='8443']/@keystoreFile" "/opt/tak/certs/files/$letsencrypt_domain/letsencrypt.jks" "$OUTPUT_FILE"
+        safe_xml_update "/Configuration/network/connector[@port='8446']/@keystoreFile" "/opt/tak/certs/files/$letsencrypt_domain/letsencrypt.jks" "$OUTPUT_FILE"
+    fi
+    
+    # Always recreate OAuth section from CDK environment variables (ignore existing config)
     oauth_server_name=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Name" "")
     
     # Remove existing OAuth section if it exists
     if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'])" "$OUTPUT_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
-        echo "Removing existing OAuth section to recreate from environment variables"
+        echo "Removing existing OAuth section to recreate from CDK environment variables"
         xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']" "$OUTPUT_FILE" 2>/dev/null
     fi
     
-    # Create OAuth section if OAuth server is configured
+    # Create OAuth section if OAuth server is configured in CDK
     if [[ -n "$oauth_server_name" ]]; then
-        echo "Creating OAuth section from environment variables"
+        echo "Creating OAuth section from CDK environment variables"
         
         # Create OAuth element using xmlstarlet
         if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='auth']" -t elem -n "oauth" "$OUTPUT_FILE" 2>/dev/null; then
             echo "Warning: Failed to create OAuth element"
         else
-            # Add OAuth attributes
+            # Add OAuth attributes from CDK
             [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "oauthUseGroupCache" -v "true" "$OUTPUT_FILE" 2>/dev/null
             [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_LoginWithEmail" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "loginWithEmail" -v "true" "$OUTPUT_FILE" 2>/dev/null
             [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "useTakServerLoginPage" -v "true" "$OUTPUT_FILE" 2>/dev/null
             [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "usernameClaim" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")" "$OUTPUT_FILE" 2>/dev/null
             [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuth_Groupprefix" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth'][last()]" -t attr -n "groupprefix" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuth_Groupprefix" "")" "$OUTPUT_FILE" 2>/dev/null
             
-            # Create authServer element
+            # Create authServer element with CDK values
             if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']" -t elem -n "authServer" "$OUTPUT_FILE" 2>/dev/null; then
                 echo "Warning: Failed to create authServer element"
             else
-                # Add authServer attributes
+                # Add authServer attributes from CDK
                 xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "name" -v "$oauth_server_name" "$OUTPUT_FILE" 2>/dev/null
                 [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "issuer" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" "$OUTPUT_FILE" 2>/dev/null
                 [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "clientId" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" "$OUTPUT_FILE" 2>/dev/null
@@ -645,12 +681,14 @@ if [[ -n "$EXISTING_FILE" ]]; then
                 [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "scope" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" "$OUTPUT_FILE" 2>/dev/null
                 [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "authEndpoint" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" "$OUTPUT_FILE" 2>/dev/null
                 [[ -n "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "tokenEndpoint" -v "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")" "$OUTPUT_FILE" 2>/dev/null
+
                 [[ "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts" "false" "boolean")" == "true" ]] && xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='oauth']/*[local-name()='authServer'][last()]" -t attr -n "trustAllCerts" -v "true" "$OUTPUT_FILE" 2>/dev/null
-                echo "OAuth section created successfully from environment variables"
+                # Note: TAKSERVER_CoreConfig_OAuthServer_JWKS is used by getOIDCIssuerPubKey.sh, not CoreConfig.xml
+                echo "OAuth section created successfully from CDK environment variables"
             fi
         fi
     else
-        echo "No OAuth server configured - OAuth section will not be created"
+        echo "No OAuth server configured in CDK - OAuth section will not be created"
     fi
     
     # Apply environment-driven settings
