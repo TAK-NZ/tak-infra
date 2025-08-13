@@ -114,6 +114,18 @@ declare -A XPATH_MAPPINGS=(
     ["TAKSERVER_CoreConfig_OAuthServer_AccessTokenName"]="/Configuration/auth/oauth/authServer/@accessTokenName"
     ["TAKSERVER_CoreConfig_OAuthServer_RefreshTokenName"]="/Configuration/auth/oauth/authServer/@refreshTokenName"
     ["TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts"]="/Configuration/auth/oauth/authServer/@trustAllCerts"
+    
+    # Profile settings
+    ["TAKSERVER_CoreConfig_Profile_UseStreamingGroup"]="/Configuration/profile/@useStreamingGroup"
+    
+    # Locate settings
+    ["TAKSERVER_CoreConfig_Locate_Enabled"]="/Configuration/locate/@enabled"
+    ["TAKSERVER_CoreConfig_Locate_RequireLogin"]="/Configuration/locate/@requireLogin"
+    ["TAKSERVER_CoreConfig_Locate_CotType"]="/Configuration/locate/@cot-type"
+    ["TAKSERVER_CoreConfig_Locate_Group"]="/Configuration/locate/@group"
+    ["TAKSERVER_CoreConfig_Locate_Broadcast"]="/Configuration/locate/@broadcast"
+    ["TAKSERVER_CoreConfig_Locate_AddToMission"]="/Configuration/locate/@addToMission"
+    ["TAKSERVER_CoreConfig_Locate_Mission"]="/Configuration/locate/@mission"
 )
 
 # Helper function to get XPath for an environment variable
@@ -567,6 +579,18 @@ cat >> "$TEMP_FILE" << EOF
     <plugins/>
     <cluster/>
     <vbm/>
+    <profile$(add_attr "useStreamingGroup" "$(get_env_value "TAKSERVER_CoreConfig_Profile_UseStreamingGroup" "false" "boolean")" "false")/>
+EOF
+
+# Add locate element if group is provided (required by XSD)
+locate_group=$(get_env_value "TAKSERVER_CoreConfig_Locate_Group" "")
+if [[ -n "$locate_group" ]]; then
+    cat >> "$TEMP_FILE" << EOF
+    <locate$(add_attr "enabled" "$(get_env_value "TAKSERVER_CoreConfig_Locate_Enabled" "false" "boolean")" "false")$(add_attr "requireLogin" "$(get_env_value "TAKSERVER_CoreConfig_Locate_RequireLogin" "true" "boolean")" "true")$(add_attr "cot-type" "$(get_env_value "TAKSERVER_CoreConfig_Locate_CotType" "a-f-G")" "a-f-G") group="$locate_group"$(add_attr "broadcast" "$(get_env_value "TAKSERVER_CoreConfig_Locate_Broadcast" "true" "boolean")" "true")$(add_attr "addToMission" "$(get_env_value "TAKSERVER_CoreConfig_Locate_AddToMission" "true" "boolean")" "true")$(add_attr_always "mission" "$(get_env_value "TAKSERVER_CoreConfig_Locate_Mission" "")")/>
+EOF
+fi
+
+cat >> "$TEMP_FILE" << EOF
 </Configuration>
 EOF
 
