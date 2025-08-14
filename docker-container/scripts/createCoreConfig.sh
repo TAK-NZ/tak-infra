@@ -415,7 +415,7 @@ fi
 cat > "$TEMP_FILE" << EOF
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Configuration xmlns="http://bbn.com/marti/xml/config">
-    <network multicastTTL="5" serverId="${SERVER_ID}" version="${TAK_VERSION}" cloudwatchEnable="$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")" cloudwatchName="${StackName}"$(add_attr "allowAllOrigins" "$(get_env_value "TAKSERVER_CoreConfig_Network_AllowAllOrigins" "false" "boolean")" "false")$(add_attr "enableHSTS" "$(get_env_value "TAKSERVER_CoreConfig_Network_EnableHSTS" "true" "boolean")" "true")$(add_attr "MissionUseGroupsForContents" "$(get_env_value "TAKSERVER_CoreConfig_Network_MissionUseGroupsForContents" "false" "boolean")" "false")$(add_attr "MissionAllowGroupChange" "$(get_env_value "TAKSERVER_CoreConfig_Network_MissionAllowGroupChange" "false" "boolean")" "false")>
+    <network multicastTTL="5" serverId="${SERVER_ID}" version="${TAK_VERSION}" cloudwatchEnable="$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")" cloudwatchName="${StackName}"$(add_attr "allowAllOrigins" "$(get_env_value "TAKSERVER_CoreConfig_Network_AllowAllOrigins" "false" "boolean")" "false")$(add_attr "enableHSTS" "$(get_env_value "TAKSERVER_CoreConfig_Network_EnableHSTS" "true" "boolean")" "true") MissionUseGroupsForContents="$(get_env_value "TAKSERVER_CoreConfig_Network_MissionUseGroupsForContents" "false" "boolean")" MissionAllowGroupChange="$(get_env_value "TAKSERVER_CoreConfig_Network_MissionAllowGroupChange" "false" "boolean")">
         <input auth="$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Auth" "x509")" _name="stdssl" protocol="tls" port="8089" coreVersion="2"$(add_attr "archive" "$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Archive" "true" "boolean")" "true")/>
         <connector port="8443" _name="https" keystore="JKS" keystoreFile="/opt/tak/certs/files/${LETSENCRYPT_DOMAIN}/letsencrypt.jks" keystorePass="atakatak"$(add_attr "enableAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableAdminUI" "true" "boolean")" "false")$(add_attr "enableWebtak" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak" "true" "boolean")" "false")$(add_attr "enableNonAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableNonAdminUI" "true" "boolean")" "false")/>
         <connector port="8446" clientAuth="false" _name="cert_https" keystore="JKS" keystoreFile="/opt/tak/certs/files/${LETSENCRYPT_DOMAIN}/letsencrypt.jks" keystorePass="atakatak"$(add_attr "enableAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableAdminUI" "true" "boolean")" "false")$(add_attr "enableWebtak" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak" "true" "boolean")" "false")$(add_attr "enableNonAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableNonAdminUI" "true" "boolean")" "false")/>
@@ -501,7 +501,7 @@ cat >> "$TEMP_FILE" << EOF
         </qos>
     </filter>
     <buffer>
-        <queue$(add_attr "defaultCoreMaxPoolFactor" "$(get_env_value "TAKSERVER_CoreConfig_Queue_DefaultCoreMaxPoolFactor" "2")" "2")$(add_attr "missionCacheLockTimeoutMilliseconds" "$(get_env_value "TAKSERVER_CoreConfig_Queue_MissionCacheLockTimeoutMilliseconds" "500")" "500")>
+        <queue defaultCoreMaxPoolFactor="$(get_env_value "TAKSERVER_CoreConfig_Queue_DefaultCoreMaxPoolFactor" "2")" missionCacheLockTimeoutMilliseconds="$(get_env_value "TAKSERVER_CoreConfig_Queue_MissionCacheLockTimeoutMilliseconds" "500")">
             <priority/>
         </queue>
         <latestSA$(add_attr "enable" "$(get_env_value "TAKSERVER_CoreConfig_Buffer_LatestSA_Enable" "true" "boolean")" "false")/>
@@ -568,6 +568,7 @@ EOF
 EOF
     fi
 
+    # Add v1Tls elements (required by XSD schema)
     cat >> "$TEMP_FILE" << EOF
             <v1Tls tlsVersion="TLSv1.2"/>
             <v1Tls tlsVersion="TLSv1.3"/>
@@ -593,7 +594,7 @@ cat >> "$TEMP_FILE" << EOF
         </fileFilter>
     </federation>
     <plugins/>
-    <cluster$(add_attr "metricsIntervalSeconds" "$(get_env_value "TAKSERVER_CoreConfig_Cluster_MetricsIntervalSeconds" "2147483646")" "2147483646")/>
+    <cluster metricsIntervalSeconds="$(get_env_value "TAKSERVER_CoreConfig_Cluster_MetricsIntervalSeconds" "2147483646")"/>
     <vbm/>
     <profile$(add_attr "useStreamingGroup" "$(get_env_value "TAKSERVER_CoreConfig_Profile_UseStreamingGroup" "false" "boolean")" "false")/>
 EOF
