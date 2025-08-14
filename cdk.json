@@ -33,7 +33,7 @@
       },
       "ecs": {
         "taskCpu": 2048,
-        "taskMemory": 4096,
+        "taskMemory": 6144,
         "desiredCount": 1,
         "enableDetailedLogging": true,
         "enableEcsExec": true
@@ -42,7 +42,7 @@
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.4-RELEASE-19",
+        "version": "5.5-RELEASE-38",
         "buildRevision": 4,
         "useS3TAKServerConfigFile": false,
         "letsEncryptMode": "staging",
@@ -101,7 +101,7 @@
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.4-RELEASE-19",
+        "version": "5.5-RELEASE-38",
         "buildRevision": 4,
         "useS3TAKServerConfigFile": true,
         "letsEncryptMode": "production",
