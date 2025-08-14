@@ -36,7 +36,7 @@
         <xs:element ref="vbm" minOccurs="0"/>
         <xs:element ref="profile" minOccurs="0"/>
       </xs:all>
-      <xs:attribute name="forceLowConcurrency" type="xs:boolean" default="true"/>
+      <xs:attribute name="forceLowConcurrency" type="xs:boolean" default="false"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="network">
@@ -152,6 +152,8 @@
       <xs:attribute name="alwaysArchiveMissionCot" type="xs:boolean" default="false"/>
       <xs:attribute name="MissionCreateGroupsRegex" type="xs:string" use="optional"/>
       <xs:attribute name="MissionDeleteRequiresOwner" type="xs:boolean" default="false"/>
+      <xs:attribute name="MissionUseGroupsForContents" type="xs:boolean" default="false"/>
+      <xs:attribute name="MissionAllowGroupChange" type="xs:boolean" default="false"/>
     </xs:complexType>
   </xs:element>
 
@@ -293,6 +295,7 @@
       <xs:attribute name="defaultExecQueueSize" type="xs:int" default="1024"/>
       <xs:attribute name="defaultMaxPoolSize" type="xs:int" default="8"/>
       <xs:attribute name="defaultMaxPoolFactor" type="xs:int" default="2"/>
+      <xs:attribute name="defaultCoreMaxPoolFactor" type="xs:int" default="2"/>
       <xs:attribute name="messageWriteQueueSize" type="xs:int" default="32"/>
       <xs:attribute name="messageWriteExecutorQueueSize" type="xs:int" default="16384"/>
       <xs:attribute name="codecViewPendingCapacity" type="xs:int" default="2048"/>
@@ -339,6 +342,11 @@
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="groupDescriptionCacheSeconds" type="xs:int" default="300"/>
+      <xs:attribute name="missionCacheLockTimeoutMilliseconds" type="xs:int" default="500">
+       <xs:annotation>
+         <xs:documentation>Default timeout to acquire lock for get mission query.</xs:documentation>
+       </xs:annotation>
+      </xs:attribute>
     </xs:complexType>
   </xs:element>
 
@@ -936,6 +944,12 @@
                   <xs:attribute name="tlsVersion" type="xs:string" default="TLSv1.2"/>
                 </xs:complexType>
               </xs:element>
+              <xs:element name="federation-token-authentication" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                  <xs:attribute name="enabled" type="xs:boolean" default="false"/>
+                  <xs:attribute name="port" type="xs:int" default="9002"/>
+                </xs:complexType>
+              </xs:element>
             </xs:sequence>
             <xs:attribute name="port" type="xs:int" default="9000"/>
             <xs:attribute name="coreVersion" type="xs:int" default="2"/>
@@ -971,6 +985,8 @@
             <xs:attribute name="maxRetries" type="xs:int" default = "0" use="optional"/>
             <xs:attribute name="unlimitedRetries" type="xs:boolean" default="true"/>
             <xs:attribute name="connectionToken" type="xs:string" default=""/>
+            <xs:attribute name="useToken" type="xs:boolean" default="false"/>
+            <xs:attribute name="tokenType" type="xs:string" default=""/>
           </xs:complexType>
         </xs:element>
         
@@ -1084,7 +1100,17 @@
                 <xs:annotation>
                   <xs:documentation>How many hops a federate message can make</xs:documentation>
                 </xs:annotation>
-              </xs:attribute>	            	
+              </xs:attribute>	 
+              <xs:attribute name="tokenFederate" type="xs:boolean" use="optional" default="false">
+				<xs:annotation>
+				  <xs:documentation>If this federate represents a Federate Token</xs:documentation>
+				</xs:annotation>
+			  </xs:attribute>  
+			  <xs:attribute name="tokenExpiration" type="xs:long" use="optional">
+				<xs:annotation>
+				  <xs:documentation>Token Expiration MS</xs:documentation>
+				</xs:annotation>
+			  </xs:attribute>           	
             </xs:complexType>
           </xs:element>
         </xs:sequence>
@@ -1119,6 +1145,8 @@
                 </xs:annotation>
               </xs:attribute>	
               <xs:attribute name="maxHops" type="xs:int" default="-1"/>
+              <xs:attribute name="allowTokenAuth" type="xs:boolean" default="false"/>
+              <xs:attribute name="tokenAuthDuration" type="xs:long" default="-1"/>
             </xs:complexType>
           </xs:element>
         </xs:sequence>
@@ -1239,7 +1267,7 @@
       <xs:attribute name="natsClusterID" type="xs:string" default="takserver-nats-streaming" />
       <xs:attribute name="kubernetes" type="xs:boolean" default="false" />
       <xs:attribute name="cacheConfig" type="xs:boolean" default="true" />
-      <xs:attribute name="metricsIntervalSeconds" type="xs:int" default="5" />
+      <xs:attribute name="metricsIntervalSeconds" type="xs:int" default="2147483646" />
     </xs:complexType>
   </xs:element>
 

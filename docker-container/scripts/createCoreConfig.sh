@@ -77,6 +77,8 @@ declare -A XPATH_MAPPINGS=(
     ["TAKSERVER_CoreConfig_Federation_EnableFederation"]="/Configuration/federation/@enableFederation"
     ["TAKSERVER_CoreConfig_Federation_WebBaseUrl"]="/Configuration/federation/federation-server/@webBaseUrl"
     ["TAKSERVER_CoreConfig_Federation_Server_TLS_Context"]="/Configuration/federation/federation-server/@TLSVersion"
+    ["TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled"]="/Configuration/federation/federation-server/federation-token-authentication/@enabled"
+    ["TAKSERVER_CoreConfig_Federation_TokenAuth_Port"]="/Configuration/federation/federation-server/federation-token-authentication/@port"
     
     # Submission/Subscription settings
     ["TAKSERVER_CoreConfig_Submission_IgnoreStaleMessages"]="/Configuration/submission/@ignoreStaleMessages"
@@ -413,7 +415,7 @@ fi
 cat > "$TEMP_FILE" << EOF
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Configuration xmlns="http://bbn.com/marti/xml/config">
-    <network multicastTTL="5" serverId="${SERVER_ID}" version="${TAK_VERSION}" cloudwatchEnable="$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")" cloudwatchName="${StackName}"$(add_attr "allowAllOrigins" "$(get_env_value "TAKSERVER_CoreConfig_Network_AllowAllOrigins" "false" "boolean")" "false")$(add_attr "enableHSTS" "$(get_env_value "TAKSERVER_CoreConfig_Network_EnableHSTS" "true" "boolean")" "true")>
+    <network multicastTTL="5" serverId="${SERVER_ID}" version="${TAK_VERSION}" cloudwatchEnable="$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")" cloudwatchName="${StackName}"$(add_attr "allowAllOrigins" "$(get_env_value "TAKSERVER_CoreConfig_Network_AllowAllOrigins" "false" "boolean")" "false")$(add_attr "enableHSTS" "$(get_env_value "TAKSERVER_CoreConfig_Network_EnableHSTS" "true" "boolean")" "true")$(add_attr "MissionUseGroupsForContents" "$(get_env_value "TAKSERVER_CoreConfig_Network_MissionUseGroupsForContents" "false" "boolean")" "false")$(add_attr "MissionAllowGroupChange" "$(get_env_value "TAKSERVER_CoreConfig_Network_MissionAllowGroupChange" "false" "boolean")" "false")>
         <input auth="$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Auth" "x509")" _name="stdssl" protocol="tls" port="8089" coreVersion="2"$(add_attr "archive" "$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Archive" "true" "boolean")" "true")/>
         <connector port="8443" _name="https" keystore="JKS" keystoreFile="/opt/tak/certs/files/${LETSENCRYPT_DOMAIN}/letsencrypt.jks" keystorePass="atakatak"$(add_attr "enableAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableAdminUI" "true" "boolean")" "false")$(add_attr "enableWebtak" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak" "true" "boolean")" "false")$(add_attr "enableNonAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableNonAdminUI" "true" "boolean")" "false")/>
         <connector port="8446" clientAuth="false" _name="cert_https" keystore="JKS" keystoreFile="/opt/tak/certs/files/${LETSENCRYPT_DOMAIN}/letsencrypt.jks" keystorePass="atakatak"$(add_attr "enableAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableAdminUI" "true" "boolean")" "false")$(add_attr "enableWebtak" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak" "true" "boolean")" "false")$(add_attr "enableNonAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableNonAdminUI" "true" "boolean")" "false")/>
@@ -499,7 +501,7 @@ cat >> "$TEMP_FILE" << EOF
         </qos>
     </filter>
     <buffer>
-        <queue>
+        <queue$(add_attr "defaultCoreMaxPoolFactor" "$(get_env_value "TAKSERVER_CoreConfig_Queue_DefaultCoreMaxPoolFactor" "2")" "2")$(add_attr "missionCacheLockTimeoutMilliseconds" "$(get_env_value "TAKSERVER_CoreConfig_Queue_MissionCacheLockTimeoutMilliseconds" "500")" "500")>
             <priority/>
         </queue>
         <latestSA$(add_attr "enable" "$(get_env_value "TAKSERVER_CoreConfig_Buffer_LatestSA_Enable" "true" "boolean")" "false")/>
@@ -543,24 +545,38 @@ if [[ -n "$(get_env_value "TAKSERVER_CoreConfig_Security_MissionTLS_KeystoreFile
 EOF
 fi
 
+# Check if federation is enabled
+federation_enabled=$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableFederation" "true" "boolean")
+
 cat >> "$TEMP_FILE" << EOF
     </security>
-    <federation$(add_attr "allowFederatedDelete" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowFederatedDelete" "false" "boolean")" "false")$(add_attr "allowMissionFederation" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowMissionFederation" "true" "boolean")" "false")$(add_attr "allowDataFeedFederation" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowDataFeedFederation" "true" "boolean")" "false")$(add_attr "enableMissionFederationDisruptionTolerance" "$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableMissionFederationDisruptionTolerance" "true" "boolean")" "false") missionFederationDisruptionToleranceRecencySeconds="$(get_env_value "TAKSERVER_CoreConfig_Federation_MissionFederationDisruptionToleranceRecencySeconds" "43200")" enableFederation="$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableFederation" "true" "boolean")"$(add_attr "enableDataPackageAndMissionFileFilter" "$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableDataPackageAndMissionFileFilter" "false" "boolean")" "false")>
+    <federation$(add_attr "allowFederatedDelete" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowFederatedDelete" "false" "boolean")" "false")$(add_attr "allowMissionFederation" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowMissionFederation" "true" "boolean")" "false")$(add_attr "allowDataFeedFederation" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowDataFeedFederation" "true" "boolean")" "false")$(add_attr "enableMissionFederationDisruptionTolerance" "$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableMissionFederationDisruptionTolerance" "true" "boolean")" "false") missionFederationDisruptionToleranceRecencySeconds="$(get_env_value "TAKSERVER_CoreConfig_Federation_MissionFederationDisruptionToleranceRecencySeconds" "43200")" enableFederation="$federation_enabled"$(add_attr "enableDataPackageAndMissionFileFilter" "$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableDataPackageAndMissionFileFilter" "false" "boolean")" "false")>
+EOF
+
+# Only add federation-server if federation is enabled
+if [[ "$federation_enabled" == "true" ]]; then
+    cat >> "$TEMP_FILE" << EOF
         <federation-server$(add_attr "port" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")" "9000")$(add_attr "coreVersion" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_CoreVersion" "2")" "2")$(add_attr "v1enabled" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V1enabled" "false" "boolean")" "false")$(add_attr "v2port" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V2port" "9001")" "9001")$(add_attr "v2enabled" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V2enabled" "true" "boolean")" "false") webBaseUrl="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_WebBaseUrl" "https://localhost:8443/Marti")">
             <tls keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_KeystoreFile" "/opt/tak/certs/files/takserver.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_KeystorePass" "atakatak")" truststore="JKS" truststoreFile="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_TruststoreFile" "/opt/tak/certs/files/fed-truststore.jks")" truststorePass="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_TruststorePass" "atakatak")" keymanager="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_Keymanager" "SunX509")"$(add_attr_always "context" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_Context")")/>
 EOF
 
-# Add federation port if configured
-if [[ -n "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")" ]]; then
-    cat >> "$TEMP_FILE" << EOF
-            <federation-port port="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")" tlsVersion="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLSVersion" "TLSv1.2")"/>
+    # Add federation port if configured
+    federation_port=$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")
+    if [[ -n "$federation_port" ]]; then
+        cat >> "$TEMP_FILE" << EOF
+            <federation-port port="$federation_port" tlsVersion="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLSVersion" "TLSv1.2")"/>
 EOF
-fi
+    fi
 
-cat >> "$TEMP_FILE" << EOF
+    cat >> "$TEMP_FILE" << EOF
             <v1Tls tlsVersion="TLSv1.2"/>
             <v1Tls tlsVersion="TLSv1.3"/>
+            <federation-token-authentication enabled="$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled" "false" "boolean")" port="$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Port" "9002")"/>
         </federation-server>
+EOF
+fi
+# Add fileFilter section
+cat >> "$TEMP_FILE" << EOF
         <fileFilter>
 EOF
 
@@ -577,7 +593,7 @@ cat >> "$TEMP_FILE" << EOF
         </fileFilter>
     </federation>
     <plugins/>
-    <cluster/>
+    <cluster$(add_attr "metricsIntervalSeconds" "$(get_env_value "TAKSERVER_CoreConfig_Cluster_MetricsIntervalSeconds" "2147483646")" "2147483646")/>
     <vbm/>
     <profile$(add_attr "useStreamingGroup" "$(get_env_value "TAKSERVER_CoreConfig_Profile_UseStreamingGroup" "false" "boolean")" "false")/>
 EOF
