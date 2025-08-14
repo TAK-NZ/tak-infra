@@ -30,8 +30,8 @@
     "type": "git",
     "url": "git+https://github.com/TAK-NZ/tak-infra.git"
   },
-  "author": "TAK.NZ - https://tak.nz",
-  "license": "MIT",
+  "author": "Christian Elsen <chris@elsen.nz>",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/TAK-NZ/tak-infra/issues"
   },

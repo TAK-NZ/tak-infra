@@ -240,3 +240,9 @@ npm run deploy:dev -- --context branding=generic
 - **TAK Server Documentation** - https://tak.gov/
 - **TAK-NZ Project** - https://github.com/TAK-NZ/
 - **Issue Tracking** - Use GitHub Issues for bug reports and feature requests
+
+## License
+
+TAK.NZ is distributed under [AGPL-3.0-only](LICENSE)\
+Copyright (C) 2025 - Christian Elsen, Team Awareness Kit New Zealand (TAK.NZ)\
+Copyright (c) 2025 DFPC - Center of Excellence 
