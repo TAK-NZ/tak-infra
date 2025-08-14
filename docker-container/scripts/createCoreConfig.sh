@@ -732,6 +732,24 @@ if [[ -n "$EXISTING_FILE" ]]; then
         echo "No OAuth server configured in CDK - OAuth section will not be created"
     fi
     
+    # Fix federation-server element if it exists and is missing required child elements
+    if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server'])" "$OUTPUT_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+        echo "Checking federation-server element for required child elements"
+        
+        # Check if federation-token-authentication element is missing
+        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'])" "$OUTPUT_FILE" 2>/dev/null | grep -q "^0$"; then
+            echo "Adding missing federation-token-authentication element to federation-server"
+            if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "federation-token-authentication" \
+                    -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'][last()]" -t attr -n "enabled" -v "$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled" "false" "boolean")" \
+                    -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'][last()]" -t attr -n "port" -v "$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Port" "9002")" \
+                    "$OUTPUT_FILE" 2>/dev/null; then
+                echo "Warning: Failed to add federation-token-authentication element"
+            else
+                echo "Successfully added federation-token-authentication element"
+            fi
+        fi
+    fi
+    
     # Apply environment-driven settings
     for xpath in "${!ENV_DRIVEN_SETTINGS[@]}"; do
         env_var="${ENV_DRIVEN_SETTINGS[$xpath]}"
