@@ -159,10 +159,13 @@ export class Elb extends Construct {
       targetType: elbv2.TargetType.IP,
       port: port,
       protocol: elbv2.Protocol.TCP,
+      deregistrationDelay: Duration.seconds(0),
+      preserveClientIp: true,
       healthCheck: {
         protocol: elbv2.Protocol.TCP,
         port: healthCheckPort.toString(),
-        interval: Duration.seconds(30),
+        interval: Duration.seconds(5),
+        timeout: Duration.seconds(2),
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 2
       }

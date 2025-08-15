@@ -440,10 +440,10 @@ export class TakServer extends Construct {
           'CMD-SHELL',
           'curl -ks -o /dev/null https://localhost:8446 || exit 1'
         ],
-        interval: Duration.seconds(30),
-        timeout: Duration.seconds(30),
-        retries: 3,
-        startPeriod: Duration.seconds(180)
+        interval: Duration.seconds(5),      // Match target group settings
+        timeout: Duration.seconds(2),       // Match target group settings
+        retries: 2,                        // Match target group threshold
+        startPeriod: Duration.seconds(240)  // Extended for TAK startup
       },
       essential: true
     };
@@ -494,13 +494,13 @@ export class TakServer extends Construct {
       serviceName: `${Stack.of(this).stackName}-TakServer`,
       cluster: props.infrastructure.ecsCluster,
       taskDefinition: this.taskDefinition,
-      healthCheckGracePeriod: Duration.seconds(300),
+      healthCheckGracePeriod: Duration.seconds(360),  // 6 minutes (240s start + 120s buffer)
       desiredCount: props.contextConfig.ecs.desiredCount,
       securityGroups: [props.infrastructure.ecsSecurityGroup],
       enableExecuteCommand: props.contextConfig.ecs.enableEcsExec,
       assignPublicIp: false,
       // Configure deployment to maintain availability
-      minHealthyPercent: isHighAvailability ? 100 : 50,
+      minHealthyPercent: 100,  // Always use zero-downtime deployments
       maxHealthyPercent: 200,
       circuitBreaker: { rollback: true }
     });

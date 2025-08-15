@@ -116,8 +116,11 @@ validate_mandatory_sections() {
         missing_sections+=("security/tls")
     fi
     
-    if ! grep -q "<federation-server" "$xml_file"; then
-        missing_sections+=("federation/federation-server")
+    # Only check for federation-server if federation is enabled
+    if [[ "${TAKSERVER_CoreConfig_Federation_EnableFederation,,}" != "false" ]]; then
+        if ! grep -q "<federation-server" "$xml_file"; then
+            missing_sections+=("federation/federation-server")
+        fi
     fi
     
     if ! grep -q "<TAKServerCAConfig" "$xml_file"; then
