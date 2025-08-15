@@ -438,7 +438,7 @@ export class TakServer extends Construct {
       healthCheck: {
         command: [
           'CMD-SHELL',
-          'curl -ks -o /dev/null https://localhost:8446 || exit 1'
+          'curl -ks --cert /opt/tak/certs/files/admin.pem --key /opt/tak/certs/files/admin.key --pass atakatak https://localhost:8443/actuator/health/readiness || exit 1'
         ],
         interval: Duration.seconds(5),      // Match target group settings
         timeout: Duration.seconds(2),       // Match target group settings
@@ -494,7 +494,7 @@ export class TakServer extends Construct {
       serviceName: `${Stack.of(this).stackName}-TakServer`,
       cluster: props.infrastructure.ecsCluster,
       taskDefinition: this.taskDefinition,
-      healthCheckGracePeriod: Duration.seconds(360),  // 6 minutes (240s start + 120s buffer)
+      healthCheckGracePeriod: Duration.seconds(360),  // 6 minutes with readiness endpoint
       desiredCount: props.contextConfig.ecs.desiredCount,
       securityGroups: [props.infrastructure.ecsSecurityGroup],
       enableExecuteCommand: props.contextConfig.ecs.enableEcsExec,
