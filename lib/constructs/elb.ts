@@ -134,6 +134,9 @@ export class Elb extends Construct {
     this.loadBalancer.setAttribute('access_logs.s3.bucket', logsBucket.bucketName);
     this.loadBalancer.setAttribute('access_logs.s3.prefix', `TAK-${props.contextConfig.stackName}-TakInfra`);
 
+    // Enable cross-zone load balancing
+    this.loadBalancer.setAttribute('load_balancing.cross_zone.enabled', 'true');
+
     // Store the DNS name
     this.dnsName = this.loadBalancer.loadBalancerDnsName;
   }
