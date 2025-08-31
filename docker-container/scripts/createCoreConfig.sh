@@ -76,9 +76,7 @@ declare -A XPATH_MAPPINGS=(
     # Federation settings
     ["TAKSERVER_CoreConfig_Federation_EnableFederation"]="/Configuration/federation/@enableFederation"
     ["TAKSERVER_CoreConfig_Federation_WebBaseUrl"]="/Configuration/federation/federation-server/@webBaseUrl"
-    ["TAKSERVER_CoreConfig_Federation_Server_TLS_Context"]="/Configuration/federation/federation-server/@TLSVersion"
-    ["TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled"]="/Configuration/federation/federation-server/federation-token-authentication/@enabled"
-    ["TAKSERVER_CoreConfig_Federation_TokenAuth_Port"]="/Configuration/federation/federation-server/federation-token-authentication/@port"
+    ["TAKSERVER_CoreConfig_Federation_Server_TLS_Context"]="/Configuration/federation/federation-server/tls/@context"
     
     # Submission/Subscription settings
     ["TAKSERVER_CoreConfig_Submission_IgnoreStaleMessages"]="/Configuration/submission/@ignoreStaleMessages"
@@ -263,7 +261,7 @@ check_existing_file() {
                 echo "Validating existing CoreConfig.xml against schema..."
                 if ! xmlstarlet val -q -s "/opt/tak/CoreConfig.xsd" "$OUTPUT_FILE" 2>/dev/null; then
                     echo "Warning: Existing CoreConfig.xml does not validate against schema"
-                    echo "Will attempt to fix during merge process"
+                    echo "Will attempt to fix validation issues during merge process"
                 fi
             fi
         else
@@ -279,6 +277,68 @@ namespace_aware_xpath() {
     local xpath="$1"
     # Convert /Configuration/element to /*[local-name()='Configuration']/*[local-name()='element']
     echo "$xpath" | sed -E 's|/([^/@\[]+)|/*[local-name()="\1"]|g'
+}
+
+# Function to fix common XSD validation issues
+fix_validation_issues() {
+    local file="$1"
+    local fixed_issues=false
+    
+    echo "Attempting to fix common XSD validation issues..."
+    
+    # Fix duplicate certificateSigning elements (common issue)
+    local cert_signing_count=$(xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='certificateSigning'])" "$file" 2>/dev/null || echo "0")
+    if [[ "$cert_signing_count" -gt 1 ]]; then
+        echo "Fixing duplicate certificateSigning elements (found $cert_signing_count)"
+        # Keep only the first certificateSigning element
+        xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='certificateSigning'][position()>1]" "$file" 2>/dev/null
+        fixed_issues=true
+    fi
+    
+    # Fix federation-server elements that might be missing required children
+    if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server'])" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+        # Check if federation-server has webBaseUrl attribute (optional but recommended)
+        if ! xmlstarlet sel -t -v "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/@webBaseUrl" "$file" 2>/dev/null | grep -q "."; then
+            echo "Adding webBaseUrl attribute to federation-server"
+            xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t attr -n "webBaseUrl" -v "https://localhost:8443/Marti" "$file" 2>/dev/null
+            fixed_issues=true
+        fi
+        
+        # Ensure federation-server has required child elements
+        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'])" "$file" 2>/dev/null | grep -q "^0$"; then
+            echo "Adding missing tls element to federation-server"
+            xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "tls" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystoreFile" -v "/opt/tak/certs/files/takserver.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystorePass" -v "atakatak" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststoreFile" -v "/opt/tak/certs/files/fed-truststore.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststorePass" -v "atakatak" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keymanager" -v "SunX509" \
+                "$file" 2>/dev/null
+            fixed_issues=true
+        fi
+    fi
+    
+    # Remove invalid File element from auth section (common issue)
+    if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='File'])" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+        echo "Removing invalid File element from auth section"
+        xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='File']" "$file" 2>/dev/null
+        fixed_issues=true
+    fi
+    
+    # Remove any other invalid empty elements in auth section
+    xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='auth']/*[not(local-name()='ldap' or local-name()='oauth' or local-name()='file')]" "$file" 2>/dev/null || true
+    
+    # Remove any empty or malformed elements that might cause validation issues
+    # Remove empty text nodes that might interfere with validation
+    xmlstarlet ed --inplace -d "//text()[normalize-space(.)='']" "$file" 2>/dev/null || true
+    
+    if [[ "$fixed_issues" == "true" ]]; then
+        echo "Applied fixes to resolve validation issues"
+    else
+        echo "No common validation issues found to fix"
+    fi
 }
 
 # Function to create missing elements based on environment variables
@@ -456,7 +516,7 @@ LETSENCRYPT_DOMAIN=$(get_env_value "TAKSERVER_QuickConnect_LetsEncrypt_Domain" "
 SERVER_ID=$(cat /proc/sys/kernel/random/uuid)
 
 # Download and setup AWS Root CA
-curl -s https://www.amazontrust.com/repository/AmazonRootCA1.pem > /tmp/AmazonRootCA1.pem
+curl -s --max-time 30 --fail https://www.amazontrust.com/repository/AmazonRootCA1.pem > /tmp/AmazonRootCA1.pem
 echo "yes" | keytool -import -file /tmp/AmazonRootCA1.pem -alias AWS -deststoretype JKS -deststorepass INTENTIONALLY_NOT_SENSITIVE -keystore /tmp/AmazonRootCA1.jks >/dev/null 2>&1
 cp /tmp/AmazonRootCA1.jks /opt/tak/certs/files/aws-acm-root.jks
 
@@ -471,11 +531,17 @@ if [[ "${DEBUG,,}" == "true" ]]; then
     env | grep -E "^TAKSERVER_CoreConfig_.*_DEFAULT" | sort
 fi
 
+# Build network attributes
+allow_origins_attr=$(add_attr "allowAllOrigins" "$(get_env_value "TAKSERVER_CoreConfig_Network_AllowAllOrigins" "false" "boolean")" "false")
+enable_hsts_attr=$(add_attr "enableHSTS" "$(get_env_value "TAKSERVER_CoreConfig_Network_EnableHSTS" "true" "boolean")" "true")
+mission_groups_attr="MissionUseGroupsForContents=\"$(get_env_value "TAKSERVER_CoreConfig_Network_MissionUseGroupsForContents" "false" "boolean")\""
+mission_change_attr="MissionAllowGroupChange=\"$(get_env_value "TAKSERVER_CoreConfig_Network_MissionAllowGroupChange" "false" "boolean")\""
+
 # Generate temporary CoreConfig.xml
 cat > "$TEMP_FILE" << EOF
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Configuration xmlns="http://bbn.com/marti/xml/config">
-    <network multicastTTL="5" serverId="${SERVER_ID}" version="${TAK_VERSION}" cloudwatchEnable="$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")" cloudwatchName="${StackName}"$(add_attr "allowAllOrigins" "$(get_env_value "TAKSERVER_CoreConfig_Network_AllowAllOrigins" "false" "boolean")" "false")$(add_attr "enableHSTS" "$(get_env_value "TAKSERVER_CoreConfig_Network_EnableHSTS" "true" "boolean")" "true") MissionUseGroupsForContents="$(get_env_value "TAKSERVER_CoreConfig_Network_MissionUseGroupsForContents" "false" "boolean")" MissionAllowGroupChange="$(get_env_value "TAKSERVER_CoreConfig_Network_MissionAllowGroupChange" "false" "boolean")">
+    <network multicastTTL="5" serverId="${SERVER_ID}" version="${TAK_VERSION#takserver-docker-}" cloudwatchEnable="$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")" cloudwatchName="${StackName}"${allow_origins_attr}${enable_hsts_attr} ${mission_groups_attr} ${mission_change_attr}>
         <input auth="$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Auth" "x509")" _name="stdssl" protocol="tls" port="8089" coreVersion="2"$(add_attr "archive" "$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Archive" "true" "boolean")" "true")/>
         <connector port="8443" _name="https" keystore="JKS" keystoreFile="/opt/tak/certs/files/${LETSENCRYPT_DOMAIN}/letsencrypt.jks" keystorePass="atakatak"$(add_attr "enableAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableAdminUI" "true" "boolean")" "false")$(add_attr "enableWebtak" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak" "true" "boolean")" "false")$(add_attr "enableNonAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableNonAdminUI" "true" "boolean")" "false")/>
         <connector port="8446" clientAuth="false" _name="cert_https" keystore="JKS" keystoreFile="/opt/tak/certs/files/${LETSENCRYPT_DOMAIN}/letsencrypt.jks" keystorePass="atakatak"$(add_attr "enableAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableAdminUI" "true" "boolean")" "false")$(add_attr "enableWebtak" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak" "true" "boolean")" "false")$(add_attr "enableNonAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableNonAdminUI" "true" "boolean")" "false")/>
@@ -561,7 +627,7 @@ cat >> "$TEMP_FILE" << EOF
         </qos>
     </filter>
     <buffer>
-        <queue defaultCoreMaxPoolFactor="$(get_env_value "TAKSERVER_CoreConfig_Queue_DefaultCoreMaxPoolFactor" "2")" missionCacheLockTimeoutMilliseconds="$(get_env_value "TAKSERVER_CoreConfig_Queue_MissionCacheLockTimeoutMilliseconds" "500")">
+        <queue defaultCoreMaxPoolFactor="$(get_env_value "TAKSERVER_CoreConfig_Queue_DefaultCoreMaxPoolFactor" "2")">
             <priority/>
         </queue>
         <latestSA$(add_attr "enable" "$(get_env_value "TAKSERVER_CoreConfig_Buffer_LatestSA_Enable" "true" "boolean")" "false")/>
@@ -578,20 +644,7 @@ cat >> "$TEMP_FILE" << EOF
     </certificateSigning>
 EOF
 
-# Add certificate signing section if explicitly enabled (legacy support)
-if [[ "$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_Enable" "false" "boolean")" == "true" ]]; then
-    cat >> "$TEMP_FILE" << EOF
-    <certificateSigning CA="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CA" "TAKServer")">
-        <certificateConfig>
-            <nameEntries>
-                <nameEntry name="O" value="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_O" "TAK.NZ")"/>
-                <nameEntry name="OU" value="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_OU" "TAK.NZ Operations")"/>
-            </nameEntries>
-        </certificateConfig>
-        <TAKServerCAConfig keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_KeystoreFile" "/opt/tak/certs/files/intermediate-ca-signing.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_KeystorePass" "atakatak")" validityDays="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_ValidityDays" "365")" signatureAlg="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_SignatureAlg" "SHA256WithRSA")" CAkey="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CAkey" "/opt/tak/certs/files/intermediate-ca-signing")" CAcertificate="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CAcertificate" "/opt/tak/certs/files/intermediate-ca-signing")"/>
-    </certificateSigning>
-EOF
-fi
+# Note: Certificate signing section is already included above - no duplicate needed
 
 cat >> "$TEMP_FILE" << EOF
     <security>
@@ -616,23 +669,8 @@ EOF
 # Only add federation-server if federation is enabled
 if [[ "$federation_enabled" == "true" ]]; then
     cat >> "$TEMP_FILE" << EOF
-        <federation-server$(add_attr "port" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")" "9000")$(add_attr "coreVersion" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_CoreVersion" "2")" "2")$(add_attr "v1enabled" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V1enabled" "false" "boolean")" "false")$(add_attr "v2port" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V2port" "9001")" "9001")$(add_attr "v2enabled" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V2enabled" "true" "boolean")" "false") webBaseUrl="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_WebBaseUrl" "https://localhost:8443/Marti")">
-            <tls keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_KeystoreFile" "/opt/tak/certs/files/takserver.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_KeystorePass" "atakatak")" truststore="JKS" truststoreFile="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_TruststoreFile" "/opt/tak/certs/files/fed-truststore.jks")" truststorePass="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_TruststorePass" "atakatak")" keymanager="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_Keymanager" "SunX509")"$(add_attr_always "context" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_Context")")/>
-EOF
-
-    # Add federation port if configured
-    federation_port=$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")
-    if [[ -n "$federation_port" ]]; then
-        cat >> "$TEMP_FILE" << EOF
-            <federation-port port="$federation_port" tlsVersion="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLSVersion" "TLSv1.2")"/>
-EOF
-    fi
-
-    # Add v1Tls elements (required by XSD schema)
-    cat >> "$TEMP_FILE" << EOF
-            <v1Tls tlsVersion="TLSv1.2"/>
-            <v1Tls tlsVersion="TLSv1.3"/>
-            <federation-token-authentication enabled="$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled" "false" "boolean")" port="$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Port" "9002")"/>
+        <federation-server port="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")">
+            <tls context="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_Context" "TLSv1.2")" keymanager="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_Keymanager" "SunX509")" keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_KeystoreFile" "/opt/tak/certs/files/takserver.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_KeystorePass" "atakatak")" truststore="JKS" truststoreFile="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_TruststoreFile" "/opt/tak/certs/files/fed-truststore.jks")" truststorePass="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_TruststorePass" "atakatak")"/>
         </federation-server>
 EOF
 fi
@@ -681,12 +719,21 @@ if [[ -n "$EXISTING_FILE" ]]; then
     # Create working file from existing
     cp "$EXISTING_FILE" "$WORK_FILE"
     
+    # Immediately remove any invalid federation-token-authentication elements that might exist
+    echo "Performing early cleanup of invalid federation elements"
+    xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication']" "$WORK_FILE" 2>/dev/null || true
+    
+    # Fix any validation issues in the existing configuration
+    fix_validation_issues "$WORK_FILE"
+    
     # Apply critical settings that must be preserved
     if ! safe_xml_update "/Configuration/network/@serverId" "${SERVER_ID}" "$WORK_FILE"; then
         echo "Warning: Failed to update server ID, continuing with existing value"
     fi
     
-    if ! safe_xml_update "/Configuration/network/@version" "${TAK_VERSION}" "$WORK_FILE"; then
+    # Extract just the version number from TAK_VERSION (remove takserver-docker- prefix)
+    CLEAN_TAK_VERSION="${TAK_VERSION#takserver-docker-}"
+    if ! safe_xml_update "/Configuration/network/@version" "${CLEAN_TAK_VERSION}" "$WORK_FILE"; then
         echo "Warning: Failed to update TAK version, continuing with existing value"
     fi
     
@@ -795,21 +842,28 @@ if [[ -n "$EXISTING_FILE" ]]; then
         echo "No OAuth server configured in CDK - OAuth section will not be created"
     fi
     
-    # Fix federation-server element if it exists and is missing required child elements
+    # Fix federation-server element structure to match XSD requirements
     if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server'])" "$WORK_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
-        echo "Checking federation-server element for required child elements"
+        echo "Checking federation-server element for XSD compliance"
         
-        # Check if federation-token-authentication element is missing
-        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'])" "$WORK_FILE" 2>/dev/null | grep -q "^0$"; then
-            echo "Adding missing federation-token-authentication element to federation-server"
-            if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "federation-token-authentication" \
-                    -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'][last()]" -t attr -n "enabled" -v "$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled" "false" "boolean")" \
-                    -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'][last()]" -t attr -n "port" -v "$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Port" "9002")" \
-                    "$WORK_FILE" 2>/dev/null; then
-                echo "Warning: Failed to add federation-token-authentication element"
-            else
-                echo "Successfully added federation-token-authentication element"
-            fi
+        # Remove ALL invalid child elements from federation-server first
+        # According to XSD, federation-server should only contain: tls, federation-port, v1Tls
+        echo "Removing all invalid child elements from federation-server"
+        xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[not(local-name()='tls' or local-name()='federation-port' or local-name()='v1Tls')]" "$WORK_FILE" 2>/dev/null || true
+        
+        # Ensure federation-server has the required tls child element
+        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'])" "$WORK_FILE" 2>/dev/null | grep -q "^0$"; then
+            echo "Adding missing tls element to federation-server"
+            xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "tls" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "context" -v "TLSv1.2" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keymanager" -v "SunX509" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystoreFile" -v "/opt/tak/certs/files/takserver.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystorePass" -v "atakatak" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststoreFile" -v "/opt/tak/certs/files/fed-truststore.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststorePass" -v "atakatak" \
+                "$WORK_FILE" 2>/dev/null
         fi
     fi
     
@@ -882,10 +936,30 @@ else
 fi
 
 # Validate working file before writing to final location
-if [[ -f "/opt/tak/CoreConfig.xsd" ]] && ! xmlstarlet val -q -s "/opt/tak/CoreConfig.xsd" "$WORK_FILE"; then
-    echo "ERROR: Generated CoreConfig.xml fails XSD validation - not writing to disk"
-    rm -f "$WORK_FILE"
-    exit 1
+if [[ -f "/opt/tak/CoreConfig.xsd" ]]; then
+    echo "Validating generated CoreConfig.xml against XSD schema..."
+    if ! xmlstarlet val -s "/opt/tak/CoreConfig.xsd" "$WORK_FILE" 2>/tmp/validation_error.log; then
+        echo "ERROR: Generated CoreConfig.xml fails XSD validation - detailed errors:"
+        cat /tmp/validation_error.log
+        echo ""
+        echo "Attempting to get more specific validation details..."
+        # Try xmllint for more detailed error reporting
+        xmllint --schema "/opt/tak/CoreConfig.xsd" "$WORK_FILE" --noout 2>/tmp/xmllint_error.log || true
+        echo "XMLLint validation errors:"
+        cat /tmp/xmllint_error.log
+        echo ""
+        echo "Generated XML content (first 50 lines):"
+        head -50 "$WORK_FILE"
+        echo ""
+        echo "Checking for specific problematic elements..."
+        echo "Federation-server child elements:"
+        xmlstarlet sel -t -m "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*" -v "local-name()" -n "$WORK_FILE" 2>/dev/null || echo "No federation-server found"
+        echo "ERROR: Not writing invalid CoreConfig.xml to disk"
+        rm -f "$WORK_FILE"
+        exit 1
+    else
+        echo "CoreConfig.xml validation passed"
+    fi
 fi
 
 # Only write to final location if validation passes
