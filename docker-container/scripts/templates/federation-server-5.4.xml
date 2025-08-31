@@ -1,0 +1,3 @@
+        <federation-server port="9000">
+            <tls context="TLSv1.2" keymanager="SunX509" keystore="JKS" keystoreFile="/opt/tak/certs/files/takserver.jks" keystorePass="atakatak" truststore="JKS" truststoreFile="/opt/tak/certs/files/fed-truststore.jks" truststorePass="atakatak"/>
+        </federation-server>

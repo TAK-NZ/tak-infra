@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Configuration xmlns="http://bbn.com/marti/xml/config">
+    <network multicastTTL="5" serverId="{{SERVER_ID}}" version="{{TAK_VERSION}}" cloudwatchEnable="{{CLOUDWATCH_ENABLE}}" cloudwatchName="{{STACK_NAME}}">
+        <input auth="{{INPUT_AUTH}}" _name="stdssl" protocol="tls" port="8089" coreVersion="2"/>
+        <connector port="8443" _name="https" keystore="JKS" keystoreFile="/opt/tak/certs/files/{{LETSENCRYPT_DOMAIN}}/letsencrypt.jks" keystorePass="atakatak" enableAdminUI="true" enableWebtak="true" enableNonAdminUI="true"/>
+        <connector port="8446" clientAuth="false" _name="cert_https" keystore="JKS" keystoreFile="/opt/tak/certs/files/{{LETSENCRYPT_DOMAIN}}/letsencrypt.jks" keystorePass="atakatak" enableAdminUI="true" enableWebtak="true" enableNonAdminUI="true"/>
+        <announce/>
+    </network>
+    <auth default="{{AUTH_DEFAULT}}" x509groups="true" x509addAnonymous="false" x509useGroupCache="true" x509useGroupCacheDefaultActive="true" x509checkRevocation="true">
+        <ldap url="{{LDAP_URL}}" userstring="{{LDAP_USERSTRING}}" updateinterval="60" groupprefix="{{LDAP_GROUP_PREFIX}}" groupNameExtractorRegex="{{LDAP_GROUP_REGEX}}" serviceAccountDN="{{LDAP_SERVICE_DN}}" serviceAccountCredential="{{LDAP_PASSWORD}}" groupBaseRDN="{{LDAP_GROUP_BASE}}" userBaseRDN="{{LDAP_USER_BASE}}" ldapsTruststore="JKS" ldapsTruststoreFile="/opt/tak/certs/files/aws-acm-root.jks" ldapsTruststorePass="INTENTIONALLY_NOT_SENSITIVE" callsignAttribute="takCallsign" colorAttribute="takColor" roleAttribute="takRole" dnAttributeName="DN" nameAttr="CN"/>
+        {{OAUTH_SECTION}}
+    </auth>
+    <submission ignoreStaleMessages="false"/>
+    <subscription/>
+    <repository enable="true">
+        <connection url="{{DB_URL}}" username="{{DB_USERNAME}}" password="{{DB_PASSWORD}}"/>
+    </repository>
+    <repeater enable="true">
+        <repeatableType initiate-test="/event/detail/emergency[@type='911 Alert']" cancel-test="/event/detail/emergency[@cancel='true']" _name="911"/>
+        <repeatableType initiate-test="/event/detail/emergency[@type='Ring The Bell']" cancel-test="/event/detail/emergency[@cancel='true']" _name="RingTheBell"/>
+        <repeatableType initiate-test="/event/detail/emergency[@type='Geo-fence Breached']" cancel-test="/event/detail/emergency[@cancel='true']" _name="GeoFenceBreach"/>
+        <repeatableType initiate-test="/event/detail/emergency[@type='Troops In Contact']" cancel-test="/event/detail/emergency[@cancel='true']" _name="TroopsInContact"/>
+    </repeater>
+    <filter>
+        <thumbnail/>
+        <urladd host="http://10.0.2.95:8080"/>
+        <flowtag/>
+        <streamingbroker/>
+        <injectionfilter enable="true"/>
+        <qos>
+            <deliveryRateLimiter enabled="true">
+                <rateLimitRule clientThresholdCount="500" reportingRateLimitSeconds="200"/>
+                <rateLimitRule clientThresholdCount="1000" reportingRateLimitSeconds="300"/>
+                <rateLimitRule clientThresholdCount="2000" reportingRateLimitSeconds="400"/>
+                <rateLimitRule clientThresholdCount="5000" reportingRateLimitSeconds="800"/>
+                <rateLimitRule clientThresholdCount="10000" reportingRateLimitSeconds="1200"/>
+            </deliveryRateLimiter>
+            <readRateLimiter enabled="false">
+                <rateLimitRule clientThresholdCount="500" reportingRateLimitSeconds="200"/>
+                <rateLimitRule clientThresholdCount="1000" reportingRateLimitSeconds="300"/>
+                <rateLimitRule clientThresholdCount="2000" reportingRateLimitSeconds="400"/>
+                <rateLimitRule clientThresholdCount="5000" reportingRateLimitSeconds="800"/>
+                <rateLimitRule clientThresholdCount="10000" reportingRateLimitSeconds="1200"/>
+            </readRateLimiter>
+            <dosRateLimiter enabled="false" intervalSeconds="60">
+                <dosLimitRule clientThresholdCount="1" messageLimitPerInterval="60"/>
+            </dosRateLimiter>
+        </qos>
+    </filter>
+    <buffer>
+        <queue>
+            <priority/>
+        </queue>
+        <latestSA enable="true"/>
+    </buffer>
+    <dissemination/>
+    <certificateSigning CA="TAKServer">
+        <certificateConfig>
+            <nameEntries>
+                <nameEntry name="O" value="TAK"/>
+                <nameEntry name="OU" value="TAK Unit"/>
+            </nameEntries>
+        </certificateConfig>
+        <TAKServerCAConfig keystore="JKS" keystoreFile="/opt/tak/certs/files/intermediate-ca-signing.jks" keystorePass="atakatak" validityDays="365" signatureAlg="SHA256WithRSA" CAkey="/opt/tak/certs/files/intermediate-ca-signing" CAcertificate="/opt/tak/certs/files/intermediate-ca-signing"/>
+    </certificateSigning>
+    <security>
+        <tls keystore="JKS" keystoreFile="/opt/tak/certs/files/takserver.jks" keystorePass="atakatak" truststore="JKS" truststoreFile="/opt/tak/certs/files/truststore-intermediate-ca.jks" truststorePass="atakatak" keymanager="SunX509"/>
+    </security>
+    <federation allowFederatedDelete="false" allowMissionFederation="true" allowDataFeedFederation="true" enableMissionFederationDisruptionTolerance="true" missionFederationDisruptionToleranceRecencySeconds="43200" enableFederation="{{FEDERATION_ENABLED}}">
+        {{FEDERATION_SERVER_SECTION}}
+        <fileFilter>
+            <fileExtension>pref</fileExtension>
+        </fileFilter>
+    </federation>
+    <plugins/>
+    <cluster/>
+    <vbm/>
+    <profile useStreamingGroup="false"/>
+</Configuration>

@@ -76,9 +76,7 @@ declare -A XPATH_MAPPINGS=(
     # Federation settings
     ["TAKSERVER_CoreConfig_Federation_EnableFederation"]="/Configuration/federation/@enableFederation"
     ["TAKSERVER_CoreConfig_Federation_WebBaseUrl"]="/Configuration/federation/federation-server/@webBaseUrl"
-    ["TAKSERVER_CoreConfig_Federation_Server_TLS_Context"]="/Configuration/federation/federation-server/@TLSVersion"
-    ["TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled"]="/Configuration/federation/federation-server/federation-token-authentication/@enabled"
-    ["TAKSERVER_CoreConfig_Federation_TokenAuth_Port"]="/Configuration/federation/federation-server/federation-token-authentication/@port"
+    ["TAKSERVER_CoreConfig_Federation_Server_TLS_Context"]="/Configuration/federation/federation-server/tls/@context"
     
     # Submission/Subscription settings
     ["TAKSERVER_CoreConfig_Submission_IgnoreStaleMessages"]="/Configuration/submission/@ignoreStaleMessages"
@@ -263,7 +261,7 @@ check_existing_file() {
                 echo "Validating existing CoreConfig.xml against schema..."
                 if ! xmlstarlet val -q -s "/opt/tak/CoreConfig.xsd" "$OUTPUT_FILE" 2>/dev/null; then
                     echo "Warning: Existing CoreConfig.xml does not validate against schema"
-                    echo "Will attempt to fix during merge process"
+                    echo "Will attempt to fix validation issues during merge process"
                 fi
             fi
         else
@@ -279,6 +277,68 @@ namespace_aware_xpath() {
     local xpath="$1"
     # Convert /Configuration/element to /*[local-name()='Configuration']/*[local-name()='element']
     echo "$xpath" | sed -E 's|/([^/@\[]+)|/*[local-name()="\1"]|g'
+}
+
+# Function to fix common XSD validation issues
+fix_validation_issues() {
+    local file="$1"
+    local fixed_issues=false
+    
+    echo "Attempting to fix common XSD validation issues..."
+    
+    # Fix duplicate certificateSigning elements (common issue)
+    local cert_signing_count=$(xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='certificateSigning'])" "$file" 2>/dev/null || echo "0")
+    if [[ "$cert_signing_count" -gt 1 ]]; then
+        echo "Fixing duplicate certificateSigning elements (found $cert_signing_count)"
+        # Keep only the first certificateSigning element
+        xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='certificateSigning'][position()>1]" "$file" 2>/dev/null
+        fixed_issues=true
+    fi
+    
+    # Fix federation-server elements that might be missing required children
+    if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server'])" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+        # Check if federation-server has webBaseUrl attribute (optional but recommended)
+        if ! xmlstarlet sel -t -v "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/@webBaseUrl" "$file" 2>/dev/null | grep -q "."; then
+            echo "Adding webBaseUrl attribute to federation-server"
+            xmlstarlet ed --inplace -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t attr -n "webBaseUrl" -v "https://localhost:8443/Marti" "$file" 2>/dev/null
+            fixed_issues=true
+        fi
+        
+        # Ensure federation-server has required child elements
+        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'])" "$file" 2>/dev/null | grep -q "^0$"; then
+            echo "Adding missing tls element to federation-server"
+            xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "tls" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystoreFile" -v "/opt/tak/certs/files/takserver.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystorePass" -v "atakatak" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststoreFile" -v "/opt/tak/certs/files/fed-truststore.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststorePass" -v "atakatak" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keymanager" -v "SunX509" \
+                "$file" 2>/dev/null
+            fixed_issues=true
+        fi
+    fi
+    
+    # Remove invalid File element from auth section (common issue)
+    if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='File'])" "$file" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
+        echo "Removing invalid File element from auth section"
+        xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='auth']/*[local-name()='File']" "$file" 2>/dev/null
+        fixed_issues=true
+    fi
+    
+    # Remove any other invalid empty elements in auth section
+    xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='auth']/*[not(local-name()='ldap' or local-name()='oauth' or local-name()='file')]" "$file" 2>/dev/null || true
+    
+    # Remove any empty or malformed elements that might cause validation issues
+    # Remove empty text nodes that might interfere with validation
+    xmlstarlet ed --inplace -d "//text()[normalize-space(.)='']" "$file" 2>/dev/null || true
+    
+    if [[ "$fixed_issues" == "true" ]]; then
+        echo "Applied fixes to resolve validation issues"
+    else
+        echo "No common validation issues found to fix"
+    fi
 }
 
 # Function to create missing elements based on environment variables
@@ -451,14 +511,77 @@ if [[ "${DEBUG,,}" == "true" ]]; then
     echo "Debug mode enabled"
 fi
 
+# Detect TAK Server version and select appropriate template
+detect_tak_version() {
+    local version="${TAK_VERSION#takserver-docker-}"
+    local major_minor="${version%%-*}"
+    
+    if [[ "$major_minor" =~ ^5\.[0-4] ]]; then
+        echo "5.4"
+    elif [[ "$major_minor" =~ ^5\.[5-9] ]]; then
+        echo "5.5"
+    else
+        echo "5.4"  # Default fallback
+    fi
+}
+
+# Template substitution function
+substitute_template() {
+    local template_file="$1"
+    local output_file="$2"
+    
+    # Read template and substitute variables
+    sed -e "s|{{SERVER_ID}}|$SERVER_ID|g" \
+        -e "s|{{TAK_VERSION}}|${TAK_VERSION#takserver-docker-}|g" \
+        -e "s|{{CLOUDWATCH_ENABLE}}|$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")|g" \
+        -e "s|{{STACK_NAME}}|$StackName|g" \
+        -e "s|{{INPUT_AUTH}}|$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Auth" "x509")|g" \
+        -e "s|{{LETSENCRYPT_DOMAIN}}|$LETSENCRYPT_DOMAIN|g" \
+        -e "s|{{AUTH_DEFAULT}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_Default" "ldap")|g" \
+        -e "s|{{LDAP_URL}}|$LDAP_SECURE_URL|g" \
+        -e "s|{{LDAP_USERSTRING}}|cn={username},ou=users,$LDAP_DN|g" \
+        -e "s|{{LDAP_GROUP_PREFIX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix" "cn=tak_" | sed 's/[|&/\]/\\&/g')|g" \
+        -e "s|{{LDAP_GROUP_REGEX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex" "cn=tak_(.*)" | sed 's/[|&/\]/\\&/g')|g" \
+        -e "s|{{LDAP_SERVICE_DN}}|cn=ldapservice,ou=users,$LDAP_DN|g" \
+        -e "s|{{LDAP_PASSWORD}}|$LDAP_Password|g" \
+        -e "s|{{LDAP_GROUP_BASE}}|ou=groups,$LDAP_DN|g" \
+        -e "s|{{LDAP_USER_BASE}}|ou=users,$LDAP_DN|g" \
+        -e "s|{{DB_URL}}|$PostgresURL|g" \
+        -e "s|{{DB_USERNAME}}|$PostgresUsername|g" \
+        -e "s|{{DB_PASSWORD}}|$PostgresPassword|g" \
+        -e "s|{{FEDERATION_ENABLED}}|$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableFederation" "true" "boolean")|g" \
+        "$template_file" > "$output_file"
+}
+
+# Generate OAuth section
+generate_oauth_section() {
+    local oauth_server_name=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Name" "")
+    
+    if [[ -n "$oauth_server_name" ]]; then
+        local trust_all_certs=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts" "false" "boolean")
+        local trust_attr=""
+        [[ "$trust_all_certs" == "true" ]] && trust_attr=' trustAllCerts="true"'
+        
+        cat << EOF
+        <oauth usernameClaim="$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "preferred_username")">
+            <authServer name="$oauth_server_name" issuer="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" clientId="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" secret="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" redirectUri="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" scope="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" authEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" tokenEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")"$trust_attr/>
+        </oauth>
+EOF
+    fi
+}
+
 # Set commonly used values
+TAK_VERSION_DETECTED=$(detect_tak_version)
 LETSENCRYPT_DOMAIN=$(get_env_value "TAKSERVER_QuickConnect_LetsEncrypt_Domain" "nodomainset")
 SERVER_ID=$(cat /proc/sys/kernel/random/uuid)
 
 # Download and setup AWS Root CA
-curl -s https://www.amazontrust.com/repository/AmazonRootCA1.pem > /tmp/AmazonRootCA1.pem
-echo "yes" | keytool -import -file /tmp/AmazonRootCA1.pem -alias AWS -deststoretype JKS -deststorepass INTENTIONALLY_NOT_SENSITIVE -keystore /tmp/AmazonRootCA1.jks >/dev/null 2>&1
-cp /tmp/AmazonRootCA1.jks /opt/tak/certs/files/aws-acm-root.jks
+if curl -s --max-time 30 --fail https://www.amazontrust.com/repository/AmazonRootCA1.pem > /tmp/AmazonRootCA1.pem; then
+    echo "yes" | keytool -import -file /tmp/AmazonRootCA1.pem -alias AWS -deststoretype JKS -deststorepass INTENTIONALLY_NOT_SENSITIVE -keystore /tmp/AmazonRootCA1.jks >/dev/null 2>&1
+    cp /tmp/AmazonRootCA1.jks /opt/tak/certs/files/aws-acm-root.jks 2>/dev/null || true
+else
+    echo "Warning: Failed to download AWS Root CA, continuing without it"
+fi
 
 # Check for existing file
 check_existing_file
@@ -471,205 +594,70 @@ if [[ "${DEBUG,,}" == "true" ]]; then
     env | grep -E "^TAKSERVER_CoreConfig_.*_DEFAULT" | sort
 fi
 
-# Generate temporary CoreConfig.xml
-cat > "$TEMP_FILE" << EOF
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Configuration xmlns="http://bbn.com/marti/xml/config">
-    <network multicastTTL="5" serverId="${SERVER_ID}" version="${TAK_VERSION}" cloudwatchEnable="$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")" cloudwatchName="${StackName}"$(add_attr "allowAllOrigins" "$(get_env_value "TAKSERVER_CoreConfig_Network_AllowAllOrigins" "false" "boolean")" "false")$(add_attr "enableHSTS" "$(get_env_value "TAKSERVER_CoreConfig_Network_EnableHSTS" "true" "boolean")" "true") MissionUseGroupsForContents="$(get_env_value "TAKSERVER_CoreConfig_Network_MissionUseGroupsForContents" "false" "boolean")" MissionAllowGroupChange="$(get_env_value "TAKSERVER_CoreConfig_Network_MissionAllowGroupChange" "false" "boolean")">
-        <input auth="$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Auth" "x509")" _name="stdssl" protocol="tls" port="8089" coreVersion="2"$(add_attr "archive" "$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Archive" "true" "boolean")" "true")/>
-        <connector port="8443" _name="https" keystore="JKS" keystoreFile="/opt/tak/certs/files/${LETSENCRYPT_DOMAIN}/letsencrypt.jks" keystorePass="atakatak"$(add_attr "enableAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableAdminUI" "true" "boolean")" "false")$(add_attr "enableWebtak" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak" "true" "boolean")" "false")$(add_attr "enableNonAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableNonAdminUI" "true" "boolean")" "false")/>
-        <connector port="8446" clientAuth="false" _name="cert_https" keystore="JKS" keystoreFile="/opt/tak/certs/files/${LETSENCRYPT_DOMAIN}/letsencrypt.jks" keystorePass="atakatak"$(add_attr "enableAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableAdminUI" "true" "boolean")" "false")$(add_attr "enableWebtak" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak" "true" "boolean")" "false")$(add_attr "enableNonAdminUI" "$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableNonAdminUI" "true" "boolean")" "false")/>
-        <announce$(add_attr "enable" "$(get_env_value "TAKSERVER_CoreConfig_Network_Announce_Enable" "false" "boolean")" "false")/>
-    </network>
-    <auth default="$(get_env_value "TAKSERVER_CoreConfig_Auth_Default" "ldap")"$(add_attr "x509groups" "$(get_env_value "TAKSERVER_CoreConfig_Auth_X509groups" "true" "boolean")" "false")$(add_attr "x509addAnonymous" "$(get_env_value "TAKSERVER_CoreConfig_Auth_X509addAnonymous" "false" "boolean")" "true")$(add_attr "x509useGroupCache" "$(get_env_value "TAKSERVER_CoreConfig_Auth_X509useGroupCache" "true" "boolean")" "false")$(add_attr "x509useGroupCacheDefaultActive" "$(get_env_value "TAKSERVER_CoreConfig_Auth_X509useGroupCacheDefaultActive" "true" "boolean")" "false")$(add_attr "x509checkRevocation" "$(get_env_value "TAKSERVER_CoreConfig_Auth_X509checkRevocation" "true" "boolean")" "false")>
-        <ldap url="${LDAP_SECURE_URL}" userstring="$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Userstring" "cn={username},ou=users,")${LDAP_DN}" updateinterval="$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Updateinterval" "60")"$(add_attr_always "groupprefix" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix")")$(add_attr_always "groupNameExtractorRegex" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex")")$(add_attr "style" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Style" "DS")" "DS") serviceAccountDN="$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_ServiceAccountDN" "cn=ldapservice,ou=users,")${LDAP_DN}" serviceAccountCredential="${LDAP_Password}"$(add_attr "groupObjectClass" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupObjectClass" "group")" "group")$(add_attr "userObjectClass" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_UserObjectClass" "user")" "user") groupBaseRDN="$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupBaseRDN" "ou=groups,")${LDAP_DN}" userBaseRDN="$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_UserBaseRDN" "ou=users,")${LDAP_DN}"$(add_attr "nestedGroupLookup" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_NestedGroupLookup" "false" "boolean")" "false")$(add_attr_always "ldapsTruststore" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_LdapsTruststore" "JKS")")$(add_attr_always "ldapsTruststoreFile" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_LdapsTruststoreFile" "/opt/tak/certs/files/aws-acm-root.jks")")$(add_attr_always "ldapsTruststorePass" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_LdapsTruststorePass" "INTENTIONALLY_NOT_SENSITIVE")") callsignAttribute="$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_CallsignAttribute" "takCallsign")" colorAttribute="$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_ColorAttribute" "takColor")" roleAttribute="$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_RoleAttribute" "takRole")"$(add_attr "enableConnectionPool" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_EnableConnectionPool" "false" "boolean")" "false")$(add_attr "dnAttributeName" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_DnAttributeName" "DN")" "distinguishedName")$(add_attr "nameAttr" "$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_NameAttr" "CN")" "cn")/>
-EOF
+# Generate CoreConfig.xml using version-specific template
+echo "Detected TAK Server version: $TAK_VERSION_DETECTED"
+TEMPLATE_FILE="$SCRIPT_DIR/templates/coreconfig-$TAK_VERSION_DETECTED.xml"
+FEDERATION_TEMPLATE="$SCRIPT_DIR/templates/federation-server-$TAK_VERSION_DETECTED.xml"
 
-# Add OAuth section if OAuth server is configured
-oauth_server_name=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Name" "")
-if [[ -n "$oauth_server_name" ]]; then
-    cat >> "$TEMP_FILE" << EOF
-        <oauth$(add_attr "oauthUseGroupCache" "$(get_env_value "TAKSERVER_CoreConfig_OAuth_OauthUseGroupCache" "false" "boolean")" "false")$(add_attr "loginWithEmail" "$(get_env_value "TAKSERVER_CoreConfig_OAuth_LoginWithEmail" "false" "boolean")" "false")$(add_attr "useTakServerLoginPage" "$(get_env_value "TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage" "false" "boolean")" "false")$(add_attr "allowUriQueryParameter" "$(get_env_value "TAKSERVER_CoreConfig_OAuth_AllowUriQueryParameter" "false" "boolean")" "false")$(add_attr "groupsClaim" "$(get_env_value "TAKSERVER_CoreConfig_OAuth_GroupsClaim" "groups")" "groups")$(add_attr_always "groupprefix" "$(get_env_value "TAKSERVER_CoreConfig_OAuth_Groupprefix")")>
-EOF
-    
-    # Add optional OAuth child elements
-    groups_claim=$(get_env_value "TAKSERVER_CoreConfig_OAuth_GroupsClaim" "")
-    username_claim=$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "")
-    scope_claim=$(get_env_value "TAKSERVER_CoreConfig_OAuth_ScopeClaim" "")
-    webtak_scope=$(get_env_value "TAKSERVER_CoreConfig_OAuth_WebtakScope" "")
-    group_prefix=$(get_env_value "TAKSERVER_CoreConfig_OAuth_Groupprefix" "")
-    
-    [[ -n "$groups_claim" && "$groups_claim" != "groups" ]] && echo "            <groupsClaim>$groups_claim</groupsClaim>" >> "$TEMP_FILE"
-    [[ -n "$username_claim" ]] && echo "            <usernameClaim>$username_claim</usernameClaim>" >> "$TEMP_FILE"
-    [[ -n "$scope_claim" && "$scope_claim" != "scope" ]] && echo "            <scopeClaim>$scope_claim</scopeClaim>" >> "$TEMP_FILE"
-    [[ -n "$webtak_scope" ]] && echo "            <webtakScope>$webtak_scope</webtakScope>" >> "$TEMP_FILE"
-    [[ -n "$group_prefix" ]] && echo "            <groupprefix>$group_prefix</groupprefix>" >> "$TEMP_FILE"
-    
-    # Add OAuth server configuration
-    cat >> "$TEMP_FILE" << EOF
-            <authServer name="$oauth_server_name" issuer="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" clientId="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" secret="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" redirectUri="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" scope="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" authEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" tokenEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")"$(add_attr "accessTokenName" "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AccessTokenName" "access_token")" "access_token")$(add_attr "refreshTokenName" "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RefreshTokenName" "refresh_token")" "refresh_token")$(add_attr "trustAllCerts" "$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts" "false" "boolean")" "false")/>
-EOF
-    echo "        </oauth>" >> "$TEMP_FILE"
+if [[ ! -f "$TEMPLATE_FILE" ]]; then
+    echo "Warning: Template for version $TAK_VERSION_DETECTED not found, using 5.4 template"
+    TEMPLATE_FILE="$SCRIPT_DIR/templates/coreconfig-5.4.xml"
+    FEDERATION_TEMPLATE="$SCRIPT_DIR/templates/federation-server-5.4.xml"
 fi
 
-# Complete the auth section and add remaining sections
-cat >> "$TEMP_FILE" << EOF
-    </auth>
-    <submission$(add_attr_always "ignoreStaleMessages" "$(get_env_value "TAKSERVER_CoreConfig_Submission_IgnoreStaleMessages" "false" "boolean")")$(add_attr "validateXml" "$(get_env_value "TAKSERVER_CoreConfig_Submission_ValidateXml" "false" "boolean")" "false")/>
-    <subscription$(add_attr "reloadPersistent" "$(get_env_value "TAKSERVER_CoreConfig_Subscription_ReloadPersistent" "false" "boolean")" "false")/>
-    <repository$(add_attr "enable" "$(get_env_value "TAKSERVER_CoreConfig_Repository_Enable" "true" "boolean")" "false")$(add_attr "numDbConnections" "$(get_env_value "TAKSERVER_CoreConfig_Repository_NumDbConnections" "16")" "16")$(add_attr "primaryKeyBatchSize" "$(get_env_value "TAKSERVER_CoreConfig_Repository_PrimaryKeyBatchSize" "500")" "500")$(add_attr "insertionBatchSize" "$(get_env_value "TAKSERVER_CoreConfig_Repository_InsertionBatchSize" "500")" "500")>
-        <connection url="${PostgresURL}" username="${PostgresUsername}" password="${PostgresPassword}"/>
-    </repository>
-    <repeater$(add_attr "enable" "$(get_env_value "TAKSERVER_CoreConfig_Repeater_Enable" "true" "boolean")" "false")$(add_attr "periodMillis" "$(get_env_value "TAKSERVER_CoreConfig_Repeater_PeriodMillis" "3000")" "3000")$(add_attr "staleDelayMillis" "$(get_env_value "TAKSERVER_CoreConfig_Repeater_StaleDelayMillis" "15000")" "15000")>
-EOF
-
-# Add repeatable types if repeater is enabled
-if [[ "$(get_env_value "TAKSERVER_CoreConfig_Repeater_Enable" "true" "boolean")" == "true" ]]; then
-    cat >> "$TEMP_FILE" << EOF
-        <repeatableType initiate-test="/event/detail/emergency[@type='911 Alert']" cancel-test="/event/detail/emergency[@cancel='true']" _name="911"/>
-        <repeatableType initiate-test="/event/detail/emergency[@type='Ring The Bell']" cancel-test="/event/detail/emergency[@cancel='true']" _name="RingTheBell"/>
-        <repeatableType initiate-test="/event/detail/emergency[@type='Geo-fence Breached']" cancel-test="/event/detail/emergency[@cancel='true']" _name="GeoFenceBreach"/>
-        <repeatableType initiate-test="/event/detail/emergency[@type='Troops In Contact']" cancel-test="/event/detail/emergency[@cancel='true']" _name="TroopsInContact"/>
-EOF
-fi
-
-cat >> "$TEMP_FILE" << EOF
-    </repeater>
-    <filter>
-        <thumbnail/>
-        <urladd host="$(get_env_value "TAKSERVER_CoreConfig_Filter_Urladd_Host" "http://10.0.2.95:8080")"/>
-        <flowtag/>
-        <streamingbroker/>
-        <qos>
-            <deliveryRateLimiter enabled="$(get_env_value "TAKSERVER_CoreConfig_Filter_QOS_DeliveryRateLimiter_Enabled" "true" "boolean")">
-                <rateLimitRule clientThresholdCount="500" reportingRateLimitSeconds="200"/>
-                <rateLimitRule clientThresholdCount="1000" reportingRateLimitSeconds="300"/>
-                <rateLimitRule clientThresholdCount="2000" reportingRateLimitSeconds="400"/>
-                <rateLimitRule clientThresholdCount="5000" reportingRateLimitSeconds="800"/>
-                <rateLimitRule clientThresholdCount="10000" reportingRateLimitSeconds="1200"/>
-            </deliveryRateLimiter>
-            <readRateLimiter enabled="$(get_env_value "TAKSERVER_CoreConfig_Filter_QOS_ReadRateLimiter_Enabled" "false" "boolean")">
-                <rateLimitRule clientThresholdCount="500" reportingRateLimitSeconds="200"/>
-                <rateLimitRule clientThresholdCount="1000" reportingRateLimitSeconds="300"/>
-                <rateLimitRule clientThresholdCount="2000" reportingRateLimitSeconds="400"/>
-                <rateLimitRule clientThresholdCount="5000" reportingRateLimitSeconds="800"/>
-                <rateLimitRule clientThresholdCount="10000" reportingRateLimitSeconds="1200"/>
-            </readRateLimiter>
-            <dosRateLimiter enabled="$(get_env_value "TAKSERVER_CoreConfig_Filter_QOS_DosRateLimiter_Enabled" "false" "boolean")" intervalSeconds="$(get_env_value "TAKSERVER_CoreConfig_Filter_QOS_DosRateLimiter_IntervalSeconds" "60")">
-                <dosLimitRule clientThresholdCount="1" messageLimitPerInterval="60"/>
-            </dosRateLimiter>
-        </qos>
-    </filter>
-    <buffer>
-        <queue defaultCoreMaxPoolFactor="$(get_env_value "TAKSERVER_CoreConfig_Queue_DefaultCoreMaxPoolFactor" "2")" missionCacheLockTimeoutMilliseconds="$(get_env_value "TAKSERVER_CoreConfig_Queue_MissionCacheLockTimeoutMilliseconds" "500")">
-            <priority/>
-        </queue>
-        <latestSA$(add_attr "enable" "$(get_env_value "TAKSERVER_CoreConfig_Buffer_LatestSA_Enable" "true" "boolean")" "false")/>
-    </buffer>
-    <dissemination$(add_attr "smartRetry" "$(get_env_value "TAKSERVER_CoreConfig_Dissemination_SmartRetry" "false" "boolean")" "false")/>
-    <certificateSigning CA="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CA" "TAKServer")">
-        <certificateConfig>
-            <nameEntries>
-                <nameEntry name="O" value="$(get_env_value "TAKSERVER_CACert_Org" "TAK")"/>
-                <nameEntry name="OU" value="$(get_env_value "TAKSERVER_CACert_OrgUnit" "TAK Unit")"/>
-            </nameEntries>
-        </certificateConfig>
-        <TAKServerCAConfig keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_KeystoreFile" "/opt/tak/certs/files/intermediate-ca-signing.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_KeystorePass" "atakatak")" validityDays="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_ValidityDays" "365")" signatureAlg="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_SignatureAlg" "SHA256WithRSA")" CAkey="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CAkey" "/opt/tak/certs/files/intermediate-ca-signing")" CAcertificate="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CAcertificate" "/opt/tak/certs/files/intermediate-ca-signing")"/>
-    </certificateSigning>
-EOF
-
-# Add certificate signing section if explicitly enabled (legacy support)
-if [[ "$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_Enable" "false" "boolean")" == "true" ]]; then
-    cat >> "$TEMP_FILE" << EOF
-    <certificateSigning CA="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CA" "TAKServer")">
-        <certificateConfig>
-            <nameEntries>
-                <nameEntry name="O" value="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_O" "TAK.NZ")"/>
-                <nameEntry name="OU" value="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_OU" "TAK.NZ Operations")"/>
-            </nameEntries>
-        </certificateConfig>
-        <TAKServerCAConfig keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_KeystoreFile" "/opt/tak/certs/files/intermediate-ca-signing.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_KeystorePass" "atakatak")" validityDays="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_ValidityDays" "365")" signatureAlg="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_SignatureAlg" "SHA256WithRSA")" CAkey="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CAkey" "/opt/tak/certs/files/intermediate-ca-signing")" CAcertificate="$(get_env_value "TAKSERVER_CoreConfig_CertificateSigning_CAcertificate" "/opt/tak/certs/files/intermediate-ca-signing")"/>
-    </certificateSigning>
-EOF
-fi
-
-cat >> "$TEMP_FILE" << EOF
-    <security>
-        <tls keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_Security_TLS_KeystoreFile" "/opt/tak/certs/files/takserver.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_Security_TLS_KeystorePass" "atakatak")" truststore="JKS" truststoreFile="$(get_env_value "TAKSERVER_CoreConfig_Security_TLS_TruststoreFile" "/opt/tak/certs/files/truststore-intermediate-ca.jks")" truststorePass="$(get_env_value "TAKSERVER_CoreConfig_Security_TLS_TruststorePass" "atakatak")" keymanager="$(get_env_value "TAKSERVER_CoreConfig_Security_TLS_Keymanager" "SunX509")"$(add_attr_always "context" "$(get_env_value "TAKSERVER_CoreConfig_Security_TLS_Context")")/>
-EOF
-
-# Add mission TLS if configured
-if [[ -n "$(get_env_value "TAKSERVER_CoreConfig_Security_MissionTLS_KeystoreFile" "")" ]]; then
-    cat >> "$TEMP_FILE" << EOF
-        <missionTls keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_Security_MissionTLS_KeystoreFile" "/opt/tak/certs/files/truststore-root.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_Security_MissionTLS_KeystorePass" "atakatak")"/>
-EOF
-fi
-
-# Check if federation is enabled
-federation_enabled=$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableFederation" "true" "boolean")
-
-cat >> "$TEMP_FILE" << EOF
-    </security>
-    <federation$(add_attr "allowFederatedDelete" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowFederatedDelete" "false" "boolean")" "false")$(add_attr "allowMissionFederation" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowMissionFederation" "true" "boolean")" "false")$(add_attr "allowDataFeedFederation" "$(get_env_value "TAKSERVER_CoreConfig_Federation_AllowDataFeedFederation" "true" "boolean")" "false")$(add_attr "enableMissionFederationDisruptionTolerance" "$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableMissionFederationDisruptionTolerance" "true" "boolean")" "false") missionFederationDisruptionToleranceRecencySeconds="$(get_env_value "TAKSERVER_CoreConfig_Federation_MissionFederationDisruptionToleranceRecencySeconds" "43200")" enableFederation="$federation_enabled"$(add_attr "enableDataPackageAndMissionFileFilter" "$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableDataPackageAndMissionFileFilter" "false" "boolean")" "false")>
-EOF
-
-# Only add federation-server if federation is enabled
-if [[ "$federation_enabled" == "true" ]]; then
-    cat >> "$TEMP_FILE" << EOF
-        <federation-server$(add_attr "port" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")" "9000")$(add_attr "coreVersion" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_CoreVersion" "2")" "2")$(add_attr "v1enabled" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V1enabled" "false" "boolean")" "false")$(add_attr "v2port" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V2port" "9001")" "9001")$(add_attr "v2enabled" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_V2enabled" "true" "boolean")" "false") webBaseUrl="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_WebBaseUrl" "https://localhost:8443/Marti")">
-            <tls keystore="JKS" keystoreFile="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_KeystoreFile" "/opt/tak/certs/files/takserver.jks")" keystorePass="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_KeystorePass" "atakatak")" truststore="JKS" truststoreFile="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_TruststoreFile" "/opt/tak/certs/files/fed-truststore.jks")" truststorePass="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_TruststorePass" "atakatak")" keymanager="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_Keymanager" "SunX509")"$(add_attr_always "context" "$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLS_Context")")/>
-EOF
-
-    # Add federation port if configured
-    federation_port=$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_Port" "9000")
-    if [[ -n "$federation_port" ]]; then
-        cat >> "$TEMP_FILE" << EOF
-            <federation-port port="$federation_port" tlsVersion="$(get_env_value "TAKSERVER_CoreConfig_Federation_Server_TLSVersion" "TLSv1.2")"/>
-EOF
+# Generate OAuth and Federation sections
+OAUTH_SECTION=$(generate_oauth_section)
+FEDERATION_SERVER_SECTION=""
+if [[ "$(get_env_value "TAKSERVER_CoreConfig_Federation_EnableFederation" "true" "boolean")" == "true" ]]; then
+    if [[ -f "$FEDERATION_TEMPLATE" ]]; then
+        FEDERATION_SERVER_SECTION=$(substitute_template "$FEDERATION_TEMPLATE" /dev/stdout)
     fi
-
-    # Add v1Tls elements (required by XSD schema)
-    cat >> "$TEMP_FILE" << EOF
-            <v1Tls tlsVersion="TLSv1.2"/>
-            <v1Tls tlsVersion="TLSv1.3"/>
-            <federation-token-authentication enabled="$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled" "false" "boolean")" port="$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Port" "9002")"/>
-        </federation-server>
-EOF
-fi
-# Add fileFilter section
-cat >> "$TEMP_FILE" << EOF
-        <fileFilter>
-EOF
-
-# Add file extensions if configured
-file_extensions=$(get_env_value "TAKSERVER_CoreConfig_Federation_FileFilter_Extensions" "pref")
-if [[ -n "$file_extensions" ]]; then
-    IFS=',' read -ra EXTENSIONS <<< "$file_extensions"
-    for ext in "${EXTENSIONS[@]}"; do
-        echo "            <fileExtension>$ext</fileExtension>" >> "$TEMP_FILE"
-    done
 fi
 
-cat >> "$TEMP_FILE" << EOF
-        </fileFilter>
-    </federation>
-    <plugins/>
-    <cluster metricsIntervalSeconds="$(get_env_value "TAKSERVER_CoreConfig_Cluster_MetricsIntervalSeconds" "2147483646")"/>
-    <vbm/>
-    <profile$(add_attr "useStreamingGroup" "$(get_env_value "TAKSERVER_CoreConfig_Profile_UseStreamingGroup" "false" "boolean")" "false")/>
-EOF
+# Generate temporary CoreConfig.xml from template
+substitute_template "$TEMPLATE_FILE" "$TEMP_FILE"
 
-# Add locate element if group is provided (required by XSD)
-locate_group=$(get_env_value "TAKSERVER_CoreConfig_Locate_Group" "")
-if [[ -n "$locate_group" ]]; then
-    cat >> "$TEMP_FILE" << EOF
-    <locate$(add_attr "enabled" "$(get_env_value "TAKSERVER_CoreConfig_Locate_Enabled" "false" "boolean")" "false")$(add_attr "requireLogin" "$(get_env_value "TAKSERVER_CoreConfig_Locate_RequireLogin" "true" "boolean")" "true")$(add_attr "cot-type" "$(get_env_value "TAKSERVER_CoreConfig_Locate_CotType" "a-f-G")" "a-f-G") group="$locate_group"$(add_attr "broadcast" "$(get_env_value "TAKSERVER_CoreConfig_Locate_Broadcast" "true" "boolean")" "true")$(add_attr "addToMission" "$(get_env_value "TAKSERVER_CoreConfig_Locate_AddToMission" "true" "boolean")" "true")$(add_attr_always "mission" "$(get_env_value "TAKSERVER_CoreConfig_Locate_Mission" "")")/>
-EOF
+# Replace template placeholders for complex sections using temporary files
+if [[ -n "$OAUTH_SECTION" ]]; then
+    # Write OAuth section to temporary file and use it for replacement
+    OAUTH_TEMP=$(mktemp)
+    echo "$OAUTH_SECTION" > "$OAUTH_TEMP"
+    # Use awk for multi-line replacement
+    awk -v oauth_file="$OAUTH_TEMP" '
+        /{{OAUTH_SECTION}}/ {
+            while ((getline line < oauth_file) > 0) {
+                print line
+            }
+            close(oauth_file)
+            next
+        }
+        { print }
+    ' "$TEMP_FILE" > "${TEMP_FILE}.tmp" && mv "${TEMP_FILE}.tmp" "$TEMP_FILE"
+    rm -f "$OAUTH_TEMP"
+else
+    sed -i 's/{{OAUTH_SECTION}}//g' "$TEMP_FILE"
 fi
 
-cat >> "$TEMP_FILE" << EOF
-</Configuration>
-EOF
+if [[ -n "$FEDERATION_SERVER_SECTION" ]]; then
+    # Write federation section to temporary file and use it for replacement
+    FED_TEMP=$(mktemp)
+    echo "$FEDERATION_SERVER_SECTION" > "$FED_TEMP"
+    # Use awk for multi-line replacement
+    awk -v fed_file="$FED_TEMP" '
+        /{{FEDERATION_SERVER_SECTION}}/ {
+            while ((getline line < fed_file) > 0) {
+                print line
+            }
+            close(fed_file)
+            next
+        }
+        { print }
+    ' "$TEMP_FILE" > "${TEMP_FILE}.tmp" && mv "${TEMP_FILE}.tmp" "$TEMP_FILE"
+    rm -f "$FED_TEMP"
+else
+    sed -i 's/{{FEDERATION_SERVER_SECTION}}//g' "$TEMP_FILE"
+fi
+
 
 # Work on temporary file to avoid writing invalid config to disk
 WORK_FILE=$(mktemp)
@@ -681,12 +669,21 @@ if [[ -n "$EXISTING_FILE" ]]; then
     # Create working file from existing
     cp "$EXISTING_FILE" "$WORK_FILE"
     
+    # Immediately remove any invalid federation-token-authentication elements that might exist
+    echo "Performing early cleanup of invalid federation elements"
+    xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication']" "$WORK_FILE" 2>/dev/null || true
+    
+    # Fix any validation issues in the existing configuration
+    fix_validation_issues "$WORK_FILE"
+    
     # Apply critical settings that must be preserved
     if ! safe_xml_update "/Configuration/network/@serverId" "${SERVER_ID}" "$WORK_FILE"; then
         echo "Warning: Failed to update server ID, continuing with existing value"
     fi
     
-    if ! safe_xml_update "/Configuration/network/@version" "${TAK_VERSION}" "$WORK_FILE"; then
+    # Extract just the version number from TAK_VERSION (remove takserver-docker- prefix)
+    CLEAN_TAK_VERSION="${TAK_VERSION#takserver-docker-}"
+    if ! safe_xml_update "/Configuration/network/@version" "${CLEAN_TAK_VERSION}" "$WORK_FILE"; then
         echo "Warning: Failed to update TAK version, continuing with existing value"
     fi
     
@@ -795,21 +792,28 @@ if [[ -n "$EXISTING_FILE" ]]; then
         echo "No OAuth server configured in CDK - OAuth section will not be created"
     fi
     
-    # Fix federation-server element if it exists and is missing required child elements
+    # Fix federation-server element structure to match XSD requirements
     if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server'])" "$WORK_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
-        echo "Checking federation-server element for required child elements"
+        echo "Checking federation-server element for XSD compliance"
         
-        # Check if federation-token-authentication element is missing
-        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'])" "$WORK_FILE" 2>/dev/null | grep -q "^0$"; then
-            echo "Adding missing federation-token-authentication element to federation-server"
-            if ! xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "federation-token-authentication" \
-                    -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'][last()]" -t attr -n "enabled" -v "$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Enabled" "false" "boolean")" \
-                    -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication'][last()]" -t attr -n "port" -v "$(get_env_value "TAKSERVER_CoreConfig_Federation_TokenAuth_Port" "9002")" \
-                    "$WORK_FILE" 2>/dev/null; then
-                echo "Warning: Failed to add federation-token-authentication element"
-            else
-                echo "Successfully added federation-token-authentication element"
-            fi
+        # Remove ALL invalid child elements from federation-server first
+        # According to XSD, federation-server should only contain: tls, federation-port, v1Tls
+        echo "Removing all invalid child elements from federation-server"
+        xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[not(local-name()='tls' or local-name()='federation-port' or local-name()='v1Tls')]" "$WORK_FILE" 2>/dev/null || true
+        
+        # Ensure federation-server has the required tls child element
+        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'])" "$WORK_FILE" 2>/dev/null | grep -q "^0$"; then
+            echo "Adding missing tls element to federation-server"
+            xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "tls" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "context" -v "TLSv1.2" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keymanager" -v "SunX509" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystoreFile" -v "/opt/tak/certs/files/takserver.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystorePass" -v "atakatak" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststoreFile" -v "/opt/tak/certs/files/fed-truststore.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststorePass" -v "atakatak" \
+                "$WORK_FILE" 2>/dev/null
         fi
     fi
     
@@ -882,10 +886,30 @@ else
 fi
 
 # Validate working file before writing to final location
-if [[ -f "/opt/tak/CoreConfig.xsd" ]] && ! xmlstarlet val -q -s "/opt/tak/CoreConfig.xsd" "$WORK_FILE"; then
-    echo "ERROR: Generated CoreConfig.xml fails XSD validation - not writing to disk"
-    rm -f "$WORK_FILE"
-    exit 1
+if [[ -f "/opt/tak/CoreConfig.xsd" ]]; then
+    echo "Validating generated CoreConfig.xml against XSD schema..."
+    if ! xmlstarlet val -s "/opt/tak/CoreConfig.xsd" "$WORK_FILE" 2>/tmp/validation_error.log; then
+        echo "ERROR: Generated CoreConfig.xml fails XSD validation - detailed errors:"
+        cat /tmp/validation_error.log
+        echo ""
+        echo "Attempting to get more specific validation details..."
+        # Try xmllint for more detailed error reporting
+        xmllint --schema "/opt/tak/CoreConfig.xsd" "$WORK_FILE" --noout 2>/tmp/xmllint_error.log || true
+        echo "XMLLint validation errors:"
+        cat /tmp/xmllint_error.log
+        echo ""
+        echo "Generated XML content (first 50 lines):"
+        head -50 "$WORK_FILE"
+        echo ""
+        echo "Checking for specific problematic elements..."
+        echo "Federation-server child elements:"
+        xmlstarlet sel -t -m "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*" -v "local-name()" -n "$WORK_FILE" 2>/dev/null || echo "No federation-server found"
+        echo "ERROR: Not writing invalid CoreConfig.xml to disk"
+        rm -f "$WORK_FILE"
+        exit 1
+    else
+        echo "CoreConfig.xml validation passed"
+    fi
 fi
 
 # Only write to final location if validation passes
