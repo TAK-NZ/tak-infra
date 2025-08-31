@@ -540,8 +540,8 @@ substitute_template() {
         -e "s|{{AUTH_DEFAULT}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_Default" "ldap")|g" \
         -e "s|{{LDAP_URL}}|$LDAP_SECURE_URL|g" \
         -e "s|{{LDAP_USERSTRING}}|cn={username},ou=users,$LDAP_DN|g" \
-        -e "s|{{LDAP_GROUP_PREFIX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix" "cn=tak_")|g" \
-        -e "s|{{LDAP_GROUP_REGEX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex" "cn=tak_(.*?)(?:,|$)")|g" \
+        -e "s|{{LDAP_GROUP_PREFIX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix" "cn=tak_" | sed 's/[|&/\]/\\&/g')|g" \
+        -e "s|{{LDAP_GROUP_REGEX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex" "cn=tak_(.*)" | sed 's/[|&/\]/\\&/g')|g" \
         -e "s|{{LDAP_SERVICE_DN}}|cn=ldapservice,ou=users,$LDAP_DN|g" \
         -e "s|{{LDAP_PASSWORD}}|$LDAP_Password|g" \
         -e "s|{{LDAP_GROUP_BASE}}|ou=groups,$LDAP_DN|g" \
@@ -558,9 +558,13 @@ generate_oauth_section() {
     local oauth_server_name=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Name" "")
     
     if [[ -n "$oauth_server_name" ]]; then
+        local trust_all_certs=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts" "false" "boolean")
+        local trust_attr=""
+        [[ "$trust_all_certs" == "true" ]] && trust_attr=' trustAllCerts="true"'
+        
         cat << EOF
         <oauth usernameClaim="$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "preferred_username")">
-            <authServer name="$oauth_server_name" issuer="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" clientId="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" secret="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" redirectUri="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" scope="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" authEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" tokenEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")"/>
+            <authServer name="$oauth_server_name" issuer="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" clientId="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" secret="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" redirectUri="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" scope="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" authEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" tokenEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")"$trust_attr/>
         </oauth>
 EOF
     fi
@@ -572,9 +576,12 @@ LETSENCRYPT_DOMAIN=$(get_env_value "TAKSERVER_QuickConnect_LetsEncrypt_Domain" "
 SERVER_ID=$(cat /proc/sys/kernel/random/uuid)
 
 # Download and setup AWS Root CA
-curl -s --max-time 30 --fail https://www.amazontrust.com/repository/AmazonRootCA1.pem > /tmp/AmazonRootCA1.pem
-echo "yes" | keytool -import -file /tmp/AmazonRootCA1.pem -alias AWS -deststoretype JKS -deststorepass INTENTIONALLY_NOT_SENSITIVE -keystore /tmp/AmazonRootCA1.jks >/dev/null 2>&1
-cp /tmp/AmazonRootCA1.jks /opt/tak/certs/files/aws-acm-root.jks
+if curl -s --max-time 30 --fail https://www.amazontrust.com/repository/AmazonRootCA1.pem > /tmp/AmazonRootCA1.pem; then
+    echo "yes" | keytool -import -file /tmp/AmazonRootCA1.pem -alias AWS -deststoretype JKS -deststorepass INTENTIONALLY_NOT_SENSITIVE -keystore /tmp/AmazonRootCA1.jks >/dev/null 2>&1
+    cp /tmp/AmazonRootCA1.jks /opt/tak/certs/files/aws-acm-root.jks 2>/dev/null || true
+else
+    echo "Warning: Failed to download AWS Root CA, continuing without it"
+fi
 
 # Check for existing file
 check_existing_file
@@ -610,9 +617,46 @@ fi
 # Generate temporary CoreConfig.xml from template
 substitute_template "$TEMPLATE_FILE" "$TEMP_FILE"
 
-# Replace template placeholders for complex sections
-sed -i "s|{{OAUTH_SECTION}}|$(echo "$OAUTH_SECTION" | sed 's/|/\|/g')|g" "$TEMP_FILE"
-sed -i "s|{{FEDERATION_SERVER_SECTION}}|$(echo "$FEDERATION_SERVER_SECTION" | sed 's/|/\|/g')|g" "$TEMP_FILE"
+# Replace template placeholders for complex sections using temporary files
+if [[ -n "$OAUTH_SECTION" ]]; then
+    # Write OAuth section to temporary file and use it for replacement
+    OAUTH_TEMP=$(mktemp)
+    echo "$OAUTH_SECTION" > "$OAUTH_TEMP"
+    # Use awk for multi-line replacement
+    awk -v oauth_file="$OAUTH_TEMP" '
+        /{{OAUTH_SECTION}}/ {
+            while ((getline line < oauth_file) > 0) {
+                print line
+            }
+            close(oauth_file)
+            next
+        }
+        { print }
+    ' "$TEMP_FILE" > "${TEMP_FILE}.tmp" && mv "${TEMP_FILE}.tmp" "$TEMP_FILE"
+    rm -f "$OAUTH_TEMP"
+else
+    sed -i 's/{{OAUTH_SECTION}}//g' "$TEMP_FILE"
+fi
+
+if [[ -n "$FEDERATION_SERVER_SECTION" ]]; then
+    # Write federation section to temporary file and use it for replacement
+    FED_TEMP=$(mktemp)
+    echo "$FEDERATION_SERVER_SECTION" > "$FED_TEMP"
+    # Use awk for multi-line replacement
+    awk -v fed_file="$FED_TEMP" '
+        /{{FEDERATION_SERVER_SECTION}}/ {
+            while ((getline line < fed_file) > 0) {
+                print line
+            }
+            close(fed_file)
+            next
+        }
+        { print }
+    ' "$TEMP_FILE" > "${TEMP_FILE}.tmp" && mv "${TEMP_FILE}.tmp" "$TEMP_FILE"
+    rm -f "$FED_TEMP"
+else
+    sed -i 's/{{FEDERATION_SERVER_SECTION}}//g' "$TEMP_FILE"
+fi
 
 
 # Work on temporary file to avoid writing invalid config to disk
