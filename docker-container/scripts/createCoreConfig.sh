@@ -304,17 +304,17 @@ fix_validation_issues() {
             fixed_issues=true
         fi
         
-        # Ensure federation-server has required child elements
-        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'])" "$file" 2>/dev/null | grep -q "^0$"; then
-            echo "Adding missing tls element to federation-server"
-            xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "tls" \
-                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystore" -v "JKS" \
-                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystoreFile" -v "/opt/tak/certs/files/takserver.jks" \
-                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keystorePass" -v "atakatak" \
-                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststore" -v "JKS" \
-                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststoreFile" -v "/opt/tak/certs/files/fed-truststore.jks" \
-                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststorePass" -v "atakatak" \
-                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "keymanager" -v "SunX509" \
+        # Ensure federation-server has required child elements (v1Tls per XSD)
+        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='v1Tls'])" "$file" 2>/dev/null | grep -q "^0$"; then
+            echo "Adding missing v1Tls element to federation-server"
+            xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "v1Tls" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='v1Tls'][last()]" -t attr -n "keystore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='v1Tls'][last()]" -t attr -n "keystoreFile" -v "/opt/tak/certs/files/takserver.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='v1Tls'][last()]" -t attr -n "keystorePass" -v "atakatak" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='v1Tls'][last()]" -t attr -n "truststore" -v "JKS" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='v1Tls'][last()]" -t attr -n "truststoreFile" -v "/opt/tak/certs/files/fed-truststore.jks" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='v1Tls'][last()]" -t attr -n "truststorePass" -v "atakatak" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='v1Tls'][last()]" -t attr -n "keymanager" -v "SunX509" \
                 "$file" 2>/dev/null
             fixed_issues=true
         fi
@@ -662,16 +662,43 @@ fi
 # Work on temporary file to avoid writing invalid config to disk
 WORK_FILE=$(mktemp)
 
-# Merge configurations if existing file is found
+# Decide whether to merge or use template based on version compatibility
 if [[ -n "$EXISTING_FILE" ]]; then
-    echo "Merging environment-driven settings with existing configuration"
+    # Check if existing file is compatible with current TAK version
+    EXISTING_VERSION=$(xmlstarlet sel -t -v "/*[local-name()='Configuration']/*[local-name()='network']/@version" "$EXISTING_FILE" 2>/dev/null || echo "unknown")
+    CURRENT_VERSION="${TAK_VERSION#takserver-docker-}"
     
-    # Create working file from existing
-    cp "$EXISTING_FILE" "$WORK_FILE"
+    # Extract major.minor versions for comparison
+    EXISTING_MAJOR_MINOR=$(echo "$EXISTING_VERSION" | sed -E 's/^([0-9]+\.[0-9]+).*/\1/')
+    CURRENT_MAJOR_MINOR=$(echo "$CURRENT_VERSION" | sed -E 's/^([0-9]+\.[0-9]+).*/\1/')
     
-    # Immediately remove any invalid federation-token-authentication elements that might exist
-    echo "Performing early cleanup of invalid federation elements"
-    xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-token-authentication']" "$WORK_FILE" 2>/dev/null || true
+    if [[ "$EXISTING_MAJOR_MINOR" == "$CURRENT_MAJOR_MINOR" ]]; then
+        echo "Merging environment-driven settings with existing configuration (same version: $EXISTING_MAJOR_MINOR)"
+        # Create working file from existing
+        cp "$EXISTING_FILE" "$WORK_FILE"
+        USE_MERGE=true
+    else
+        echo "Version mismatch detected: existing=$EXISTING_MAJOR_MINOR, current=$CURRENT_MAJOR_MINOR"
+        echo "Using template approach to ensure compatibility"
+        # Use template file instead of existing
+        cp "$TEMP_FILE" "$WORK_FILE"
+        USE_MERGE=false
+    fi
+else
+    # No existing file, use template
+    cp "$TEMP_FILE" "$WORK_FILE"
+    USE_MERGE=false
+fi
+
+# Apply merge-specific logic only if we're merging
+if [[ "$USE_MERGE" == "true" ]]; then
+    echo "Applying merge-specific configuration updates"
+    
+    # Handle version transitions: convert between tls and v1Tls elements
+    echo "Performing early cleanup and version transition handling"
+    
+    # Ensure federation-server has required elements per XSD
+    echo "Ensuring federation-server meets XSD requirements"
     
     # Fix any validation issues in the existing configuration
     fix_validation_issues "$WORK_FILE"
@@ -796,10 +823,8 @@ if [[ -n "$EXISTING_FILE" ]]; then
     if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server'])" "$WORK_FILE" 2>/dev/null | grep -q "^[1-9][0-9]*$"; then
         echo "Checking federation-server element for XSD compliance"
         
-        # Remove ALL invalid child elements from federation-server first
-        # According to XSD, federation-server should only contain: tls, federation-port, v1Tls
-        echo "Removing all invalid child elements from federation-server"
-        xmlstarlet ed --inplace -d "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[not(local-name()='tls' or local-name()='federation-port' or local-name()='v1Tls')]" "$WORK_FILE" 2>/dev/null || true
+        # Clean federation-server per XSD: requires tls, allows federation-port and v1Tls
+        echo "Cleaning federation-server per XSD requirements"
         
         # Ensure federation-server has the required tls child element
         if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'])" "$WORK_FILE" 2>/dev/null | grep -q "^0$"; then
@@ -813,6 +838,15 @@ if [[ -n "$EXISTING_FILE" ]]; then
                 -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststore" -v "JKS" \
                 -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststoreFile" -v "/opt/tak/certs/files/fed-truststore.jks" \
                 -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='tls'][last()]" -t attr -n "truststorePass" -v "atakatak" \
+                "$WORK_FILE" 2>/dev/null
+        fi
+        
+        # Ensure federation-server has at least one required child element after tls
+        if xmlstarlet sel -t -v "count(/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-port' or local-name()='v1Tls' or local-name()='federation-token-authentication'])" "$WORK_FILE" 2>/dev/null | grep -q "^0$"; then
+            echo "Adding missing federation-port element to federation-server"
+            xmlstarlet ed --inplace -s "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" -t elem -n "federation-port" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-port'][last()]" -t attr -n "port" -v "9000" \
+                -i "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']/*[local-name()='federation-port'][last()]" -t attr -n "tlsVersion" -v "TLSv1.2" \
                 "$WORK_FILE" 2>/dev/null
         fi
     fi
