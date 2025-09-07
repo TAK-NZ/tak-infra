@@ -279,6 +279,16 @@ done
 
 echo "TAK Server - Starting server"
 
+# Setup certificate cleanup cron job
+echo "TAK Server - Setting up certificate cleanup cron job"
+cat > /etc/cron.d/tak-cert-cleanup << 'EOF'
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# Clean up duplicate certificates every 15 minutes
+*/15 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
+EOF
+
 # Start cron in background
 echo "Certbot - Starting cron for certbot renewals"
 /usr/sbin/cron &

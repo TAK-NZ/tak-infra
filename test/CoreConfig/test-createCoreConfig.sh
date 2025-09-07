@@ -156,7 +156,9 @@ run_test() {
     export PostgresUsername="testuser"
     export PostgresPassword="testpass"
     export PostgresURL="postgresql://localhost:5432/testdb"
-    export TAK_VERSION="5.4-RELEASE-19"
+    # Extract TAK version from cdk.json
+    local tak_version=$(grep -o '"version": "[^"]*"' "$SCRIPT_DIR/../../cdk.json" | head -1 | cut -d'"' -f4)
+    export TAK_VERSION="takserver-docker-${tak_version:-5.4-RELEASE-19}"
     export LDAP_DN="dc=example,dc=com"
     export LDAP_SECURE_URL="ldaps://ldap.example.com:636"
     export LDAP_Password="ldappass"
