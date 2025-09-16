@@ -218,6 +218,17 @@ cd /opt/tak
 # Ensure persistent config directory exists
 mkdir -p /opt/tak/persistent-config
 
+# Ensure persistent retention config directory exists
+mkdir -p /opt/tak/persistent-config/retention
+
+# Remove existing retention directory/symlink if it exists
+if [ -e "/opt/tak/conf/retention" ]; then
+    rm -rf /opt/tak/conf/retention
+fi
+
+# Create symlink for retention directory
+ln -sf /opt/tak/persistent-config/retention /opt/tak/conf/retention
+
 # Check if a persistent config file already exists
 if [ -f "/opt/tak/persistent-config/CoreConfig.xml" ]; then
     echo "TAK Server - Found existing persistent configuration, will merge with environment settings"
