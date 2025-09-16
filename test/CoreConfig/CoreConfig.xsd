@@ -154,6 +154,7 @@
       <xs:attribute name="MissionDeleteRequiresOwner" type="xs:boolean" default="false"/>
       <xs:attribute name="MissionUseGroupsForContents" type="xs:boolean" default="false"/>
       <xs:attribute name="MissionAllowGroupChange" type="xs:boolean" default="false"/>
+      <xs:attribute name="MissionStrictUidMissionMembership" type="xs:boolean" default="true"/>
     </xs:complexType>
   </xs:element>
 
@@ -243,6 +244,7 @@
       <xs:attribute name="x509useGroupCacheRequiresExtKeyUsage" type="xs:boolean" default="true"/>
       <xs:attribute name="x509checkRevocation" type="xs:boolean" default="false"/>
       <xs:attribute name="x509tokenAuth" type="xs:boolean" default="false"/>
+      <xs:attribute name="x509assignAdminAllGroups" type="xs:boolean" default="true"/>
     </xs:complexType>
   </xs:element>
 
