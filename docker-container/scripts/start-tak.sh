@@ -218,6 +218,16 @@ cd /opt/tak
 # Ensure persistent config directory exists
 mkdir -p /opt/tak/persistent-config
 
+# Restore retention config files if they exist
+echo "TAK Server - Restoring retention configuration"
+if [ -d "/opt/tak/persistent-config/retention" ] && [ "$(ls -A /opt/tak/persistent-config/retention 2>/dev/null)" ]; then
+    mkdir -p /opt/tak/conf/retention
+    cp -r /opt/tak/persistent-config/retention/* /opt/tak/conf/retention/ 2>/dev/null || true
+    echo "TAK Server - Restored retention configuration from persistent storage"
+else
+    echo "TAK Server - No existing retention configuration found"
+fi
+
 # Check if a persistent config file already exists
 if [ -f "/opt/tak/persistent-config/CoreConfig.xml" ]; then
     echo "TAK Server - Found existing persistent configuration, will merge with environment settings"
@@ -279,14 +289,17 @@ done
 
 echo "TAK Server - Starting server"
 
-# Setup certificate cleanup cron job
-echo "TAK Server - Setting up certificate cleanup cron job"
+# Setup certificate cleanup and retention backup cron jobs
+echo "TAK Server - Setting up certificate cleanup and retention backup cron jobs"
 cat > /etc/cron.d/tak-cert-cleanup << 'EOF'
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # Clean up duplicate certificates every 15 minutes
 */15 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
+
+# Backup retention config every 10 minutes
+*/5 * * * * root mkdir -p /opt/tak/persistent-config/retention && cp -r /opt/tak/conf/retention/* /opt/tak/persistent-config/retention/ 2>/dev/null || true
 EOF
 
 # Start cron in background
