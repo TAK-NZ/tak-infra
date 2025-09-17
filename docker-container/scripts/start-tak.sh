@@ -298,8 +298,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # Clean up duplicate certificates every 15 minutes
 */15 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
 
-# Backup retention config every 10 minutes
-*/5 * * * * root mkdir -p /opt/tak/persistent-config/retention && cp -r /opt/tak/conf/retention/* /opt/tak/persistent-config/retention/ 2>/dev/null || true
+# Backup retention config every 5 minutes (only if newer)
+*/5 * * * * root mkdir -p /opt/tak/persistent-config/retention && rsync -au /opt/tak/conf/retention/ /opt/tak/persistent-config/retention/ 2>/dev/null || true
 EOF
 
 # Start cron in background
