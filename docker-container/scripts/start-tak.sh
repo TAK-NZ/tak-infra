@@ -289,17 +289,24 @@ done
 
 echo "TAK Server - Starting server"
 
-# Setup certificate cleanup and retention backup cron jobs
-echo "TAK Server - Setting up certificate cleanup and retention backup cron jobs"
+# Setup certificate cleanup cron job
+echo "TAK Server - Setting up certificate cleanup cron job"
 cat > /etc/cron.d/tak-cert-cleanup << 'EOF'
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # Clean up duplicate certificates every 15 minutes
 */15 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
+EOF
+
+# Setup retention config backup cron job
+echo "TAK Server - Setting up retention config backup cron job"
+cat > /etc/cron.d/tak-retention-backup << 'EOF'
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 # Backup retention config every 5 minutes (only if newer)
-*/5 * * * * root mkdir -p /opt/tak/persistent-config/retention && rsync -au /opt/tak/conf/retention/ /opt/tak/persistent-config/retention/ 2>/dev/null || true
+*/5 * * * * root mkdir -p /opt/tak/persistent-config/retention && cp -ru /opt/tak/conf/retention/* /opt/tak/persistent-config/retention/ 2>/dev/null || true
 EOF
 
 # Start cron in background
