@@ -406,6 +406,9 @@ export class TakServer extends Construct {
           TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix: `cn=${props.contextConfig.takserver.ldapGroupPrefix}`,
           TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex: `cn=${props.contextConfig.takserver.ldapGroupPrefix}(.*?)(?:,|$)`
         }),
+        // WebTAK Configuration
+        TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak: (props.contextConfig.webtak?.enabled ?? false).toString(),
+        TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak: (props.contextConfig.webtak?.enabled ?? false).toString(),
         // WebTAK OIDC Configuration
         ...(props.contextConfig.webtak?.enableOidc && props.secrets.takserver.webTakOidc && {
           TAKSERVER_CoreConfig_OAuth_UseTakServerLoginPage: (props.contextConfig.webtak?.useTakServerLoginPage ?? true).toString(),
