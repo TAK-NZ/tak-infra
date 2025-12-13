@@ -42,7 +42,7 @@
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.5-RELEASE-58",
+        "version": "5.6-RELEASE-6",
         "buildRevision": 1,
         "useS3TAKServerConfigFile": false,
         "letsEncryptMode": "staging",
@@ -61,6 +61,7 @@
         "enableContainerInsights": false
       },
       "webtak": {
+        "enabled": false,
         "enableOidc": true,
         "providerName": "TAK-WebTAK",
         "applicationName": "WebTAK",
@@ -101,7 +102,7 @@
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.5-RELEASE-58",
+        "version": "5.6-RELEASE-6",
         "buildRevision": 1,
         "useS3TAKServerConfigFile": true,
         "letsEncryptMode": "production",
@@ -120,6 +121,7 @@
         "enableContainerInsights": true
       },
       "webtak": {
+        "enabled": false,
         "enableOidc": true,
         "providerName": "TAK-WebTAK",
         "applicationName": "WebTAK",
