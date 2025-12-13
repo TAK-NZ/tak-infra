@@ -772,6 +772,19 @@ if [[ "$USE_MERGE" == "true" ]]; then
         safe_xml_update "/Configuration/network/connector[@port='8446']/@keystoreFile" "/opt/tak/certs/files/$letsencrypt_domain/letsencrypt.jks" "$WORK_FILE"
     fi
     
+    # WebTAK connector settings from CDK
+    webtak_8443_enabled=$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak" "")
+    if [[ -n "$webtak_8443_enabled" ]]; then
+        echo "Applying WebTAK enablement for port 8443: $webtak_8443_enabled"
+        safe_xml_update "/Configuration/network/connector[@port='8443']/@enableWebtak" "$webtak_8443_enabled" "$WORK_FILE"
+    fi
+    
+    webtak_8446_enabled=$(get_env_value "TAKSERVER_CoreConfig_Network_Connector_8446_EnableWebtak" "")
+    if [[ -n "$webtak_8446_enabled" ]]; then
+        echo "Applying WebTAK enablement for port 8446: $webtak_8446_enabled"
+        safe_xml_update "/Configuration/network/connector[@port='8446']/@enableWebtak" "$webtak_8446_enabled" "$WORK_FILE"
+    fi
+    
     # Always recreate OAuth section from CDK environment variables (ignore existing config)
     oauth_server_name=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Name" "")
     
