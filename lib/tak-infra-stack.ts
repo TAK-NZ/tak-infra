@@ -221,7 +221,7 @@ export class TakInfraStack extends cdk.Stack {
 
     // Set up WebTAK OIDC if enabled
     let webTakOidcSetup: WebTakOidcSetup | undefined;
-    if (envConfig.webtak?.enableOidc) {
+    if (envConfig.webtak?.enabled && envConfig.webtak?.enableOidc) {
       // Use the same URL as TakServiceUrl
       const webTakUrl = route53.getServiceUrl();
       

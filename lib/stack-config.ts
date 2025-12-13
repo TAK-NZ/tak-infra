@@ -54,6 +54,7 @@ export interface ContextEnvironmentConfig {
     takImageTag?: string;
   };
   webtak?: {
+    enabled?: boolean;
     enableOidc?: boolean;
     providerName?: string;
     applicationName?: string;
