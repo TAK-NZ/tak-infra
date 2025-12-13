@@ -62,7 +62,7 @@
       },
       "webtak": {
         "enabled": false,
-        "enableOidc": true,
+        "enableOidc": false,
         "providerName": "TAK-WebTAK",
         "applicationName": "WebTAK",
         "applicationSlug": "tak-webtak",
