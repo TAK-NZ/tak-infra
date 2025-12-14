@@ -1,0 +1,50 @@
+<?xml version='1.0' standalone='yes'?>
+<preferences>
+    <!-- TAK.NZ Standard ATAK Device Profile Settings -->
+    <!-- Enables centralized administration and security management -->
+    <preference version="1" name="com.atakmap.app_preferences">
+        <!-- Allow server to push device profile updates (certificates, settings) -->
+        <!-- Crucial for centralized administration and security -->
+        <entry key="deviceProfileEnableOnConnect" class="class java.lang.Boolean">true</entry>
+        
+        <!-- Show server connection status widget on map -->
+        <!-- Improves user awareness of network status -->
+        <entry key="displayServerConnectionWidget" class="class java.lang.Boolean">true</entry>
+        
+        <!-- Set default role for user's CoT icon -->
+        <!-- Provides immediate context about user's function on the map -->
+        <entry key="atakRoleType" class="class java.lang.String">Team Member</entry>
+        
+        <!-- Maximum file transfer size (500 MB) -->
+        <!-- Essential for sharing large map packages and preventing transfer failures -->
+        <entry key="maxTransferSize" class="class java.lang.String">524288000</entry>
+    </preference>
+    
+    <!-- Civilian/Public Safety specific preferences -->
+    <!-- Standardizes units and coordinate systems for New Zealand operations -->
+    <preference version="1" name="com.atakmap.app.civ_preferences">
+        <!-- Force altitude display to metric units (meters) -->
+        <!-- Consistent with New Zealand public safety and mapping standards -->
+        <entry key="alt_unit_pref" class="class java.lang.String">1</entry>
+        
+        <!-- Force speed display to metric units (km/h) -->
+        <!-- Standardizes usage to metric -->
+        <entry key="speed_unit_pref" class="class java.lang.String">1</entry>
+        
+        <!-- Force Range and Bearing tool to metric units (meters/kilometers) -->
+        <!-- Standardizes all distance measurements to metric -->
+        <entry key="rab_rng_units_pref" class="class java.lang.String">1</entry>
+        
+        <!-- Set North reference to True North (0=True, 1=Magnetic) -->
+        <!-- True North aligns with UTM grid and mapping standards -->
+        <entry key="rab_north_ref_pref" class="class java.lang.String">0</entry>
+        
+        <!-- Set coordinate display to Universal Transverse Mercator -->
+        <!-- Best metric, grid-based coordinate system for public safety operations -->
+        <entry key="coord_display_pref" class="class java.lang.String">UTM</entry>
+        
+        <!-- Set default background map layer to LINZ Topographic -->
+        <!-- Ensures standardized starting map view for all New Zealand users -->
+        <entry key="MobileLayerSelectionAdapter.selected" class="class java.lang.String">01 - TAK.NZ - LINZ Topographic</entry>
+    </preference>
+</preferences>
