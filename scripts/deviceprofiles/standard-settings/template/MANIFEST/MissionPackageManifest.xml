@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MissionPackageManifest version="2">
+    <configuration>
+        <exportTagName>TAK_NZ_Standard_Settings</exportTagName>
+        <uid>{{UUID}}</uid>
+        <name>TAK.NZ ATAK Standard Settings</name>
+    </configuration>
+    <contents>
+        <content>
+            <path>prefs/config.pref</path>
+            <mime>application/vnd.atak-pref</mime>
+            <hash>{{HASH}}</hash> 
+        </content>
+    </contents>
+</MissionPackageManifest>

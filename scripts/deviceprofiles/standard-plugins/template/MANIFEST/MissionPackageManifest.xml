@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MissionPackageManifest version="2">
+    <configuration>
+        <exportTagName>TAK-NZ-Standard-Plugins</exportTagName>
+        <uid>{{UUID}}</uid>
+        <name>Data Sync Plugin Installer</name>
+    </configuration>
+    <contents>
+        <content>
+            <path>plugins/plugin.xml</path>
+            <mime>application/vnd.atak-plugin-manifest</mime>
+            <hash>{{HASH}}</hash> 
+        </content>
+    </contents>
+</MissionPackageManifest>

@@ -1,0 +1,10 @@
+<plugins>
+    <plugin
+        name="DataSync"
+        version="5.5"
+        path="ATAK-Plugin-datasync-3.5.32-7878c349-5.5.0-civ-release.apk"
+        mime="application/vnd.android.package-archive"
+        onReceiveInstall="true"
+        onReceiveEnable="true"
+    />
+</plugins>

@@ -63,6 +63,10 @@ coverage/
 tak-data/
 takserver-docker-*.zip
 
+# Device Profile packages
+TAK-NZ-ATAK-Standard-Settings-*.zip
+TAK-NZ-Standard-Plugins-*.zip
+
 # Backup, To-Do and Reference directory 
 backup/
 todo/
