@@ -16,7 +16,7 @@ ADMIN_PASS="atakatak"
 API_BASE="https://localhost:8443"
 CURL_TIMEOUT=10
 MAX_PARALLEL_JOBS=5
-REVOKED_RETENTION_DAYS=7  # Delete revoked certs older than this
+# Note: Only deletes revoked certs that have also expired (prevents unrevocation)
 
 # Check bash version
 if ((BASH_VERSINFO[0] < 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 3))); then
@@ -117,9 +117,9 @@ fi
 echo ""
 
 # ============================================================================
-# PHASE 2: Delete Old Revoked Certificates
+# PHASE 2: Delete Expired Revoked Certificates
 # ============================================================================
-echo "PHASE 2: Deleting old revoked certificates"
+echo "PHASE 2: Deleting expired revoked certificates"
 echo "----------------------------------------"
 
 echo "Fetching revoked certificates..."
@@ -135,21 +135,21 @@ if [ -z "$REVOKED_JSON" ]; then
     exit 1
 fi
 
-# Calculate cutoff date
-CUTOFF_DATE=$(date -u -d "$REVOKED_RETENTION_DAYS days ago" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null || date -u -v-${REVOKED_RETENTION_DAYS}d +"%Y-%m-%dT%H:%M:%S")
-echo "Deleting certificates revoked before: $CUTOFF_DATE"
+# Current date for expiration comparison
+CURRENT_DATE=$(date -u +"%Y-%m-%dT%H:%M:%S")
+echo "Deleting certificates that are revoked AND expired (expiration < $CURRENT_DATE)"
 
-# Find old revoked certificates
-declare -a old_revoked_ids
-while IFS='|' read -r id revocation_date; do
-    [ -z "$id" ] || [ "$id" = "null" ] || [ -z "$revocation_date" ] || [ "$revocation_date" = "null" ] && continue
-    [[ "$revocation_date" < "$CUTOFF_DATE" ]] && old_revoked_ids+=("$id")
-done < <(echo "$REVOKED_JSON" | jq -r '.data[] | select(.id != null and .revocationDate != null) | "\(.id)|\(.revocationDate)"')
+# Find expired revoked certificates
+declare -a expired_revoked_ids
+while IFS='|' read -r id expiration_date; do
+    [ -z "$id" ] || [ "$id" = "null" ] || [ -z "$expiration_date" ] || [ "$expiration_date" = "null" ] && continue
+    [[ "$expiration_date" < "$CURRENT_DATE" ]] && expired_revoked_ids+=("$id")
+done < <(echo "$REVOKED_JSON" | jq -r '.data[] | select(.id != null and .expirationDate != null) | "\(.id)|\(.expirationDate)"')
 
-if [ ${#old_revoked_ids[@]} -eq 0 ]; then
-    echo "No old revoked certificates to delete."
+if [ ${#expired_revoked_ids[@]} -eq 0 ]; then
+    echo "No expired revoked certificates to delete."
 else
-    echo "Found ${#old_revoked_ids[@]} old revoked certificates to delete"
+    echo "Found ${#expired_revoked_ids[@]} expired revoked certificates to delete"
     
     delete_cert() {
         local id="$1"
@@ -168,7 +168,7 @@ else
     }
     
     if [ "$PARALLEL_MODE" = true ]; then
-        for id in "${old_revoked_ids[@]}"; do
+        for id in "${expired_revoked_ids[@]}"; do
             while [ $(jobs -r | wc -l) -ge $MAX_PARALLEL_JOBS ]; do
                 wait -n 2>/dev/null || true
             done
@@ -176,7 +176,7 @@ else
         done
         wait
     else
-        for id in "${old_revoked_ids[@]}"; do
+        for id in "${expired_revoked_ids[@]}"; do
             delete_cert "$id"
         done
     fi
@@ -187,5 +187,5 @@ echo "========================================"
 echo "Certificate cleanup complete"
 echo "========================================"
 echo "Phase 1: Revoked ${#duplicates_to_revoke[@]} duplicate certificates"
-echo "Phase 2: Deleted ${#old_revoked_ids[@]} old revoked certificates"
+echo "Phase 2: Deleted ${#expired_revoked_ids[@]} expired revoked certificates"
 echo ""
