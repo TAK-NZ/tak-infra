@@ -173,7 +173,8 @@ export class Database extends Construct {
           logs.RetentionDays.ONE_MONTH : 
           logs.RetentionDays.ONE_WEEK,
         monitoringRole: enableMonitoring ? monitoringRole : undefined,
-        monitoringInterval: enableMonitoring ? Duration.seconds(dbConfig.monitoringInterval) : undefined
+        monitoringInterval: enableMonitoring ? Duration.seconds(dbConfig.monitoringInterval) : undefined,
+        networkType: rds.NetworkType.DUAL
       });
     } else {
       // Provisioned instances configuration
@@ -226,7 +227,8 @@ export class Database extends Construct {
           logs.RetentionDays.ONE_MONTH : 
           logs.RetentionDays.ONE_WEEK,
         monitoringRole: enableMonitoring ? monitoringRole : undefined,
-        monitoringInterval: enableMonitoring ? Duration.seconds(dbConfig.monitoringInterval) : undefined
+        monitoringInterval: enableMonitoring ? Duration.seconds(dbConfig.monitoringInterval) : undefined,
+        networkType: rds.NetworkType.DUAL
       });
     }
 

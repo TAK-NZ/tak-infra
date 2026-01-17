@@ -1,69 +1,189 @@
 #!/bin/bash
-
-# TAK Server Duplicate Certificate Cleanup
+#
+# TAK Server Certificate Cleanup Script
 # 
-# This script identifies and revokes duplicate certificates for the same user/device
-# combination. It keeps the most recently issued certificate and revokes all older
-# duplicates to prevent authentication conflicts and maintain certificate hygiene.
+# Phase 1: Revoke duplicate certificates (keeps newest per user)
+# Phase 2: Delete old revoked certificates (revoked > X days ago)
+#
+# Uses efficient O(N) algorithms and parallel processing
 
 set -euo pipefail
 
-CERT_PATH="/opt/tak/certs/files/admin.pem"
-KEY_PATH="/opt/tak/certs/files/admin.key"
-KEY_PASS="atakatak"
-BASE_URL="https://localhost:8443/Marti/api/certadmin"
+# Configuration
+ADMIN_CERT="/opt/tak/certs/files/admin.pem"
+ADMIN_KEY="/opt/tak/certs/files/admin.key"
+ADMIN_PASS="atakatak"
+API_BASE="https://localhost:8443"
+CURL_TIMEOUT=10
+MAX_PARALLEL_JOBS=5
+REVOKED_RETENTION_DAYS=7  # Delete revoked certs older than this
 
-echo "Fetching all certificates from TAK Server..."
+# Check bash version
+if ((BASH_VERSINFO[0] < 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 3))); then
+    echo "Warning: Bash 4.3+ required for parallel processing. Falling back to sequential mode."
+    PARALLEL_MODE=false
+else
+    PARALLEL_MODE=true
+fi
 
-CERTS=$(curl -s -k --cert "$CERT_PATH" --key "$KEY_PATH" --pass "$KEY_PASS" "$BASE_URL/cert")
+echo "========================================"
+echo "TAK Server Certificate Cleanup"
+echo "========================================"
+echo ""
 
-if [[ -z "$CERTS" ]]; then
-    echo "Error: No response from server"
+# ============================================================================
+# PHASE 1: Revoke Duplicate Certificates
+# ============================================================================
+echo "PHASE 1: Revoking duplicate certificates"
+echo "----------------------------------------"
+
+echo "Fetching active certificates..."
+ACTIVE_JSON=$(curl -ks \
+  --cert "$ADMIN_CERT" \
+  --key "$ADMIN_KEY" \
+  --pass "$ADMIN_PASS" \
+  --max-time "$CURL_TIMEOUT" \
+  "$API_BASE/Marti/api/certadmin/cert/active" 2>/dev/null)
+
+if [ -z "$ACTIVE_JSON" ]; then
+    echo "Error: Failed to fetch active certificates"
     exit 1
 fi
 
-echo "Processing certificates to find duplicates..."
+# Build user map to find duplicates
+declare -A user_newest_date
+declare -A user_newest_id
+declare -a all_active_certs
 
-TEMP_FILE=$(mktemp)
-trap "rm -f $TEMP_FILE" EXIT
-
-# Extract certificates from .data array and filter non-revoked ones
-echo "$CERTS" | jq -r '.data[] | select(.revocationDate == null) | "\(.userDn)|\(.clientUid)|\(.issuanceDate)|\(.hash)"' | sort > "$TEMP_FILE"
-
-echo "Found $(wc -l < "$TEMP_FILE") active certificates"
-
-# Process duplicates
-processed_keys=()
-while IFS='|' read -r user_dn client_uid issuance_date hash; do
-    key="${user_dn}|${client_uid}"
+while IFS='|' read -r id user_dn issuance_date; do
+    [ -z "$id" ] || [ "$id" = "null" ] && continue
     
-    # Skip if already processed
-    if [[ " ${processed_keys[*]} " =~ " ${key} " ]]; then
-        continue
+    all_active_certs+=("$id|$user_dn|$issuance_date")
+    
+    if [ -z "${user_newest_date[$user_dn]:-}" ] || [[ "$issuance_date" > "${user_newest_date[$user_dn]}" ]]; then
+        user_newest_date[$user_dn]="$issuance_date"
+        user_newest_id[$user_dn]="$id"
     fi
+done < <(echo "$ACTIVE_JSON" | jq -r '.data[] | select(.id != null and .userDn != null and .issuanceDate != null and .revocationDate == null) | "\(.id)|\(.userDn)|\(.issuanceDate)"')
+
+echo "Found ${#all_active_certs[@]} active certificates"
+echo "Found ${#user_newest_id[@]} unique users"
+
+# Identify duplicates
+declare -a duplicates_to_revoke
+for cert_info in "${all_active_certs[@]}"; do
+    IFS='|' read -r id user_dn issuance_date <<< "$cert_info"
+    [ "$id" != "${user_newest_id[$user_dn]}" ] && duplicates_to_revoke+=("$id")
+done
+
+if [ ${#duplicates_to_revoke[@]} -eq 0 ]; then
+    echo "No duplicate certificates found."
+else
+    echo "Found ${#duplicates_to_revoke[@]} duplicates to revoke"
     
-    # Get all certificates for this combination
-    matching_certs=$(grep "^${user_dn}|${client_uid}|" "$TEMP_FILE")
-    cert_count=$(echo "$matching_certs" | wc -l)
+    revoke_cert() {
+        local id="$1"
+        local http_code
+        http_code=$(curl -ks \
+          --cert "$ADMIN_CERT" \
+          --key "$ADMIN_KEY" \
+          --pass "$ADMIN_PASS" \
+          --max-time "$CURL_TIMEOUT" \
+          -w "%{http_code}" \
+          -o /dev/null \
+          -X DELETE \
+          "$API_BASE/Marti/api/certadmin/cert/revoke/$id" 2>/dev/null)
+        
+        [ "$http_code" = "200" ] && echo "  ✓ Revoked ID: $id" || echo "  ✗ Failed ID: $id (HTTP $http_code)"
+    }
     
-    if [[ $cert_count -gt 1 ]]; then
-        echo "Found $cert_count certificates for userDn='$user_dn', clientUid='$client_uid'"
-        
-        # Get hashes to revoke (all except the most recent)
-        hashes_to_revoke=$(echo "$matching_certs" | sort -t'|' -k3 -r | tail -n +2 | cut -d'|' -f4)
-        
-        for hash_to_revoke in $hashes_to_revoke; do
-            echo "  Revoking certificate: $hash_to_revoke"
-            
-            if curl -s -k -X DELETE --cert "$CERT_PATH" --key "$KEY_PATH" --pass "$KEY_PASS" "$BASE_URL/cert/$hash_to_revoke" >/dev/null; then
-                echo "    ✓ Revoked $hash_to_revoke"
-            else
-                echo "    ✗ Failed to revoke $hash_to_revoke"
-            fi
+    if [ "$PARALLEL_MODE" = true ]; then
+        for id in "${duplicates_to_revoke[@]}"; do
+            while [ $(jobs -r | wc -l) -ge $MAX_PARALLEL_JOBS ]; do
+                wait -n 2>/dev/null || true
+            done
+            revoke_cert "$id" &
+        done
+        wait
+    else
+        for id in "${duplicates_to_revoke[@]}"; do
+            revoke_cert "$id"
         done
     fi
-    
-    processed_keys+=("$key")
-done < "$TEMP_FILE"
+fi
 
-echo "Certificate cleanup completed."
+echo ""
+
+# ============================================================================
+# PHASE 2: Delete Old Revoked Certificates
+# ============================================================================
+echo "PHASE 2: Deleting old revoked certificates"
+echo "----------------------------------------"
+
+echo "Fetching revoked certificates..."
+REVOKED_JSON=$(curl -ks \
+  --cert "$ADMIN_CERT" \
+  --key "$ADMIN_KEY" \
+  --pass "$ADMIN_PASS" \
+  --max-time "$CURL_TIMEOUT" \
+  "$API_BASE/Marti/api/certadmin/cert/revoked" 2>/dev/null)
+
+if [ -z "$REVOKED_JSON" ]; then
+    echo "Error: Failed to fetch revoked certificates"
+    exit 1
+fi
+
+# Calculate cutoff date
+CUTOFF_DATE=$(date -u -d "$REVOKED_RETENTION_DAYS days ago" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null || date -u -v-${REVOKED_RETENTION_DAYS}d +"%Y-%m-%dT%H:%M:%S")
+echo "Deleting certificates revoked before: $CUTOFF_DATE"
+
+# Find old revoked certificates
+declare -a old_revoked_ids
+while IFS='|' read -r id revocation_date; do
+    [ -z "$id" ] || [ "$id" = "null" ] || [ -z "$revocation_date" ] || [ "$revocation_date" = "null" ] && continue
+    [[ "$revocation_date" < "$CUTOFF_DATE" ]] && old_revoked_ids+=("$id")
+done < <(echo "$REVOKED_JSON" | jq -r '.data[] | select(.id != null and .revocationDate != null) | "\(.id)|\(.revocationDate)"')
+
+if [ ${#old_revoked_ids[@]} -eq 0 ]; then
+    echo "No old revoked certificates to delete."
+else
+    echo "Found ${#old_revoked_ids[@]} old revoked certificates to delete"
+    
+    delete_cert() {
+        local id="$1"
+        local http_code
+        http_code=$(curl -ks \
+          --cert "$ADMIN_CERT" \
+          --key "$ADMIN_KEY" \
+          --pass "$ADMIN_PASS" \
+          --max-time "$CURL_TIMEOUT" \
+          -w "%{http_code}" \
+          -o /dev/null \
+          -X DELETE \
+          "$API_BASE/Marti/api/certadmin/cert/delete/$id" 2>/dev/null)
+        
+        [ "$http_code" = "200" ] && echo "  ✓ Deleted ID: $id" || echo "  ✗ Failed ID: $id (HTTP $http_code)"
+    }
+    
+    if [ "$PARALLEL_MODE" = true ]; then
+        for id in "${old_revoked_ids[@]}"; do
+            while [ $(jobs -r | wc -l) -ge $MAX_PARALLEL_JOBS ]; do
+                wait -n 2>/dev/null || true
+            done
+            delete_cert "$id" &
+        done
+        wait
+    else
+        for id in "${old_revoked_ids[@]}"; do
+            delete_cert "$id"
+        done
+    fi
+fi
+
+echo ""
+echo "========================================"
+echo "Certificate cleanup complete"
+echo "========================================"
+echo "Phase 1: Revoked ${#duplicates_to_revoke[@]} duplicate certificates"
+echo "Phase 2: Deleted ${#old_revoked_ids[@]} old revoked certificates"
+echo ""

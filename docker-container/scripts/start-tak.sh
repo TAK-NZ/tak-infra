@@ -295,8 +295,8 @@ cat > /etc/cron.d/tak-cert-cleanup << 'EOF'
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-# Clean up duplicate certificates every 15 minutes
-*/15 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
+# Clean up duplicate certificates every hour
+0 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
 EOF
 
 # Setup retention config backup cron job
