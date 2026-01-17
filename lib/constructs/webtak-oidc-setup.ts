@@ -73,6 +73,7 @@ export class WebTakOidcSetup extends Construct {
         LAUNCH_URL: `${webTakUrl}/login/auth`,
         OPEN_IN_NEW_TAB: openInNewTab ? 'true' : 'false',
         APPLICATION_DESCRIPTION: description,
+        HIDE_AUTHENTIK_APP: (webTakConfig?.hideAuthentikApp ?? true) ? 'true' : 'false',
         ...(webTakConfig?.authenticationFlowName ? { AUTHENTICATION_FLOW_NAME: webTakConfig.authenticationFlowName } : {}),
         ...(webTakConfig?.authorizationFlowName ? { AUTHORIZATION_FLOW_NAME: webTakConfig.authorizationFlowName } : {}),
         ...(webTakConfig?.invalidationFlowName ? { INVALIDATION_FLOW_NAME: webTakConfig.invalidationFlowName } : {}),

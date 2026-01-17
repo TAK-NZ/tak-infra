@@ -62,7 +62,7 @@
       },
       "webtak": {
         "enabled": false,
-        "enableOidc": false,
+        "enableOidc": true,
         "providerName": "TAK-WebTAK",
         "applicationName": "WebTAK",
         "applicationSlug": "tak-webtak",
@@ -74,7 +74,8 @@
         "description": "Web-based geospatial collaboration platform (Legacy system).",
         "iconPath": "src/webtak-oidc-setup/tak-logo.png",
         "signingKeyName": "authentik Self-signed Certificate",
-        "useTakServerLoginPage": false
+        "useTakServerLoginPage": true,
+        "hideAuthentikApp": true
       }
     },
     "prod": {
@@ -134,7 +135,8 @@
         "description": "Web-based geospatial collaboration platform (Legacy system).",
         "iconPath": "src/webtak-oidc-setup/tak-logo.png",
         "signingKeyName": "authentik Self-signed Certificate",
-        "useTakServerLoginPage": false
+        "useTakServerLoginPage": true,
+        "hideAuthentikApp": true
       }
     },
     "tak-defaults": {

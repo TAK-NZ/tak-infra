@@ -2,7 +2,7 @@
 #
 # TAK Server Certificate Cleanup Script
 # 
-# Phase 1: Revoke duplicate certificates (keeps newest per user)
+# Phase 1: Revoke duplicate certificates (keeps newest per user+device)
 # Phase 2: Delete old revoked certificates (revoked > X days ago)
 #
 # Uses efficient O(N) algorithms and parallel processing
@@ -50,30 +50,32 @@ if [ -z "$ACTIVE_JSON" ]; then
     exit 1
 fi
 
-# Build user map to find duplicates
-declare -A user_newest_date
-declare -A user_newest_id
+# Build user+device map to find duplicates
+declare -A user_device_newest_date
+declare -A user_device_newest_id
 declare -a all_active_certs
 
-while IFS='|' read -r id user_dn issuance_date; do
+while IFS='|' read -r id user_dn client_uid issuance_date; do
     [ -z "$id" ] || [ "$id" = "null" ] && continue
     
-    all_active_certs+=("$id|$user_dn|$issuance_date")
+    # Create unique key from user + device
+    user_device_key="${user_dn}|${client_uid}"
+    all_active_certs+=("$id|$user_device_key|$issuance_date")
     
-    if [ -z "${user_newest_date[$user_dn]:-}" ] || [[ "$issuance_date" > "${user_newest_date[$user_dn]}" ]]; then
-        user_newest_date[$user_dn]="$issuance_date"
-        user_newest_id[$user_dn]="$id"
+    if [ -z "${user_device_newest_date[$user_device_key]:-}" ] || [[ "$issuance_date" > "${user_device_newest_date[$user_device_key]}" ]]; then
+        user_device_newest_date[$user_device_key]="$issuance_date"
+        user_device_newest_id[$user_device_key]="$id"
     fi
-done < <(echo "$ACTIVE_JSON" | jq -r '.data[] | select(.id != null and .userDn != null and .issuanceDate != null and .revocationDate == null) | "\(.id)|\(.userDn)|\(.issuanceDate)"')
+done < <(echo "$ACTIVE_JSON" | jq -r '.data[] | select(.id != null and .userDn != null and .clientUid != null and .issuanceDate != null and .revocationDate == null) | "\(.id)|\(.userDn)|\(.clientUid)|\(.issuanceDate)"')
 
 echo "Found ${#all_active_certs[@]} active certificates"
-echo "Found ${#user_newest_id[@]} unique users"
+echo "Found ${#user_device_newest_id[@]} unique user+device combinations"
 
 # Identify duplicates
 declare -a duplicates_to_revoke
 for cert_info in "${all_active_certs[@]}"; do
-    IFS='|' read -r id user_dn issuance_date <<< "$cert_info"
-    [ "$id" != "${user_newest_id[$user_dn]}" ] && duplicates_to_revoke+=("$id")
+    IFS='|' read -r id user_device_key issuance_date <<< "$cert_info"
+    [ "$id" != "${user_device_newest_id[$user_device_key]}" ] && duplicates_to_revoke+=("$id")
 done
 
 if [ ${#duplicates_to_revoke[@]} -eq 0 ]; then

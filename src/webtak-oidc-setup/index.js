@@ -153,7 +153,8 @@ exports.handler = async (event, context) => {
     // Create or update application
     const applicationName = process.env.APPLICATION_NAME;
     const applicationSlug = process.env.APPLICATION_SLUG;
-    const launchUrl = process.env.LAUNCH_URL;
+    const hideAuthentikApp = process.env.HIDE_AUTHENTIK_APP === 'true';
+    const launchUrl = hideAuthentikApp ? 'blank://blank' : process.env.LAUNCH_URL;
     const openInNewTab = process.env.OPEN_IN_NEW_TAB === 'true';
     const description = process.env.APPLICATION_DESCRIPTION;
     const groupName = process.env.GROUP_NAME;
@@ -593,11 +594,11 @@ async function uploadApplicationIcon(api, appSlug) {
     // Check if application already has an icon
     const appResponse = await api.get(`/api/v3/core/applications/${appSlug}/`);
     if (appResponse.data.meta_icon) {
-      console.log(`Application ${appSlug} already has an icon, skipping upload`);
+      console.log(`Application ${appSlug} already has an icon: ${appResponse.data.meta_icon}`);
+      console.log('Skipping icon upload');
       return null;
     }
     
-    // Use file upload instead of URL
     const iconPath = path.join(__dirname, 'tak-logo.png');
     console.log(`Uploading icon from: ${iconPath}`);
     
@@ -606,24 +607,47 @@ async function uploadApplicationIcon(api, appSlug) {
       return null;
     }
     
+    // Step 1: Upload file to Authentik media storage
     const form = new FormData();
-    form.append('file', fs.createReadStream(iconPath));
+    form.append('file', fs.createReadStream(iconPath), 'tak-logo.png');
     
-    const response = await api.post(`/api/v3/core/applications/${appSlug}/set_icon/`, form, {
+    // Don't use the api instance - it has Content-Type: application/json set
+    // Create a direct axios request with proper headers
+    const uploadResponse = await axios.post(`${api.defaults.baseURL}/api/v3/admin/file/`, form, {
       headers: {
+        'Authorization': api.defaults.headers['Authorization'],
         ...form.getHeaders(),
-        'Content-Type': 'multipart/form-data',
       },
     });
     
-    console.log('Icon uploaded successfully');
+    console.log('File upload response:', JSON.stringify(uploadResponse.data, null, 2));
+    
+    // The response contains a 'url' field with the file path
+    const uploadedFilePath = uploadResponse.data.url;
+    
+    if (!uploadedFilePath) {
+      console.error('Could not find url field in upload response');
+      return null;
+    }
+    
+    console.log(`File uploaded successfully: ${uploadedFilePath}`);
+    
+    // Step 2: Update application with the uploaded file path
+    const response = await api.patch(`/api/v3/core/applications/${appSlug}/`, {
+      meta_icon: uploadedFilePath
+    });
+    
+    console.log('Icon set successfully');
     return response.data;
   } catch (error) {
-    console.error('Error uploading application icon:', error.message);
-    if (error.response && error.response.data) {
-      console.error('Error details:', JSON.stringify(error.response.data, null, 2));
+    console.error('Error setting application icon:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response statusText:', error.response.statusText);
+      if (error.response.data) {
+        console.error('Error details:', JSON.stringify(error.response.data, null, 2));
+      }
     }
-    // Don't throw error for icon upload failures
     return null;
   }
 }

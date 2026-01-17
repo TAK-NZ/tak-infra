@@ -72,8 +72,8 @@ export class TakSecretsManager extends Construct {
       removalPolicy: removalPolicy
     });
 
-    // Create WebTAK OIDC client secret if WebTAK is enabled and OIDC is enabled
-    if (props.contextConfig.webtak?.enabled && props.contextConfig.webtak?.enableOidc) {
+    // Create WebTAK OIDC client secret if OIDC is enabled
+    if (props.contextConfig.webtak?.enableOidc) {
       this.webTakOidcClientSecret = new secretsmanager.Secret(this, 'WebTakOidcClientSecret', {
         secretName: `${stackName}/TAK-Server/WebTAK-OIDC-Client-Secret`,
         description: `WebTAK OIDC Client Secret`,
