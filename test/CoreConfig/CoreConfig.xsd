@@ -35,6 +35,7 @@
         <xs:element ref="locate" minOccurs="0"/>
         <xs:element ref="vbm" minOccurs="0"/>
         <xs:element ref="profile" minOccurs="0"/>
+        <xs:element ref="webContent" minOccurs="0" />
       </xs:all>
       <xs:attribute name="forceLowConcurrency" type="xs:boolean" default="false"/>
     </xs:complexType>
@@ -137,9 +138,19 @@
           <xs:documentation>Explicity set the size for Tomcat service thread pool. multiplier for autodetected ignite thread pool size. The optimal value varies based on system capabilities (CPU core count).</xs:documentation>
         </xs:annotation>
       </xs:attribute>
-      <xs:attribute name="tomcatPoolMultiplier" type="xs:int" default="32">
+      <xs:attribute name="tomcatPoolMultiplier" type="xs:int" default="2">
         <xs:annotation>
           <xs:documentation>Set the multiplier for autodetected ignite thread pool size. The optimal value varies based on system capabilities (CPU core count).</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="apiAsyncExecutorMultiplier" type="xs:int" default="2">
+        <xs:annotation>
+          <xs:documentation>Set the multiplier for size of async executor pool used by REST APIs.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="apiAsyncExecutorQueueSize" type="xs:int" default="64">
+        <xs:annotation>
+          <xs:documentation>Set the async executor pool queue size (used by REST APIs.)</xs:documentation>
         </xs:annotation>
       </xs:attribute>
       <xs:attribute name="cloudwatchNamespace" type="xs:string" default="takserver"/>
@@ -155,8 +166,30 @@
       <xs:attribute name="MissionUseGroupsForContents" type="xs:boolean" default="false"/>
       <xs:attribute name="MissionAllowGroupChange" type="xs:boolean" default="false"/>
       <xs:attribute name="MissionStrictUidMissionMembership" type="xs:boolean" default="true"/>
+      <xs:attribute name="MissionBrokerUidAddsFromApi" type="xs:boolean" default="true"/>
     </xs:complexType>
   </xs:element>
+
+  <xs:element name="webContent">
+    <xs:complexType>
+        <xs:annotation>
+            <xs:documentation>
+            Allows administrators to enable group based content filtering. Using this field you can declare
+            subtrees of webcontent which require specific group association to access.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="accessFilter" type="accessFilterType"  minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="accessFilterType">
+      <xs:sequence>
+          <xs:element name="group" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="folder" type="xs:string" />
+  </xs:complexType>
 
   <xs:simpleType name="authType">
     <xs:restriction base="xs:string">
@@ -220,6 +253,8 @@
             <xs:attribute name="connectionPoolTimeout" type="xs:string" default="30000" />
             <xs:attribute name="dnAttributeName" type="xs:string" default="distinguishedName"/>
             <xs:attribute name="nameAttr" type="xs:string" default="cn"/>
+            <xs:attribute name="nameAttrAD" type="xs:string" default="sAMAccountName"/>
+            <xs:attribute name="adminGroup" type="xs:string"/>
           </xs:complexType>
         </xs:element>
         <xs:element name="File" minOccurs="0" maxOccurs="1">
@@ -343,8 +378,10 @@
           <xs:documentation>Cache TTL for caffeine file cache (if enabled). Default 120 seconds.</xs:documentation>
         </xs:annotation>
       </xs:attribute>
+      <xs:attribute name="oAuthConfigurationsCacheSeconds" type="xs:int" default="86400"/>
+      <xs:attribute name="oAuthPublicKeyCacheSeconds" type="xs:int" default="43200"/>
       <xs:attribute name="groupDescriptionCacheSeconds" type="xs:int" default="300"/>
-      <xs:attribute name="missionCacheLockTimeoutMilliseconds" type="xs:int" default="500">
+      <xs:attribute name="missionCacheLockTimeoutMilliseconds" type="xs:int" default="10000">
        <xs:annotation>
          <xs:documentation>Default timeout to acquire lock for get mission query.</xs:documentation>
        </xs:annotation>
@@ -597,7 +634,6 @@
       <xs:attribute name="keystorePass" type="xs:string" use="required"/>
     </xs:complexType>
   </xs:element>
-
   <xs:element name="oauth">
     <xs:complexType>
       <xs:annotation>
@@ -625,6 +661,13 @@
             <xs:annotation>
               <xs:documentation>OAuth authorization server</xs:documentation>
             </xs:annotation>
+              <xs:sequence>
+                  <xs:element name="key" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                      <xs:annotation>
+                          <xs:documentation>Series of strings which represent the base64 key format.</xs:documentation>
+                      </xs:annotation>
+                  </xs:element>
+              </xs:sequence>
             <xs:attribute name="name" type="xs:string"  use="required"/>
             <xs:attribute name="issuer" type="xs:string" use="required"/>
             <xs:attribute name="clientId" type="xs:string" use="required"/>
@@ -636,6 +679,21 @@
             <xs:attribute name="accessTokenName" type="xs:string" default="access_token"/>
             <xs:attribute name="refreshTokenName" type="xs:string" default="refresh_token"/>
             <xs:attribute name="trustAllCerts" type="xs:boolean" default="false"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="openIdDiscoveryConfiguraiton" minOccurs="0" maxOccurs="unbounded">
+            <xs:complexType>
+              <xs:annotation>
+                  <xs:documentation>OpenID Connect Discovery Well Known Configuraiton support</xs:documentation>
+              </xs:annotation>
+              <xs:attribute name="name" type="xs:string" use="required"/>
+              <xs:attribute name="clientId" type="xs:string" use="required"/>
+              <xs:attribute name="secret" type="xs:string" use="required"/>
+              <xs:attribute name="redirectUri" type="xs:string" use="required"/>
+              <xs:attribute name="configurationUri" type="xs:string" use="required"/>
+              <xs:attribute name="accessTokenName" type="xs:string" default="access_token"/>
+              <xs:attribute name="refreshTokenName" type="xs:string" default="refresh_token"/>
+              <xs:attribute name="trustAllCerts" type="xs:boolean" default="false"/>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
@@ -652,6 +710,7 @@
       <xs:attribute name="webtakScope" type="xs:string" />
       <xs:attribute name="groupprefix" type="xs:string" default=""/>
       <xs:attribute name="allowUriQueryParameter" type="xs:boolean" default="false"/>
+      <xs:attribute name="allowAccessTokenRetrieval" type="xs:boolean" default="false"/>
     </xs:complexType>
   </xs:element>
 
@@ -1269,7 +1328,8 @@
       <xs:attribute name="natsClusterID" type="xs:string" default="takserver-nats-streaming" />
       <xs:attribute name="kubernetes" type="xs:boolean" default="false" />
       <xs:attribute name="cacheConfig" type="xs:boolean" default="true" />
-      <xs:attribute name="metricsIntervalSeconds" type="xs:int" default="2147483646" />
+      <xs:attribute name="metricsIntervalDelaySeconds" type="xs:int" default="5" />
+      <xs:attribute name="metricsIntervalSeconds" type="xs:int" default="60" />
     </xs:complexType>
   </xs:element>
 
@@ -1356,7 +1416,7 @@
             default="false" />
         <xs:attribute name="quicConnectionTimeoutSeconds" type="xs:long"
             default="90" />
-            
+        <xs:attribute name="takServerHost" type="xs:string"/>
 	</xs:complexType>
 	
 	<xs:complexType name="dataFeed">
