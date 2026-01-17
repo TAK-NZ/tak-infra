@@ -68,5 +68,6 @@ export interface ContextEnvironmentConfig {
     iconPath?: string;
     signingKeyName?: string;
     useTakServerLoginPage?: boolean;
+    hideAuthentikApp?: boolean;
   };
 }

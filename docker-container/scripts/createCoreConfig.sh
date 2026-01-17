@@ -72,6 +72,7 @@ declare -A XPATH_MAPPINGS=(
     ["TAKSERVER_CoreConfig_Auth_LDAP_EnableConnectionPool"]="/Configuration/auth/ldap/@enableConnectionPool"
     ["TAKSERVER_CoreConfig_Auth_LDAP_DnAttributeName"]="/Configuration/auth/ldap/@dnAttributeName"
     ["TAKSERVER_CoreConfig_Auth_LDAP_NameAttr"]="/Configuration/auth/ldap/@nameAttr"
+    ["TAKSERVER_CoreConfig_Auth_LDAP_AdminGroup"]="/Configuration/auth/ldap/@adminGroup"
     
     # Federation settings
     ["TAKSERVER_CoreConfig_Federation_EnableFederation"]="/Configuration/federation/@enableFederation"
