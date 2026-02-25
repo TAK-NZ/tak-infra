@@ -167,6 +167,7 @@
       <xs:attribute name="MissionAllowGroupChange" type="xs:boolean" default="false"/>
       <xs:attribute name="MissionStrictUidMissionMembership" type="xs:boolean" default="true"/>
       <xs:attribute name="MissionBrokerUidAddsFromApi" type="xs:boolean" default="true"/>
+      <xs:attribute name="disableBroadcastMapItems" type="xs:boolean" default="false"/>
     </xs:complexType>
   </xs:element>
 
@@ -1005,9 +1006,10 @@
                   <xs:attribute name="tlsVersion" type="xs:string" default="TLSv1.2"/>
                 </xs:complexType>
               </xs:element>
-              <xs:element name="federation-token-authentication" minOccurs="1" maxOccurs="1">
+              <xs:element name="federation-token-authentication" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:attribute name="enabled" type="xs:boolean" default="false"/>
+                  <xs:attribute name="tls" type="xs:boolean" default="true"/>
                   <xs:attribute name="port" type="xs:int" default="9002"/>
                 </xs:complexType>
               </xs:element>
@@ -1048,6 +1050,7 @@
             <xs:attribute name="connectionToken" type="xs:string" default=""/>
             <xs:attribute name="useToken" type="xs:boolean" default="false"/>
             <xs:attribute name="tokenType" type="xs:string" default=""/>
+            <xs:attribute name="tls" type="xs:boolean" default="true"/>
           </xs:complexType>
         </xs:element>
         

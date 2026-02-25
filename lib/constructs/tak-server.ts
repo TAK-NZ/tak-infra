@@ -352,6 +352,7 @@ export class TakServer extends Construct {
           TAK_VERSION: `takserver-docker-${props.contextConfig.takserver.version}`,
           ENVIRONMENT: props.contextConfig.stackName
         },
+        platform: ecrAssets.Platform.LINUX_AMD64,
         // Exclude files that change frequently but don't affect the Docker build
         exclude: [
           'node_modules/**',
