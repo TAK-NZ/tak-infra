@@ -211,6 +211,12 @@ else
     echo "TAK Server - No OIDC issuer public certificate configured, skipping download"
 fi
 
+# Download TAK-GPT plugin configuration from S3
+if [ -n "${S3_TAK_CONFIG_BUCKET:-}" ]; then
+    echo "TAK Server - Downloading TAK-GPT plugin configuration"
+    /opt/tak/scripts/download-plugin-config.sh || echo "Warning: Failed to download plugin config"
+fi
+
 
 echo "TAK Server - Generating config file"
 cd /opt/tak

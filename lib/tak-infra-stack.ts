@@ -18,6 +18,7 @@ import { Elb } from './constructs/elb';
 import { Route53 } from './constructs/route53';
 import { TakServer } from './constructs/tak-server';
 import { WebTakOidcSetup } from './constructs/webtak-oidc-setup';
+import { BedrockGeoJsonLambda } from './constructs/bedrock-geojson-lambda';
 
 // Utility imports
 import { createBaseImportValue, BASE_EXPORT_NAMES, createAuthImportValue, AUTH_EXPORT_NAMES } from './cloudformation-imports';
@@ -363,6 +364,14 @@ export class TakInfraStack extends cdk.Stack {
       value: route53.serviceFqdn,
       description: 'TAK Service fully qualified hostname (without https://)',
       exportName: `${resolvedStackName}-TakServiceName`
+    });
+
+    // Bedrock GeoJSON query Lambda
+    const bedrockGeoJsonLambda = new BedrockGeoJsonLambda(this, 'BedrockGeoJsonLambda');
+    new CfnOutput(this, 'BedrockGeoJsonLambdaArn', {
+      value: bedrockGeoJsonLambda.fn.functionArn,
+      description: 'Bedrock Agent GeoJSON query Lambda ARN',
+      exportName: `${resolvedStackName}-BedrockGeoJsonLambdaArn`
     });
 
     // WebTAK OIDC outputs (if enabled)

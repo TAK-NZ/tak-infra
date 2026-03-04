@@ -215,6 +215,7 @@ npm run deploy:dev -- --context branding=generic
 - **[🔧 TAK Server CoreConfig](docs/TAKSERVER_CORECONFIG.md)** - Dynamic environment variable configuration system
 - **[🔐 WebTAK OIDC Integration](docs/WEBTAK_OIDC.md)** - Single sign-on authentication setup with Authentik
 - **[🐳 Docker Image Strategy](docs/DOCKER_IMAGE_STRATEGY.md)** - Hybrid image strategy for fast CI/CD and flexible development
+- **[🤖 TAK-GPT Plugin](docs/TAK_GPT_PLUGIN.md)** - AI-powered chat assistant integration
 
 ## Security Features
 

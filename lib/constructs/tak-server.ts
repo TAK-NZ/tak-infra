@@ -291,6 +291,28 @@ export class TakServer extends Construct {
       props.storage.s3.configBucket.grantRead(taskRole);
     }
 
+    // Grant read access to S3 config bucket for plugin configurations
+    props.storage.s3.configBucket.grantRead(taskRole, 'takserver-plugins/*');
+
+    // Add Bedrock permissions for TAK-GPT plugin (foundation models, inference profiles, knowledge bases, and agents)
+    taskRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'bedrock:InvokeModel',
+        'bedrock:InvokeModelWithResponseStream',
+        'bedrock:Retrieve',
+        'bedrock:RetrieveAndGenerate',
+        'bedrock:InvokeAgent'
+      ],
+      resources: [
+        `arn:aws:bedrock:*::foundation-model/*`,
+        `arn:aws:bedrock:*:${Stack.of(this).account}:inference-profile/*`,
+        `arn:aws:bedrock:*:${Stack.of(this).account}:knowledge-base/*`,
+        `arn:aws:bedrock:*:${Stack.of(this).account}:agent/*`,
+        `arn:aws:bedrock:*:${Stack.of(this).account}:agent-alias/*/*`
+      ]
+    }));
+
     // Create task definition
     this.taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDef', {
       cpu: props.contextConfig.ecs.taskCpu,
@@ -402,6 +424,8 @@ export class TakServer extends Construct {
         TAKSERVER_QuickConnect_LetsEncrypt_CertType: props.contextConfig.takserver.letsEncryptMode || 'staging',
         TAKSERVER_QuickConnect_LetsEncrypt_Email: props.contextConfig.takserver.letsEncryptEmail || 'admin@tak.nz',
         TAKSERVER_CoreConfig_Network_CloudwatchEnable: props.contextConfig.takserver.enableCloudWatchMetrics?.toString() || 'false',
+        // S3 bucket for plugin configs
+        S3_TAK_CONFIG_BUCKET: props.storage.s3.configBucket.bucketName,
         // LDAP Group Prefix Configuration
         ...(props.contextConfig.takserver.ldapGroupPrefix && {
           TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix: `cn=${props.contextConfig.takserver.ldapGroupPrefix}`,
