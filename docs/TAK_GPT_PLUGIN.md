@@ -110,7 +110,7 @@ python3 scripts/bedrock/setup-bedrock-agent.py \
   --system-prompt-file scripts/bedrock/nz_rag_responder.txt
 ```
 
-See [scripts/bedrock/README.md](../scripts/bedrock/README.md) for full details including document sync and re-running.
+See [scripts/bedrock/README.md](../scripts/bedrock/README.md) for full details including document sync, KML/KMZ conversion, and re-running.
 
 **Live GeoJSON Data Sources:**
 
