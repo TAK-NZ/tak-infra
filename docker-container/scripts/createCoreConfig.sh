@@ -519,8 +519,10 @@ detect_tak_version() {
     
     if [[ "$major_minor" =~ ^5\.[0-4] ]]; then
         echo "5.4"
-    elif [[ "$major_minor" =~ ^5\.[5-9] ]]; then
+    elif [[ "$major_minor" == "5.5" ]]; then
         echo "5.5"
+    elif [[ "$major_minor" =~ ^5\.[6-9] ]]; then
+        echo "5.6"
     else
         echo "5.4"  # Default fallback
     fi

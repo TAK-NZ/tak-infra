@@ -1,0 +1,77 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'java-library'
+    id("com.gradleup.shadow") version "8.3.5"
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations.all {
+    exclude group: "org.springframework"
+    exclude group: "org.springframework.boot"
+    exclude group: "jakarta.servlet"
+    exclude group: "org.apache.tomcat.embed"
+
+    resolutionStrategy {
+        force 'com.google.common:guava:33.3.1-jre'
+    }
+}
+
+dependencies {
+    compileOnly fileTree(dir: '/tmp/tak-plugin-libs', include: ['*.jar'])
+
+    implementation ('dev.langchain4j:langchain4j:1.9.1')
+    implementation ("dev.langchain4j:langchain4j-ollama:1.9.1")
+    implementation ("dev.langchain4j:langchain4j-document-parser-apache-pdfbox:1.9.1-beta17")
+    implementation ("com.openai:openai-java:4.14.0")
+    implementation ("com.anthropic:anthropic-java:2.11.1")
+    implementation ("dev.langchain4j:langchain4j-vertex-ai-gemini:1.9.1-beta17")
+    implementation ("com.google.adk:google-adk-contrib-langchain4j:0.2.0")
+    implementation ("com.google.adk:google-adk:0.5.0")
+    implementation ("com.fasterxml.jackson.core:jackson-databind:2.18.2")
+    implementation ("software.amazon.awssdk:bedrockruntime:2.29.45")
+    implementation ("software.amazon.awssdk:bedrockagentruntime:2.29.45")
+    implementation ("software.amazon.awssdk:auth:2.29.45")
+
+    compileOnly ('com.h2database:h2:2.2.224')
+    compileOnly ('ch.qos.logback:logback-classic:1.5.3')
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+shadowJar {
+    zip64 = true
+    archiveBaseName = 'tak-gpt-all'
+    archiveClassifier = ''
+
+    // Disable relocation to avoid ASM bytecode issues with Java 17
+    // relocate ("com.google.common", "shadow.com.google.common")
+    // relocate ("com.fasterxml.jackson", "shadow.com.fasterxml.jackson")
+    // relocate ("okhttp3", "shadow.okhttp3")
+
+    dependencies {
+        exclude(dependency("org.springframework:.*"))
+        exclude(dependency("org.springframework.boot:.*"))
+        exclude(dependency("jakarta.annotation:.*"))
+        exclude(dependency("jakarta.inject:.*"))
+        exclude(dependency("jakarta.persistence:.*"))
+        exclude(dependency("jakarta.transaction:.*"))
+        exclude(dependency("jakarta.validation:.*"))
+        exclude(dependency("jakarta.xml.bind:.*"))
+        exclude(dependency("org.slf4j:.*"))
+        exclude(dependency("ch.qos.logback:.*"))
+        exclude(dependency("com.h2database:.*"))
+        exclude(dependency("org.yaml:snakeyaml:.*"))
+    }
+}

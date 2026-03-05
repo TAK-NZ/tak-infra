@@ -1,0 +1,4111 @@
+CoT Type Reference for TAK/ATAK Marker Placement
+=================================================
+This file maps Cursor on Target (CoT) type strings to their MIL-STD-2525B meanings.
+Use these type values in the create_tak_map_marker tool.
+
+CoT type structure: a-<affiliation>-<dimension>-<category>-...
+Affiliations: f=friendly, h=hostile, u=unknown, n=neutral
+Dimensions: G=ground, A=air, S=sea/surface, U=subsurface, F=SOF
+
+Format: CoT type | Full name | Description
+
+CoT: u-d-p
+Name: Drawn Point
+Description: User Drawn Point
+
+CoT: u-d-r
+Name: Drawn Rectangle
+Description: User Drawn Rectangle
+
+CoT: u-d-f
+Name: Drawn Polyline
+Description: User Drawn Polyline
+
+CoT: u-d-c-c
+Name: Drawn Circle
+Description: User Drawn Circle
+
+CoT: u-rb-a
+Name: Drawn Range
+Description: User Drawn Range & Bearing
+
+CoT: a-.-A
+Name: Air/Air Track
+Description: Air Track
+
+CoT: a-.-A-C
+Name: Air/Civ
+Description: CIVIL AIRCRAFT
+
+CoT: a-.-A-C-F
+Name: Air/Civ/fixed
+Description: FIXED WING
+
+CoT: a-.-A-C-F-q
+Name: Air/Civ/fixed/rpv, drone, uav
+Description: FIXED WING RPV/Drone
+
+CoT: a-.-A-C-H
+Name: Air/Civ/rotary
+Description: ROTARY WING
+
+CoT: a-.-A-C-L
+Name: Air/Civ/Blimp
+Description: LIGHTER THAN AIR
+
+CoT: a-.-A-M-F
+Name: Air/Mil/Fixed
+Description: FIXED WING
+
+CoT: a-.-A-M-F-g
+Name: Air/Mil/Fixed/Gunship
+Description: FIXED WING GUNSHIP
+
+CoT: a-.-A-M-F-A
+Name: Air/Mil/Fixed/Attack/Strike
+Description: ATTACK/STRIKE
+
+CoT: a-.-A-M-F-B
+Name: Air/Mil/Fixed/Bomber
+Description: BOMBER
+
+CoT: a-.-A-M-F-C
+Name: Air/Mil/Fixed/Transport
+Description: CARGO AIRLIFT (TRANSPORT)
+
+CoT: a-.-A-M-F-C-H
+Name: Air/Mil/Fixed/Transport/Heavy
+Description: CARGO AIRLIFT (HEAVY)
+
+CoT: a-.-A-M-F-C-L
+Name: Air/Mil/Fixed/Transport/Light
+Description: CARGO AIRLIFT (LIGHT)
+
+CoT: a-.-A-M-F-C-M
+Name: Air/Mil/Fixed/Transport/Medium
+Description: CARGO AIRLIFT (MEDIUM)
+
+CoT: a-.-A-M-F-D
+Name: Air/Mil/Fixed/C2
+Description: AIRBORNE COMMAND POST (C2)
+
+CoT: a-.-A-M-F-F
+Name: Air/Mil/Fixed/Fighter
+Description: FIGHTER
+
+CoT: a-.-A-M-F-F-I
+Name: Air/Mil/Fixed/Interceptor
+Description: INTERCEPTOR
+
+CoT: a-.-A-M-F-H
+Name: Air/Mil/Fixed/CSAR
+Description: COMBAT SEARCH AND RESCUE (CSAR)
+
+CoT: a-.-A-M-F-J
+Name: Air/Mil/Fixed/ECM/Jammer
+Description: ELECTRONIC COUNTERMEASURES (ECM/JAMMER)
+
+CoT: a-.-A-M-F-K
+Name: Air/Mil/Fixed/Tanker
+Description: TANKER
+
+CoT: a-.-A-M-F-L
+Name: Air/Mil/Fixed/VSTOL
+Description: VSTOL
+
+CoT: a-.-A-M-F-M
+Name: Air/Mil/Fixed/SOF
+Description: SPECIAL OPERATIONS FORCES (SOF)
+
+CoT: a-.-A-M-F-O
+Name: Air/Mil/Fixed/MEDEVAC
+Description: MEDEVAC
+
+CoT: a-.-A-M-F-P
+Name: Air/Mil/Fixed/Patrol
+Description: PATROL
+
+CoT: a-.-A-M-F-P-M
+Name: Air/Mil/Fixed/Mine Countermeasures
+Description: MINE COUNTERMEASURES
+
+CoT: a-.-A-M-F-P-N
+Name: Air/Mil/Fixed/ASUW
+Description: ANTISURFACE WARFARE/ASUW
+
+CoT: a-.-A-M-F-Q
+Name: Air/Mil/Fixed/Drone,RPV,UAV
+Description: DRONE (RPV/UAV)
+
+CoT: a-.-A-M-F-R
+Name: Air/Mil/Fixed/RECONN
+Description: RECONNAISSANCE
+
+CoT: a-.-A-M-F-R-W
+Name: Air/Mil/Fixed/AEW
+Description: AIRBORNE EARLY WARNING (AEW)
+
+CoT: a-.-A-M-F-R-X
+Name: Air/Mil/Fixed/Photo
+Description: PHOTOGRAPHIC
+
+CoT: a-.-A-M-F-R-Z
+Name: Air/Mil/Fixed/ESM
+Description: ELECTRONIC SURVEILLANCE MEASURES
+
+CoT: a-.-A-M-F-S
+Name: Air/Mil/Fixed/ASW/Carrier Based
+Description: ANTISUBMARINE WARFARE (ASW) CARRIER BASED
+
+CoT: a-.-A-M-F-T
+Name: Air/Mil/Fixed/Trainer
+Description: TRAINER
+
+CoT: a-.-A-M-F-U
+Name: Air/Mil/Fixed/Utility
+Description: UTILITY
+
+CoT: a-.-A-M-F-U-H
+Name: Air/Mil/Fixed/Utility/Heavy
+Description: UTILITY (HEAVY)
+
+CoT: a-.-A-M-F-U-L
+Name: Air/Mil/Fixed/Utility/Light
+Description: UTILITY (LIGHT)
+
+CoT: a-.-A-M-F-U-M
+Name: Air/Mil/Fixed/Utility/Medium
+Description: UTILITY (MEDIUM)
+
+CoT: a-.-A-M-F-Y
+Name: Air/Mil/Fixed/C3I
+Description: COMMUNICATIONS (C3I)
+
+CoT: a-.-A-M-H
+Name: Air/Mil/Rotor
+Description: ROTARY WING
+
+CoT: a-.-A-M-H-A
+Name: Air/Mil/Rotor/Attack
+Description: ATTACK
+
+CoT: a-.-A-M-H-C
+Name: Air/Mil/Rotor/Transport
+Description: CARGO AIRLIFT (TRANSPORT)
+
+CoT: a-.-A-M-H-C-H
+Name: Air/Mil/Rotor/Transport/Heavy
+Description: CARGO AIRLIFT (HEAVY)
+
+CoT: a-.-A-M-H-C-L
+Name: Air/Mil/Rotor/Transport/Light
+Description: CARGO AIRLIFT (LIGHT)
+
+CoT: a-.-A-M-H-C-M
+Name: Air/Mil/Rotor/Transport/Medium
+Description: CARGO AIRLIFT (MEDIUM)
+
+CoT: a-.-A-M-H-D
+Name: Air/Mil/Rotor/C2
+Description: AIRBORNE COMMAND POST (C2)
+
+CoT: a-.-A-M-H-H
+Name: Air/Mil/Rotor/CSAR
+Description: COMBAT SEARCH AND RESCUE (CSAR)
+
+CoT: a-.-A-M-H-I
+Name: Air/Mil/Rotor/Mine Countermeasures
+Description: MINE COUNTERMEASURES
+
+CoT: a-.-A-M-H-J
+Name: Air/Mil/Rotor/ECM/Jammer
+Description: ELECTRONIC COUNTERMEASURES (ECM/JAMMER)
+
+CoT: a-.-A-M-H-K
+Name: Air/Mil/Rotor/Tanker
+Description: TANKER
+
+CoT: a-.-A-M-H-M
+Name: Air/Mil/Rotor/SOF
+Description: SPECIAL OPERATIONS FORCES (SOF)
+
+CoT: a-.-A-M-H-O
+Name: Air/Mil/Rotor/MEDEVAC
+Description: MEDEVAC
+
+CoT: a-.-A-M-H-Q
+Name: Air/Mil/Rotor/Drone,RPV,UAV
+Description: DRONE (RPV/UAV)
+
+CoT: a-.-A-M-H-R
+Name: Air/Mil/Rotor/Reconnaissance
+Description: RECONNAISSANCE
+
+CoT: a-.-A-M-H-S
+Name: Air/Mil/Rotor/ASW/MPA
+Description: ANTISUBMARINE WARFARE/MPA
+
+CoT: a-.-A-M-H-T
+Name: Air/Mil/Rotor/Trainer
+Description: TRAINER
+
+CoT: a-.-A-M-H-U
+Name: Air/Mil/Rotor/Utility
+Description: UTILITY
+
+CoT: a-.-A-M-H-U-H
+Name: Air/Mil/Rotor/Utility/Heavy)
+Description: UTILITY (HEAVY)
+
+CoT: a-.-A-M-H-U-L
+Name: Air/Mil/Rotor/Utility/Light)
+Description: UTILITY (LIGHT)
+
+CoT: a-.-A-M-H-U-M
+Name: Air/Mil/Rotor/Utility/Medium)
+Description: UTILITY (MEDIUM)
+
+CoT: a-.-A-M-L
+Name: Air/Mil/Blimp
+Description: LIGHTER THAN AIR
+
+CoT: a-.-A-W
+Name: Air/Weapon
+Description: WEAPON
+
+CoT: a-.-A-W-D
+Name: Air/Weapon/Decoy
+Description: DECOY
+
+CoT: a-.-A-W-M
+Name: Air/Weapon/Missile In Flight
+Description: MISSILE IN FLIGHT
+
+CoT: a-.-A-W-M-A
+Name: Air/Weapon/Missile/Air Launched
+Description: AIR LAUNCHED MISSILE
+
+CoT: a-.-A-W-M-A-A
+Name: Air/Weapon/Missile/Air To Air
+Description: AIR TO AIR MISSILE (AAM)
+
+CoT: a-.-A-W-M-A-S
+Name: Air/Weapon/Missile/Air To Surface
+Description: AIR TO SURFACE MISSILE (ASM)
+
+CoT: a-.-A-W-M-L
+Name: Air/Weapon/Missile/Attack Missile
+Description: LAND ATTACK MISSILE
+
+CoT: a-.-A-W-M-S
+Name: Air/Weapon/Missile/Land Launched Missile
+Description: SURFACE/LAND LAUNCHED MISSILE
+
+CoT: a-.-A-W-M-S-A
+Name: Air/Weapon/Missile/SAM
+Description: SURFACE TO AIR MISSILE (SAM)
+
+CoT: a-.-A-W-M-S-A-f
+Name: Air/Weapon/Missile/SAM/FixedSite
+Description: SAM (FixedSite)
+
+CoT: a-.-A-W-M-S-A-i
+Name: Air/Weapon/Missile/SAM/Manpad
+Description: SAM (Manpad)
+
+CoT: a-.-A-W-M-S-A-m
+Name: Air/Weapon/Missile/SAM/Mobile
+Description: SAM (Mobile)
+
+CoT: a-.-A-W-M-S-S
+Name: Air/Weapon/Missile/Surface To Surface (SSM)
+Description: SURFACE TO SURFACE MISSILE (SSM)
+
+CoT: a-.-A-W-M-U
+Name: Air/Weapon/Missile/Subsurface To Surface (S/SSM)
+Description: SUBSURFACE TO SURFACE MISSILE (S/SSM)
+
+CoT: a-.-G
+Name: Ground
+Description: GROUND TRACK
+
+CoT: a-.-G-E
+Name: Gnd/Equipment
+Description: EQUIPMENT
+
+CoT: a-.-G-E-S
+Name: Gnd/Equip/Sensor
+Description: SENSOR
+
+CoT: a-.-G-E-S-E
+Name: Gnd/Equip/Sensor/Emplaced
+Description: EMPLACED SENSOR
+
+CoT: a-.-G-E-S-R
+Name: Gnd/Equip/Sensor/Radar
+Description: RADAR
+
+CoT: a-.-G-E-V
+Name: Gnd/Equip/Vehicle
+Description: GROUND VEHICLE
+
+CoT: a-.-G-E-V-A
+Name: Gnd/Equip/Vehic/Armor/Gun
+Description: Armor (GUN)
+
+CoT: a-.-G-E-V-A-A
+Name: Gnd/Equip/Vehic/Armor/Apc
+Description: Armor (APC)
+
+CoT: a-.-G-E-V-A-A-R
+Name: Gnd/Equip/Vehic/Armor/Apc/Recovery
+Description: ARMORED PERSONNEL CARRIER RECOVERY
+
+CoT: a-.-G-E-V-A-C
+Name: Gnd/Equip/Vehic/Armor/C2V/ACV
+Description: C2V/ACV
+
+CoT: a-.-G-E-V-A-I
+Name: Gnd/Equip/Vehic/Armor/Infantry
+Description: ARMORED INFANTRY
+
+CoT: a-.-G-E-V-A-L
+Name: Gnd/Equip/Vehic/Armor/Light
+Description: LIGHT ARMORED VEHICLE
+
+CoT: a-.-G-E-V-A-S
+Name: Gnd/Equip/Vehic/Armor/Combat Service Support
+Description: COMBAT SERVICE SUPPORT VEHICLE
+
+CoT: a-.-G-E-V-A-T
+Name: Gnd/Equip/Vehic/Armor/Tank
+Description: TANK
+
+CoT: a-.-G-E-V-A-T-H
+Name: Gnd/Equip/Vehic/Armor/Tank/Heavy
+Description: TANK HEAVY
+
+CoT: a-.-G-E-V-A-T-H-R
+Name: Gnd/Equip/Vehic/Armor/Tank/Heavy/Recovery
+Description: TANK HEAVY RECOVERY
+
+CoT: a-.-G-E-V-A-T-L
+Name: Gnd/Equip/Vehic/Armor/Tank/Light
+Description: TANK LIGHT
+
+CoT: a-.-G-E-V-A-T-L-R
+Name: Gnd/Equip/Vehic/Armor/Tank/Light/Recovery
+Description: TANK LIGHT RECOVERY
+
+CoT: a-.-G-E-V-A-T-M
+Name: Gnd/Equip/Vehic/Armor/Tank/Medium
+Description: TANK MEDIUM
+
+CoT: a-.-G-E-V-A-T-M-R
+Name: Gnd/Equip/Vehic/Armor/Tank/Medium/Recovery
+Description: TANK MEDIUM RECOVERY
+
+CoT: a-.-G-E-V-C
+Name: Gnd/Equip/Vehic/Civilian
+Description: CIVILIAN VEHICLE
+
+CoT: a-.-G-E-V-E
+Name: Gnd/Equip/Vehic/Engineer
+Description: ENGINEER VEHICLE
+
+CoT: a-.-G-E-V-E-A
+Name: Gnd/Equip/Vehic/Mine Clearing Vehicle
+Description: MINE CLEARING VEHICLE
+
+CoT: a-.-G-E-V-E-A-A
+Name: Gnd/Equip/Vehic/Armored Mounted Mine Clearing Vehicle
+Description: ARMORED MOUNTED MINE CLEARING VEHICLE
+
+CoT: a-.-G-E-V-E-A-T
+Name: Gnd/Equip/Vehic/Trailer Mounted Mine Clearing Vehicle
+Description: TRAILER MOUNTED MINE CLEARING VEHICLE
+
+CoT: a-.-G-E-V-E-B
+Name: Gnd/Equip/Vehic/Bridge
+Description: BRIDGE
+
+CoT: a-.-G-E-V-E-C
+Name: Gnd/Equip/Vehic/Construction
+Description: CONSTRUCTION VEHICLE
+
+CoT: a-.-G-E-V-E-D
+Name: Gnd/Equip/Vehic/Dozer
+Description: DOZER
+
+CoT: a-.-G-E-V-E-E
+Name: Gnd/Equip/Vehic/Earthmover
+Description: EARTHMOVER
+
+CoT: a-.-G-E-V-E-M
+Name: Gnd/Equip/Vehic/Mine Laying Vehicle
+Description: MINE LAYING VEHICLE
+
+CoT: a-.-G-E-V-E-M-L
+Name: Gnd/Equip/Vehic/Truck Mounted With Volcano
+Description: TRUCK MOUNTED WITH VOLCANO
+
+CoT: a-.-G-E-V-E-M-V
+Name: Gnd/Equip/Vehic/Armored Carrier With Volcano
+Description: ARMORED CARRIER WITH VOLCANO
+
+CoT: a-.-G-E-V-T
+Name: Gnd/Equip/Vehic/Locomotive
+Description: Locomotive
+
+CoT: a-.-G-E-V-U
+Name: Gnd/Equip/Vehic/Utility
+Description: UTILITY VEHICLE
+
+CoT: a-.-G-E-V-U-B
+Name: Gnd/Equip/Vehic/Bus
+Description: BUS
+
+CoT: a-.-G-E-V-U-L
+Name: Gnd/Equip/Vehic/Limited Cross Country Truck
+Description: LIMITED CROSS COUNTRY TRUCK
+
+CoT: a-.-G-E-V-U-R
+Name: Gnd/Equip/Vehic/Boat
+Description: WATER CRAFT
+
+CoT: a-.-G-E-V-U-R-l
+Name: Gnd/Equip/Vehic/Boat/Large
+Description: Boat (Large)
+
+CoT: a-.-G-E-V-U-R-m
+Name: Gnd/Equip/Vehic/Boat/Med
+Description: Boat (Med)
+
+CoT: a-.-G-E-V-U-R-s
+Name: Gnd/Equip/Vehic/Boat/Small
+Description: Boat (Small)
+
+CoT: a-.-G-E-V-U-S
+Name: Gnd/Equip/Vehic/Semi
+Description: SEMI
+
+CoT: a-.-G-E-V-U-X
+Name: Gnd/Equip/Vehic/Cross Country Truck
+Description: CROSS COUNTRY TRUCK
+
+CoT: a-.-G-E-V-m
+Name: Gnd/Equip/Vehic/Ambulance
+Description: Ambulance
+
+CoT: a-.-G-E-W
+Name: Gnd/Equip/Weapon
+Description: WEAPON
+
+CoT: a-.-G-E-W-A
+Name: Gnd/Equip/Weapon/Air Defense Gun
+Description: AIR DEFENSE GUN
+
+CoT: a-.-G-E-W-A-H
+Name: Gnd/Equip/Weapon/AAA/Heavy
+Description: AAA (Heavy)
+
+CoT: a-.-G-E-W-A-L
+Name: Gnd/Equip/Weapon/AAA/Light
+Description: AAA (Light)
+
+CoT: a-.-G-E-W-A-M
+Name: Gnd/Equip/Weapon/AAA/Medium
+Description: AAA (Medium)
+
+CoT: a-.-G-E-W-D
+Name: Gnd/Equip/Weapon/DirectFire/
+Description: DIRECT FIRE GUN
+
+CoT: a-.-G-E-W-D-H
+Name: Gnd/Equip/Weapon/DirectFire/Heavy
+Description: DIRECT FIRE GUN HEAVY
+
+CoT: a-.-G-E-W-D-H-S
+Name: Gnd/Equip/Weapon/DirectFire/Heavy/Self Propelled
+Description: DIRECT FIRE GUN HEAVY SELF PROPELLED
+
+CoT: a-.-G-E-W-D-L
+Name: Gnd/Equip/Weapon/DirectFire/Light
+Description: DIRECT FIRE GUN LIGHT
+
+CoT: a-.-G-E-W-D-L-S
+Name: Gnd/Equip/Weapon/DirectFire/Light/Self Propelled
+Description: DIRECT FIRE GUN LIGHT SELF PROPELLED
+
+CoT: a-.-G-E-W-D-M
+Name: Gnd/Equip/Weapon/DirectFire/Medium
+Description: DIRECT FIRE GUN MEDIUM
+
+CoT: a-.-G-E-W-D-M-S
+Name: Gnd/Equip/Weapon/DirectFire/Medium/Self Propelled
+Description: DIRECT FIRE GUN MEDIUM SELF PROPELLED
+
+CoT: a-.-G-E-W-G
+Name: Gnd/Equip/Weapon/AnitTankGun
+Description: ANTI TANK GUN
+
+CoT: a-.-G-E-W-G-H
+Name: Gnd/Equip/Weapon/Atg/Heavy
+Description: ANTI TANK GUN HEAVY
+
+CoT: a-.-G-E-W-G-L
+Name: Gnd/Equip/Weapon/Atg/Light
+Description: ANTI TANK GUN LIGHT
+
+CoT: a-.-G-E-W-G-M
+Name: Gnd/Equip/Weapon/Atg/Medium
+Description: ANTI TANK GUN MEDIUM
+
+CoT: a-.-G-E-W-G-R
+Name: Gnd/Equip/Weapon/Atg/Recoilless
+Description: ANTI TANK GUN RECOILLESS
+
+CoT: a-.-G-E-W-H
+Name: Gnd/Equip/Weapon/Howitzer
+Description: HOWITZER
+
+CoT: a-.-G-E-W-H-H
+Name: Gnd/Equip/Weapon/Howitzer/Heavy
+Description: HOWITZER HEAVY
+
+CoT: a-.-G-E-W-H-H-S
+Name: Gnd/Equip/Weapon/Howitzer/Heavy/Self Propelled
+Description: HOWITZER HEAVY SELF PROPELLED
+
+CoT: a-.-G-E-W-H-L
+Name: Gnd/Equip/Weapon/Howitzer/Light
+Description: HOWITZER LIGHT
+
+CoT: a-.-G-E-W-H-L-S
+Name: Gnd/Equip/Weapon/Howitzer/Light/Self Propelled
+Description: HOWITZER LIGHT SELF PROPELLED
+
+CoT: a-.-G-E-W-H-M
+Name: Gnd/Equip/Weapon/Howitzer/Medium
+Description: HOWITZER MEDIUM
+
+CoT: a-.-G-E-W-H-M-S
+Name: Gnd/Equip/Weapon/Howitzer/Medium/Self Propelled
+Description: HOWITZER MEDIUM SELF PROPELLED
+
+CoT: a-.-G-E-W-M
+Name: Gnd/Equip/Weapon/MissileLauncher
+Description: MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-A
+Name: Gnd/Equip/Weapon/MissileLauncher/Ad/Air Defense
+Description: AIR DEFENSE (AD) MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-A-I
+Name: Gnd/Equip/Weapon/MissileLauncher/Ad/Intermediate Range
+Description: INTERMEDIATE RANGE AD MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-A-L
+Name: Gnd/Equip/Weapon/MissileLauncher/Ad/Long Range
+Description: LONG RANGE AD MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-A-S
+Name: Gnd/Equip/Weapon/MissileLauncher/Ad/Short Range
+Description: SHORT RANGE AD MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-A-T
+Name: Gnd/Equip/Weapon/MissileLauncher/Ad/Theater
+Description: AD MISSILE LAUNCHER THEATER
+
+CoT: a-.-G-E-W-M-S
+Name: Gnd/Equip/Weapon/MissileLauncher/SS/Surface Surf (SS)
+Description: SURF SURF (SS) MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-S-I
+Name: Gnd/Equip/Weapon/MissileLauncher/SS/Intermediate Range
+Description: INTERMEDIATE RANGE SS MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-S-L
+Name: Gnd/Equip/Weapon/MissileLauncher/SS/Long Range
+Description: LONG RANGE SS MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-S-S
+Name: Gnd/Equip/Weapon/MissileLauncher/SS/Short Range
+Description: SHORT RANGE SS MISSILE LAUNCHER
+
+CoT: a-.-G-E-W-M-T
+Name: Gnd/Equip/Weapon/MissileLauncher/AT/Antitank
+Description: MISSILE LAUNCHER ANTITANK (AT)
+
+CoT: a-.-G-E-W-M-T-H
+Name: Gnd/Equip/Weapon/MissileLauncher/AT/Heavy
+Description: MISSILE LAUNCHER AT HEAVY
+
+CoT: a-.-G-E-W-M-T-L
+Name: Gnd/Equip/Weapon/MissileLauncher/AT/Light
+Description: MISSILE LAUNCHER AT LIGHT
+
+CoT: a-.-G-E-W-M-T-M
+Name: Gnd/Equip/Weapon/MissileLauncher/AT/Medium
+Description: MISSILE LAUNCHER AT MEDIUM
+
+CoT: a-.-G-E-W-O
+Name: Gnd/Equip/Weapon/Mortar
+Description: MORTAR
+
+CoT: a-.-G-E-W-O-H
+Name: Gnd/Equip/Weapon/Mortar/Heavy
+Description: MORTAR HEAVY
+
+CoT: a-.-G-E-W-O-L
+Name: Gnd/Equip/Weapon/Mortar/Light
+Description: MORTAR LIGHT
+
+CoT: a-.-G-E-W-O-M
+Name: Gnd/Equip/Weapon/Mortar/Medium
+Description: MORTAR MEDIUM
+
+CoT: a-.-G-E-W-R
+Name: Gnd/Equip/Weapon/Rifle/Automatic Weapon
+Description: RIFLE/AUTOMATIC WEAPON
+
+CoT: a-.-G-E-W-R-H
+Name: Gnd/Equip/Weapon/Rifle/Heavy Machine Gun
+Description: HEAVY MACHINE GUN
+
+CoT: a-.-G-E-W-R-L
+Name: Gnd/Equip/Weapon/Rifle/Light Machine Gun
+Description: LIGHT MACHINE GUN
+
+CoT: a-.-G-E-W-R-R
+Name: Gnd/Equip/Weapon/Rifle/Rifle
+Description: RIFLE
+
+CoT: a-.-G-E-W-S
+Name: Gnd/Equip/Weapon/RocketLauncher/Single/
+Description: SINGLE ROCKET LAUNCHER
+
+CoT: a-.-G-E-W-S-H
+Name: Gnd/Equip/Weapon/RocketLauncher/Single/Heavy
+Description: SINGLE ROCKET LAUNCHER HEAVY
+
+CoT: a-.-G-E-W-S-L
+Name: Gnd/Equip/Weapon/RocketLauncher/Single/Light
+Description: SINGLE ROCKET LAUNCHER LIGHT
+
+CoT: a-.-G-E-W-S-M
+Name: Gnd/Equip/Weapon/RocketLauncher/Single/Medium
+Description: SINGLE ROCKET LAUNCHER MEDIUM
+
+CoT: a-.-G-E-W-T
+Name: Gnd/Equip/Weapon/RocketLauncher/AntiTank
+Description: ANTI TANK ROCKET LAUNCHER
+
+CoT: a-.-G-E-W-T-H
+Name: Gnd/Equip/Weapon/RocketLauncher/AT/Heavy
+Description: ANTI TANK ROCKET LAUNCHER HEAVY
+
+CoT: a-.-G-E-W-T-L
+Name: Gnd/Equip/Weapon/RocketLauncher/AT/Light
+Description: ANTI TANK ROCKET LAUNCHER LIGHT
+
+CoT: a-.-G-E-W-T-M
+Name: Gnd/Equip/Weapon/RocketLauncher/AT/Medium
+Description: ANTI TANK ROCKET LAUNCHER MEDIUM
+
+CoT: a-.-G-E-W-X
+Name: Gnd/Equip/Weapon/RocketLauncher/Multiple 
+Description: MULTIPLE ROCKET LAUNCHER
+
+CoT: a-.-G-E-W-X-H
+Name: Gnd/Equip/Weapon/RocketLauncher/Multiple/Heavy
+Description: MULTIPLE ROCKET LAUNCHER HEAVY
+
+CoT: a-.-G-E-W-X-L
+Name: Gnd/Equip/Weapon/RocketLauncher/Multiple/Light
+Description: MULTIPLE ROCKET LAUNCHER LIGHT
+
+CoT: a-.-G-E-W-X-M
+Name: Gnd/Equip/Weapon/RocketLauncher/Multiple/Medium
+Description: MULTIPLE ROCKET LAUNCHER MEDIUM
+
+CoT: a-.-G-E-W-Z
+Name: Gnd/Equip/Weapon/Grenade Launcher
+Description: GRENADE LAUNCHER
+
+CoT: a-.-G-E-W-Z-H
+Name: Gnd/Equip/Weapon/Grenade Launcher/Heavy
+Description: GRENADE LAUNCHER HEAVY
+
+CoT: a-.-G-E-W-Z-L
+Name: Gnd/Equip/Weapon/Grenade Launcher/Light
+Description: GRENADE LAUNCHER LIGHT
+
+CoT: a-.-G-E-W-Z-M
+Name: Gnd/Equip/Weapon/Grenade Launcher/Medium
+Description: GRENADE LAUNCHER MEDIUM
+
+CoT: a-.-G-E-X
+Name: Gnd/Equip/Special Equipment
+Description: SPECIAL EQUIPMENT
+
+CoT: a-.-G-E-X-F
+Name: Gnd/Equip/Flame Thrower
+Description: FLAME THROWER
+
+CoT: a-.-G-E-X-L
+Name: Gnd/Equip/Laser
+Description: LASER
+
+CoT: a-.-G-E-X-M
+Name: Gnd/Equip/Land Mines
+Description: LAND MINES
+
+CoT: a-.-G-E-X-M-C
+Name: Gnd/Equip/Claymore
+Description: CLAYMORE
+
+CoT: a-.-G-E-X-M-L
+Name: Gnd/Equip/Less Than Lethal
+Description: LESS THAN LETHAL
+
+CoT: a-.-G-E-X-N
+Name: Gnd/Equip/Nbc Equipment
+Description: NBC EQUIPMENT
+
+CoT: a-.-G-I
+Name: Gnd/Building
+Description: Building
+
+CoT: a-.-G-I-B
+Name: Gnd/Structure/Base/Military
+Description: MILITARY BASE/FACILITY
+
+CoT: a-.-G-I-B-A
+Name: Gnd/Structure/Base/Airbase
+Description: AIRPORT/AIRBASE
+
+CoT: a-.-G-I-B-N
+Name: Gnd/Structure/Base/Naval Base
+Description: SEAPORT/NAVAL BASE
+
+CoT: a-.-G-I-c
+Name: Gnd/Structure/Civilian
+Description: Civilian
+
+CoT: a-.-G-I-c-b
+Name: Gnd/Structure/Civilian/Bridge
+Description: Bridge
+
+CoT: a-.-G-I-c-bar
+Name: Gnd/Structure/Civilian/Fence or Wall or Barrier
+Description: Fence/Wall/Barrier
+
+CoT: a-.-G-I-c-can
+Name: Gnd/Structure/Civilian/Canal
+Description: Canal
+
+CoT: a-.-G-I-c-can-l
+Name: Gnd/Structure/Civilian/Canal/Lock
+Description: Canal Lock
+
+CoT: a-.-G-I-c-frm
+Name: Gnd/Structure/Civilian/Farm
+Description: Farm
+
+CoT: a-.-G-I-c-l
+Name: Gnd/Structure/Civilian/Levee
+Description: Levy
+
+CoT: a-.-G-I-c-mon
+Name: Gnd/Structure/Civilian/Monument
+Description: Monument
+
+CoT: a-.-G-I-c-o
+Name: Gnd/Structure/Civilian/Offices
+Description: Offices
+
+CoT: a-.-G-I-c-rah
+Name: Gnd/Structure/Civilian/Residence or Apartment or Hotel
+Description: Residence/Apartment/Hotel
+
+CoT: a-.-G-I-c-rel
+Name: Gnd/Structure/Civilian/Religous
+Description: Religous
+
+CoT: a-.-G-I-c-res
+Name: Gnd/Structure/Civilian/Resevoir
+Description: Resevoir
+
+CoT: a-.-G-I-c-ret
+Name: Gnd/Structure/Civilian/Retail
+Description: Retail
+
+CoT: a-.-G-I-c-sch
+Name: Gnd/Structure/Civilian/School
+Description: School
+
+CoT: a-.-G-I-c-vip
+Name: Gnd/Structure/Civilian/VIP
+Description: VIP
+
+CoT: a-.-G-I-c-whs
+Name: Gnd/Structure/Civilian/Warehouse
+Description: Warehouse
+
+CoT: a-.-G-I-E
+Name: Gnd/Structure/Factory
+Description: EQUIPMENT MANUFACTURE
+
+CoT: a-.-G-I-E-h
+Name: Gnd/Structure/Factory/Heavy
+Description: Heavy
+
+CoT: a-.-G-I-E-l
+Name: Gnd/Structure/Factory/Light
+Description: Light
+
+CoT: a-.-G-I-E-o
+Name: Gnd/Structure/Factory/Plant Other
+Description: Plant Other
+
+CoT: a-.-G-I-G
+Name: Gnd/Structure/Government
+Description: GOVERNMENT LEADERSHIP
+
+CoT: a-.-G-I-i
+Name: Gnd/Structure/IM Facilities
+Description: IM Facilities
+
+CoT: a-.-G-I-i-e
+Name: Gnd/Structure/IM Facilities/Emergency Management
+Description: Emergency Management
+
+CoT: a-.-G-I-i-e-eoc
+Name: Gnd/Structure/IM Facilities/Emergency Management/Emergency Operations Center
+Description: Emergency Operations Center
+
+CoT: a-.-G-I-i-e-ic
+Name: Gnd/Structure/IM Facilities/Emergency Management/Incident Commander
+Description: Incident Commander
+
+CoT: a-.-G-I-i-e-icc
+Name: Gnd/Structure/IM Facilities/Emergency Management/Incident Communications Center
+Description: Incident Communications Center
+
+CoT: a-.-G-I-i-e-icp
+Name: Gnd/Structure/IM Facilities/Emergency Management/Incident Command Post
+Description: Incident Command Post
+
+CoT: a-.-G-I-i-e-wr
+Name: Gnd/Structure/IM Facilities/Emergency Management/War Room
+Description: War Room
+
+CoT: a-.-G-I-i-f
+Name: Gnd/Structure/IM Facilities/Fire and Hazmat
+Description: Fire/Hazmat
+
+CoT: a-.-G-I-i-f-fd
+Name: Gnd/Structure/IM Facilities/Fire and Hazmat/Fire Department
+Description: Fire Department
+
+CoT: a-.-G-I-i-h
+Name: Gnd/Structure/IM Facilities/Health and Medical
+Description: Health and Medical
+
+CoT: a-.-G-I-i-h-md
+Name: Gnd/Structure/IM Facilities/Health and Medical/Medical Dispatch
+Description: Medical Dispatch
+
+CoT: a-.-G-I-i-l
+Name: Gnd/Structure/IM Facilities/Law Enforcement
+Description: Law Enforcement
+
+CoT: a-.-G-I-i-l-cp
+Name: Gnd/Structure/IM Facilities/Law Enforcement/Police Checkpoint
+Description: Police Checkpoint
+
+CoT: a-.-G-I-i-l-hp
+Name: Gnd/Structure/IM Facilities/Law Enforcement/Highway Patrol
+Description: Highway Patrol
+
+CoT: a-.-G-I-i-l-lp
+Name: Gnd/Structure/IM Facilities/Law Enforcement/Local Police
+Description: Local Police
+
+CoT: a-.-G-I-i-l-ntz
+Name: Gnd/Structure/IM Facilities/Law Enforcement/No Trespassing Zone
+Description: No Trespassing Zone
+
+CoT: a-.-G-I-i-l-sd
+Name: Gnd/Structure/IM Facilities/Law Enforcement/Sheriffs Department
+Description: Sheriffs Department
+
+CoT: a-.-G-I-i-l-sp
+Name: Gnd/Structure/IM Facilities/Law Enforcement/State Police
+Description: State Police
+
+CoT: a-.-G-I-i-m
+Name: Gnd/Structure/IM Facilities/Emergency Medical Services
+Description: Emergency Medical Services
+
+CoT: a-.-G-I-i-o
+Name: Gnd/Structure/IM Facilities/Other
+Description: Other
+
+CoT: a-.-G-I-i-o-ad
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch
+Description: Agency Dispatch
+
+CoT: a-.-G-I-i-o-ad-ems
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch/EMS
+Description: EMS
+
+CoT: a-.-G-I-i-o-ad-f
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch/Fire
+Description: Fire
+
+CoT: a-.-G-I-i-o-ad-hwy
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch/Highway
+Description: Highway
+
+CoT: a-.-G-I-i-o-ad-mda
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch/Media
+Description: Media
+
+CoT: a-.-G-I-i-o-ad-pl
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch/Police Local
+Description: Police Local
+
+CoT: a-.-G-I-i-o-ad-ps
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch/Police Station
+Description: Police Station
+
+CoT: a-.-G-I-i-o-ad-tow
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch/Tow
+Description: Tow
+
+CoT: a-.-G-I-i-o-ad-ts
+Name: Gnd/Structure/IM Facilities/Other/Agency Dispatch/Transit
+Description: Transit
+
+CoT: a-.-G-I-i-o-bcc
+Name: Gnd/Structure/IM Facilities/Other/Border Control Checkpoint
+Description: Border Control Checkpoint
+
+CoT: a-.-G-I-i-o-dmz
+Name: Gnd/Structure/IM Facilities/Other/DMZ
+Description: DMZ
+
+CoT: a-.-G-I-i-o-isp
+Name: Gnd/Structure/IM Facilities/Other/Independent Service Provider
+Description: Independent Service Provider
+
+CoT: a-.-G-I-i-o-mc
+Name: Gnd/Structure/IM Facilities/Other/Mobile Center
+Description: Mobile Center
+
+CoT: a-.-G-I-i-o-mc-f
+Name: Gnd/Structure/IM Facilities/Other/Mobile Center/Fire
+Description: Fire
+
+CoT: a-.-G-I-i-o-mc-h
+Name: Gnd/Structure/IM Facilities/Other/Mobile Center/Medical
+Description: Medical
+
+CoT: a-.-G-I-i-o-mc-l
+Name: Gnd/Structure/IM Facilities/Other/Mobile Center/Law Enforcement
+Description: Law Enforcement
+
+CoT: a-.-G-I-i-o-mes
+Name: Gnd/Structure/IM Facilities/Other/Message Center
+Description: Message Center
+
+CoT: a-.-G-I-i-o-mob
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center
+Description: Mobilization Center
+
+CoT: a-.-G-I-i-o-mob-ems
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center/EMS
+Description: EMS
+
+CoT: a-.-G-I-i-o-mob-es
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center/Transit
+Description: Transit
+
+CoT: a-.-G-I-i-o-mob-f
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center/Fire
+Description: Fire
+
+CoT: a-.-G-I-i-o-mob-hwy
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center/Highway
+Description: Highway
+
+CoT: a-.-G-I-i-o-mob-mda
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center/Media
+Description: Media
+
+CoT: a-.-G-I-i-o-mob-pl
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center/Police Local
+Description: Ploce Local
+
+CoT: a-.-G-I-i-o-mob-ps
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center/Police Station
+Description: Police Station
+
+CoT: a-.-G-I-i-o-mob-tow
+Name: Gnd/Structure/IM Facilities/Other/Mobilization Center/Tow
+Description: Tow
+
+CoT: a-.-G-I-i-o-ps
+Name: Gnd/Structure/IM Facilities/Other/Public Safety
+Description: Public Safety
+
+CoT: a-.-G-I-i-o-rl
+Name: Gnd/Structure/IM Facilities/Other/Reporting Locations
+Description: Reporting Locations
+
+CoT: a-.-G-I-i-o-sa
+Name: Gnd/Structure/IM Facilities/Other/Staging Area
+Description: Staging Area
+
+CoT: a-.-G-I-i-o-sa-ems
+Name: Gnd/Structure/IM Facilities/Other/Staging Area/EMS
+Description: EMS
+
+CoT: a-.-G-I-i-o-sa-f
+Name: Gnd/Structure/IM Facilities/Other/Staging Area/Fire
+Description: Fire
+
+CoT: a-.-G-I-i-o-sa-hwy
+Name: Gnd/Structure/IM Facilities/Other/Staging Area/Highway
+Description: Highway
+
+CoT: a-.-G-I-i-o-sa-mda
+Name: Gnd/Structure/IM Facilities/Other/Staging Area/Media
+Description: Media
+
+CoT: a-.-G-I-i-o-sa-pl
+Name: Gnd/Structure/IM Facilities/Other/Staging Area/Police Local
+Description: Police Local
+
+CoT: a-.-G-I-i-o-sa-ps
+Name: Gnd/Structure/IM Facilities/Other/Staging Area/Police Station
+Description: Police Station
+
+CoT: a-.-G-I-i-o-sa-tow
+Name: Gnd/Structure/IM Facilities/Other/Staging Area/Tow
+Description: Tow
+
+CoT: a-.-G-I-i-o-sa-ts
+Name: Gnd/Structure/IM Facilities/Other/Staging Area/Transit
+Description: Transit
+
+CoT: a-.-G-I-i-o-sc
+Name: Gnd/Structure/IM Facilities/Other/Security Checkpoint
+Description: Security Checkpoint
+
+CoT: a-.-G-I-i-o-seg
+Name: Gnd/Structure/IM Facilities/Other/Segment
+Description: Segment
+
+CoT: a-.-G-I-i-o-t
+Name: Gnd/Structure/IM Facilities/Other/Transportation
+Description: Transportation
+
+CoT: a-.-G-I-i-o-t-im
+Name: Gnd/Structure/IM Facilities/Other/Transportation/Transit Incident Management Center
+Description: Transit Incident Management Center
+
+CoT: a-.-G-I-i-o-t-tc
+Name: Gnd/Structure/IM Facilities/Other/Transportation/Transit Management Center
+Description: Transit Management Center
+
+CoT: a-.-G-I-i-o-t-td
+Name: Gnd/Structure/IM Facilities/Other/Transportation/Traffic Inc Service Patrol Dispatch
+Description: Traffic Inc Service Patrol Dispatch
+
+CoT: a-.-G-I-i-o-t-tm
+Name: Gnd/Structure/IM Facilities/Other/Transportation/Traffic Management Center
+Description: Traffic Management Center
+
+CoT: a-.-G-I-i-o-tmp
+Name: Gnd/Structure/IM Facilities/Other/Temp
+Description: Temporary
+
+CoT: a-.-G-I-i-o-tmp-f
+Name: Gnd/Structure/IM Facilities/Other/Temp/Fire
+Description: Fire
+
+CoT: a-.-G-I-i-o-tmp-h
+Name: Gnd/Structure/IM Facilities/Other/Temp/Medical
+Description: Medical
+
+CoT: a-.-G-I-i-o-tmp-l
+Name: Gnd/Structure/IM Facilities/Other/Temp/Law Enforcement
+Description: Law Enforcement
+
+CoT: a-.-G-I-i-p
+Name: Gnd/Structure/IM Facilities/Public Works
+Description: Public Works
+
+CoT: a-.-G-I-M
+Name: Gnd/Structure/Mil/Military Materiel Facility
+Description: MILITARY MATERIEL FACILITY
+
+CoT: a-.-G-I-M-A
+Name: Gnd/Structure/Mil/Aircraft Production
+Description: AIRCRAFT PRODUCTION/ASSEMBLY
+
+CoT: a-.-G-I-M-C
+Name: Gnd/Structure/Mil/NBC Warfare Production
+Description: CHEMICAL/BIOLOGICAL WARFARE PRODUCTION
+
+CoT: a-.-G-I-M-E
+Name: Gnd/Structure/Mil/Ammunition Production
+Description: AMMUNITION AND EXPLOSIVES PRODUCTION
+
+CoT: a-.-G-I-M-F
+Name: Gnd/Structure/Mil/Nuclear Energy
+Description: NUCLEAR ENERGY
+
+CoT: a-.-G-I-M-F-A
+Name: Gnd/Structure/Mil/Atomic Energy Reactor
+Description: ATOMIC ENERGY REACTOR
+
+CoT: a-.-G-I-M-F-P
+Name: Gnd/Structure/Mil/Nuclear Material Production
+Description: NUCLEAR MATERIAL PRODUCTION
+
+CoT: a-.-G-I-M-F-P-W
+Name: Gnd/Structure/Mil/Nuclear/Weapons Grade
+Description: WEAPONS GRADE
+
+CoT: a-.-G-I-M-F-S
+Name: Gnd/Structure/Mil/Nuclear Material Storage
+Description: NUCLEAR MATERIAL STORAGE
+
+CoT: a-.-G-I-M-G
+Name: Gnd/Structure/Mil/Armament Production
+Description: ARMAMENT PRODUCTION
+
+CoT: a-.-G-I-M-M
+Name: Gnd/Structure/Mil/Missile+Space System Production
+Description: MISSILE/SPACE SYSTEM PRODUCTION
+
+CoT: a-.-G-I-M-N
+Name: Gnd/Structure/Mil/Engineering Equipment Production
+Description: ENGINEERING EQUIPMENT PRODUCTION
+
+CoT: a-.-G-I-M-N-B
+Name: Gnd/Structure/Mil/Bridge
+Description: BRIDGE
+
+CoT: a-.-G-I-M-N-B-l
+Name: Gnd/Structure/Mil/Bridge/Large
+Description: Bridge (Large)
+
+CoT: a-.-G-I-M-N-B-m
+Name: Gnd/Structure/Mil/Bridge/Med
+Description: Bridge (Med)
+
+CoT: a-.-G-I-M-N-B-s
+Name: Gnd/Structure/Mil/Bridge/Small
+Description: Bridge (Small)
+
+CoT: a-.-G-I-M-N-c
+Name: Gnd/Structure/Mil/Canal
+Description: Canal
+
+CoT: a-.-G-I-M-S
+Name: Gnd/Structure/Mil/Ship Construction
+Description: SHIP CONSTRUCTION
+
+CoT: a-.-G-I-M-V
+Name: Gnd/Structure/Mil/Military Vehicle Production
+Description: MILITARY VEHICLE PRODUCTION
+
+CoT: a-.-G-I-P
+Name: Gnd/Structure/Processing Facility
+Description: PROCESSING FACILITY
+
+CoT: a-.-G-I-P-D
+Name: Gnd/Structure/Decon
+Description: DECON
+
+CoT: a-.-G-I-R
+Name: Gnd/Structure/Raw Material Production/Storage
+Description: RAW MATERIAL PRODUCTION/STORAGE
+
+CoT: a-.-G-I-R-M
+Name: Gnd/Structure/Mine
+Description: MINE
+
+CoT: a-.-G-I-R-N
+Name: Gnd/Structure/NBC
+Description: NBC
+
+CoT: a-.-G-I-R-N-B
+Name: Gnd/Structure/Biological
+Description: BIOLOGICAL
+
+CoT: a-.-G-I-R-N-C
+Name: Gnd/Structure/Chemical
+Description: CHEMICAL
+
+CoT: a-.-G-I-R-N-N
+Name: Gnd/Structure/Nuclear
+Description: NUCLEAR
+
+CoT: a-.-G-I-R-P
+Name: Gnd/Structure/PETROLEUM/GAS/OIL
+Description: PETROLEUM/GAS/OIL
+
+CoT: a-.-G-I-R-P-r
+Name: Gnd/Structure/PETROLEUM/GAS/OIL/Refinery
+Description: Refinery
+
+CoT: a-.-G-I-T
+Name: Gnd/Structure/Transport Facility
+Description: TRANSPORT FACILITY
+
+CoT: a-.-G-I-T-a
+Name: Gnd/Structure/Transport Facility/Airport
+Description: Airport
+
+CoT: a-.-G-I-T-hb
+Name: Gnd/Structure/Transport Facility/Helibase
+Description: Helibase
+
+CoT: a-.-G-I-T-hs
+Name: Gnd/Structure/Transport Facility/Helispot
+Description: Helispot
+
+CoT: a-.-G-I-T-l
+Name: Gnd/Structure/Transport Facility/Land Port
+Description: Land Port
+
+CoT: a-.-G-I-T-pg
+Name: Gnd/Structure/Transport Facility/Parking Garage
+Description: Parking Garage
+
+CoT: a-.-G-I-T-r
+Name: Gnd/Structure/Transport Facility/Railroad
+Description: Railroad
+
+CoT: a-.-G-I-T-s
+Name: Gnd/Structure/Transport Facility/Seaport
+Description: Seaport
+
+CoT: a-.-G-I-U
+Name: Gnd/Structure/Utility/Service, Research, Utility Facility
+Description: SERVICE, RESEARCH, UTILITY FACILITY
+
+CoT: a-.-G-I-U-E
+Name: Gnd/Structure/Utility/Electric Power
+Description: ELECTRIC POWER FACILITY
+
+CoT: a-.-G-I-U-E-c
+Name: Gnd/Structure/Utility/Electric Power/Coal Power Plant
+Description: Coal Power Plant
+
+CoT: a-.-G-I-U-E-h
+Name: Gnd/Structure/Utility/Electric Power/Hydroelectric Power Plant
+Description: Hydroelectric Power Plant
+
+CoT: a-.-G-I-U-E-o
+Name: Gnd/Structure/Utility/Electric Power/Other Power
+Description: Other Power
+
+CoT: a-.-G-I-U-E-ps
+Name: Gnd/Structure/Utility/Electric Power/Power Substation
+Description: Power Substation
+
+CoT: a-.-G-I-U-E-D
+Name: Gnd/Structure/Utility/Dam
+Description: DAM
+
+CoT: a-.-G-I-U-E-F
+Name: Gnd/Structure/Utility/Fossil Fuel
+Description: FOSSIL FUEL
+
+CoT: a-.-G-I-U-E-N
+Name: Gnd/Structure/Utility/Nuclear Plant
+Description: NUCLEAR PLANT
+
+CoT: a-.-G-I-U-P
+Name: Gnd/Structure/Utility/Public Water Services
+Description: PUBLIC WATER SERVICES
+
+CoT: a-.-G-I-U-R
+Name: Gnd/Structure/Utility/Technological Research
+Description: TECHNOLOGICAL RESEARCH FACILITY
+
+CoT: a-.-G-I-U-T
+Name: Gnd/Structure/Utility/Telecommunications
+Description: TELECOMMUNICATIONS FACILITY
+
+CoT: a-.-G-I-U-T-com
+Name: Gnd/Structure/Utility/Telecommunications/Communications
+Description: Communications
+
+CoT: a-.-G-I-U-T-com-af
+Name: Gnd/Structure/Utility/Telecommunications/Communications/Antenna Farm
+Description: Antenna Farm
+
+CoT: a-.-G-I-U-T-com-sat
+Name: Gnd/Structure/Utility/Telecommunications/Communications/Satellite Communications
+Description: Satellite Communications
+
+CoT: a-.-G-I-U-T-com-tow
+Name: Gnd/Structure/Utility/Telecommunications/Communications/Tower
+Description: Tower
+
+CoT: a-.-G-I-U-T-r
+Name: Gnd/Structure/Utility/Telecommunications/Radio
+Description: Radio
+
+CoT: a-.-G-I-U-T-r-s
+Name: Gnd/Structure/Utility/Telecommunications/Radio/Station
+Description: Station
+
+CoT: a-.-G-I-U-T-tp
+Name: Gnd/Structure/Utility/Telecommunications/Telephone
+Description: Telephone
+
+CoT: a-.-G-I-U-T-tp-ts
+Name: Gnd/Structure/Utility/Telecommunications/Telephone/Telephone Switching
+Description: Telephone Switching
+
+CoT: a-.-G-I-U-T-tv
+Name: Gnd/Structure/Utility/Telecommunications/Television
+Description: Television
+
+CoT: a-.-G-I-U-T-tv-c
+Name: Gnd/Structure/Utility/Telecommunications/Television/Cable
+Description: Cable
+
+CoT: a-.-G-I-U-T-tv-s
+Name: Gnd/Structure/Utility/Telecommunications/Television/Station
+Description: Station
+
+CoT: a-.-G-I-X
+Name: Gnd/Structure/Medical Facility
+Description: MEDICAL FACILITY
+
+CoT: a-.-G-I-X-H
+Name: Gnd/Structure/Hospital
+Description: HOSPITAL
+
+CoT: a-.-G-I-X-hcf
+Name: Gnd/Structure/Medical Facility/Hospital/Hospital Care Facility
+Description: Hospital Care Facility
+
+CoT: a-.-G-I-r
+Name: Gnd/Structure/Road
+Description: Road
+
+CoT: a-.-G-I-r-h
+Name: Gnd/Structure/Road/Highway
+Description: Road (Highway)
+
+CoT: a-.-G-I-r-i
+Name: Gnd/Structure/Road/Improved
+Description: Road (Improved)
+
+CoT: a-.-G-I-r-ra
+Name: Gnd/Structure/Road/Rest Area
+Description: Rest Area
+
+CoT: a-.-G-I-r-u
+Name: Gnd/Structure/Road/Unimproved
+Description: Road (Un-improved)
+
+CoT: a-.-G-U
+Name: Gnd/Unit
+Description: UNIT
+
+CoT: a-.-G-U-C
+Name: Gnd/Combat
+Description: COMBAT
+
+CoT: a-.-G-U-C-A
+Name: Gnd/Combat/ARMOR
+Description: ARMOR
+
+CoT: a-.-G-U-C-A-A
+Name: Gnd/Combat/Armor/ANTI ARMOR
+Description: ANTI ARMOR
+
+CoT: a-.-G-U-C-A-A-A
+Name: Gnd/Combat/Armor/ANTI ARMOR ARMORED
+Description: ANTI ARMOR ARMORED
+
+CoT: a-.-G-U-C-A-A-A-S
+Name: Gnd/Combat/Armor/ANTI ARMOR ARMORED AIR ASSAULT
+Description: ANTI ARMOR ARMORED AIR ASSAULT
+
+CoT: a-.-G-U-C-A-A-A-T
+Name: Gnd/Combat/Armor/ANTI ARMOR ARMORED TRACKED
+Description: ANTI ARMOR ARMORED TRACKED
+
+CoT: a-.-G-U-C-A-A-A-W
+Name: Gnd/Combat/Armor/ANTI ARMOR ARMORED WHEELED
+Description: ANTI ARMOR ARMORED WHEELED
+
+CoT: a-.-G-U-C-A-A-C
+Name: Gnd/Combat/Armor/ANTI ARMOR ARCTIC
+Description: ANTI ARMOR ARCTIC
+
+CoT: a-.-G-U-C-A-A-D
+Name: Gnd/Combat/Armor/ANTI ARMOR DISMOUNTED
+Description: ANTI ARMOR DISMOUNTED
+
+CoT: a-.-G-U-C-A-A-L
+Name: Gnd/Combat/Armor/ANTI ARMOR LIGHT
+Description: ANTI ARMOR LIGHT
+
+CoT: a-.-G-U-C-A-A-M
+Name: Gnd/Combat/Armor/ANTI ARMOR AIRBORNE
+Description: ANTI ARMOR AIRBORNE
+
+CoT: a-.-G-U-C-A-A-O
+Name: Gnd/Combat/Armor/ANTI ARMOR MOTORIZED
+Description: ANTI ARMOR MOTORIZED
+
+CoT: a-.-G-U-C-A-A-O-S
+Name: Gnd/Combat/Armor/ANTI ARMOR MOTORIZED AIR ASSAULT
+Description: ANTI ARMOR MOTORIZED AIR ASSAULT
+
+CoT: a-.-G-U-C-A-A-S
+Name: Gnd/Combat/Armor/ANTI ARMOR AIR ASSAULT
+Description: ANTI ARMOR AIR ASSAULT
+
+CoT: a-.-G-U-C-A-A-U
+Name: Gnd/Combat/Armor/ANTI ARMOR MOUNTAIN
+Description: ANTI ARMOR MOUNTAIN
+
+CoT: a-.-G-U-C-A-T
+Name: Gnd/Combat/Armor/ARMOR TRACK
+Description: ARMOR TRACK
+
+CoT: a-.-G-U-C-A-T-A
+Name: Gnd/Combat/Armor/ARMOR TRACK AIRBORNE
+Description: ARMOR TRACK AIRBORNE
+
+CoT: a-.-G-U-C-A-T-H
+Name: Gnd/Combat/Armor/ARMOR TRACK, HEAVY
+Description: ARMOR TRACK, HEAVY
+
+CoT: a-.-G-U-C-A-T-L
+Name: Gnd/Combat/Armor/ARMOR TRACK, LIGHT
+Description: ARMOR TRACK, LIGHT
+
+CoT: a-.-G-U-C-A-T-M
+Name: Gnd/Combat/Armor/ARMOR TRACK, MEDIUM
+Description: ARMOR TRACK, MEDIUM
+
+CoT: a-.-G-U-C-A-T-R
+Name: Gnd/Combat/Armor/ARMOR TRACK, RECOVERY
+Description: ARMOR TRACK, RECOVERY
+
+CoT: a-.-G-U-C-A-T-W
+Name: Gnd/Combat/Armor/ARMOR TRACK AMPHIBIOUS
+Description: ARMOR TRACK AMPHIBIOUS
+
+CoT: a-.-G-U-C-A-T-W-R
+Name: Gnd/Combat/Armor/ARMOR TRACK AMPHIBIOUS RECOVERY
+Description: ARMOR TRACK AMPHIBIOUS RECOVERY
+
+CoT: a-.-G-U-C-A-W
+Name: Gnd/Combat/Armor/ARMOR, WHEELED
+Description: ARMOR, WHEELED
+
+CoT: a-.-G-U-C-A-W-A
+Name: Gnd/Combat/Armor/ARMOR, WHEELED AIRBORNE
+Description: ARMOR, WHEELED AIRBORNE
+
+CoT: a-.-G-U-C-A-W-H
+Name: Gnd/Combat/Armor/ARMOR, WHEELED HEAVY
+Description: ARMOR, WHEELED HEAVY
+
+CoT: a-.-G-U-C-A-W-L
+Name: Gnd/Combat/Armor/ARMOR, WHEELED LIGHT
+Description: ARMOR, WHEELED LIGHT
+
+CoT: a-.-G-U-C-A-W-M
+Name: Gnd/Combat/Armor/ARMOR, WHEELED MEDIUM
+Description: ARMOR, WHEELED MEDIUM
+
+CoT: a-.-G-U-C-A-W-R
+Name: Gnd/Combat/Armor/ARMOR, WHEELED RECOVERY
+Description: ARMOR, WHEELED RECOVERY
+
+CoT: a-.-G-U-C-A-W-S
+Name: Gnd/Combat/Armor/ARMOR, WHEELED AIR ASSAULT
+Description: ARMOR, WHEELED AIR ASSAULT
+
+CoT: a-.-G-U-C-A-W-W
+Name: Gnd/Combat/Armor/ARMOR, WHEELED AMPHIBIOUS
+Description: ARMOR, WHEELED AMPHIBIOUS
+
+CoT: a-.-G-U-C-A-W-W-R
+Name: Gnd/Combat/Armor/ARMOR, WHEELED AMPHIBIOUS RECOVERY
+Description: ARMOR, WHEELED AMPHIBIOUS RECOVERY
+
+CoT: a-.-G-U-C-D
+Name: Gnd/Combat/Defense/AIR DEFENSE
+Description: AIR DEFENSE
+
+CoT: a-.-G-U-C-D-C
+Name: Gnd/Combat/Defense/COMPOSITE
+Description: COMPOSITE
+
+CoT: a-.-G-U-C-D-G
+Name: Gnd/Combat/Defense/GUN UNIT
+Description: GUN UNIT
+
+CoT: a-.-G-U-C-D-H
+Name: Gnd/Combat/Defense/H/MAD
+Description: H/MAD
+
+CoT: a-.-G-U-C-D-H-H
+Name: Gnd/Combat/Defense/HAWK
+Description: HAWK
+
+CoT: a-.-G-U-C-D-H-P
+Name: Gnd/Combat/Defense/PATRIOT
+Description: PATRIOT
+
+CoT: a-.-G-U-C-D-M
+Name: Gnd/Combat/Defense/AIR DEFENSE MISSILE
+Description: AIR DEFENSE MISSILE
+
+CoT: a-.-G-U-C-D-M-H
+Name: Gnd/Combat/Defense/AIR DEFENSE MISSILE HEAVY
+Description: AIR DEFENSE MISSILE HEAVY
+
+CoT: a-.-G-U-C-D-M-L
+Name: Gnd/Combat/Defense/AIR DEFENSE MISSILE LIGHT
+Description: AIR DEFENSE MISSILE LIGHT
+
+CoT: a-.-G-U-C-D-M-L-A
+Name: Gnd/Combat/Defense/AIR DEFENSE MISSILE MOTORIZED (AVENGER)
+Description: AIR DEFENSE MISSILE MOTORIZED (AVENGER)
+
+CoT: a-.-G-U-C-D-M-M
+Name: Gnd/Combat/Defense/AIR DEFENSE MISSILE MEDIUM
+Description: AIR DEFENSE MISSILE MEDIUM
+
+CoT: a-.-G-U-C-D-O
+Name: Gnd/Combat/Defense/THEATER MISSILE DEFENSE UNIT
+Description: THEATER MISSILE DEFENSE UNIT
+
+CoT: a-.-G-U-C-D-S
+Name: Gnd/Combat/Defense/SHORT RANGE
+Description: SHORT RANGE
+
+CoT: a-.-G-U-C-D-S-S
+Name: Gnd/Combat/Defense/STINGER
+Description: STINGER
+
+CoT: a-.-G-U-C-D-S-V
+Name: Gnd/Combat/Defense/VULCAN
+Description: VULCAN
+
+CoT: a-.-G-U-C-D-T
+Name: Gnd/Combat/Defense/TARGETING UNIT
+Description: TARGETING UNIT
+
+CoT: a-.-G-U-C-E
+Name: Gnd/Combat/Engineer/ENGINEER
+Description: ENGINEER
+
+CoT: a-.-G-U-C-E-C
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT
+Description: ENGINEER COMBAT
+
+CoT: a-.-G-U-C-E-C-A
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT AIRBORNE
+Description: ENGINEER COMBAT AIRBORNE
+
+CoT: a-.-G-U-C-E-C-C
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT ARCTIC
+Description: ENGINEER COMBAT ARCTIC
+
+CoT: a-.-G-U-C-E-C-H
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT HEAVY
+Description: ENGINEER COMBAT HEAVY
+
+CoT: a-.-G-U-C-E-C-L
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT LIGHT (SAPPER)
+Description: ENGINEER COMBAT LIGHT (SAPPER)
+
+CoT: a-.-G-U-C-E-C-M
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT MEDIUM
+Description: ENGINEER COMBAT MEDIUM
+
+CoT: a-.-G-U-C-E-C-O
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT MOUNTAIN
+Description: ENGINEER COMBAT MOUNTAIN
+
+CoT: a-.-G-U-C-E-C-R
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT RECON
+Description: ENGINEER COMBAT RECON
+
+CoT: a-.-G-U-C-E-C-S
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT AIR ASSAULT
+Description: ENGINEER COMBAT AIR ASSAULT
+
+CoT: a-.-G-U-C-E-C-T
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT MECHANIZED (TRACK)
+Description: ENGINEER COMBAT MECHANIZED (TRACK)
+
+CoT: a-.-G-U-C-E-C-W
+Name: Gnd/Combat/Engineer/ENGINEER COMBAT MOTORIZED
+Description: ENGINEER COMBAT MOTORIZED
+
+CoT: a-.-G-U-C-E-N
+Name: Gnd/Combat/Engineer/ENGINEER CONSTRUCTION
+Description: ENGINEER CONSTRUCTION
+
+CoT: a-.-G-U-C-E-N-N
+Name: Gnd/Combat/Engineer/ENGINEER NAVAL CONSTRUCTION
+Description: ENGINEER NAVAL CONSTRUCTION
+
+CoT: a-.-G-U-C-F
+Name: Gnd/Combat/Artillery (Fixed)
+Description: Artillery (Fixed)
+
+CoT: a-.-G-U-C-F-H
+Name: Gnd/Combat/HOWITZER/GUN
+Description: HOWITZER/GUN
+
+CoT: a-.-G-U-C-F-H-A
+Name: Gnd/Combat/AIRBORNE
+Description: AIRBORNE
+
+CoT: a-.-G-U-C-F-H-C
+Name: Gnd/Combat/ARCTIC
+Description: ARCTIC
+
+CoT: a-.-G-U-C-F-H-E
+Name: Gnd/Combat/Artillery (Mobile)
+Description: Artillery (Mobile)
+
+CoT: a-.-G-U-C-F-H-H
+Name: Gnd/Combat/HEAVY
+Description: HEAVY
+
+CoT: a-.-G-U-C-F-H-L
+Name: Gnd/Combat/LIGHT
+Description: LIGHT
+
+CoT: a-.-G-U-C-F-H-M
+Name: Gnd/Combat/MEDIUM
+Description: MEDIUM
+
+CoT: a-.-G-U-C-F-H-O
+Name: Gnd/Combat/MOUNTAIN
+Description: MOUNTAIN
+
+CoT: a-.-G-U-C-F-H-S
+Name: Gnd/Combat/AIR ASSAULT
+Description: AIR ASSAULT
+
+CoT: a-.-G-U-C-F-H-X
+Name: Gnd/Combat/AMPHIBIOUS
+Description: AMPHIBIOUS
+
+CoT: a-.-G-U-C-F-M
+Name: Gnd/Combat/MORTAR
+Description: MORTAR
+
+CoT: a-.-G-U-C-F-M-L
+Name: Gnd/Combat/AMPHIBIOUS MORTAR
+Description: AMPHIBIOUS MORTAR
+
+CoT: a-.-G-U-C-F-M-S
+Name: Gnd/Combat/SELF PROPELLED (SP) TRACKED MORTAR
+Description: SELF PROPELLED (SP) TRACKED MORTAR
+
+CoT: a-.-G-U-C-F-M-T
+Name: Gnd/Combat/TOWED MORTAR
+Description: TOWED MORTAR
+
+CoT: a-.-G-U-C-F-M-T-A
+Name: Gnd/Combat/TOWED AIRBORNE MORTAR
+Description: TOWED AIRBORNE MORTAR
+
+CoT: a-.-G-U-C-F-M-T-C
+Name: Gnd/Combat/TOWED ARCTIC MORTAR
+Description: TOWED ARCTIC MORTAR
+
+CoT: a-.-G-U-C-F-M-T-O
+Name: Gnd/Combat/TOWED MOUNTAIN MORTAR
+Description: TOWED MOUNTAIN MORTAR
+
+CoT: a-.-G-U-C-F-M-T-S
+Name: Gnd/Combat/TOWED AIR ASSAULT MORTAR
+Description: TOWED AIR ASSAULT MORTAR
+
+CoT: a-.-G-U-C-F-M-W
+Name: Gnd/Combat/SP WHEELED MORTAR
+Description: SP WHEELED MORTAR
+
+CoT: a-.-G-U-C-F-O
+Name: Gnd/Combat/METEOROLOGICAL
+Description: METEOROLOGICAL
+
+CoT: a-.-G-U-C-F-O-A
+Name: Gnd/Combat/AIRBORNE METEOROLOGICAL
+Description: AIRBORNE METEOROLOGICAL
+
+CoT: a-.-G-U-C-F-O-L
+Name: Gnd/Combat/LIGHT METEOROLOGICAL
+Description: LIGHT METEOROLOGICAL
+
+CoT: a-.-G-U-C-F-O-O
+Name: Gnd/Combat/MOUNTAIN METEOROLOGICAL
+Description: MOUNTAIN METEOROLOGICAL
+
+CoT: a-.-G-U-C-F-O-S
+Name: Gnd/Combat/AIR ASSAULT METEOROLOGICAL
+Description: AIR ASSAULT METEOROLOGICAL
+
+CoT: a-.-G-U-C-F-R
+Name: Gnd/Combat/ROCKET
+Description: ROCKET
+
+CoT: a-.-G-U-C-F-R-M
+Name: Gnd/Combat/Rockets (Fixed)
+Description: Rockets (Fixed)
+
+CoT: a-.-G-U-C-F-R-M-R
+Name: Gnd/Combat/Rockets (Mobile)
+Description: Rockets (Mobile)
+
+CoT: a-.-G-U-C-F-R-M-S
+Name: Gnd/Combat/MULTI ROCKET SELF PROPELLED
+Description: MULTI ROCKET SELF PROPELLED
+
+CoT: a-.-G-U-C-F-R-M-T
+Name: Gnd/Combat/MULTI ROCKET TOWED
+Description: MULTI ROCKET TOWED
+
+CoT: a-.-G-U-C-F-R-S
+Name: Gnd/Combat/SINGLE ROCKET LAUNCHER
+Description: SINGLE ROCKET LAUNCHER
+
+CoT: a-.-G-U-C-F-R-S-R
+Name: Gnd/Combat/SINGLE ROCKET TRUCK
+Description: SINGLE ROCKET TRUCK
+
+CoT: a-.-G-U-C-F-R-S-S
+Name: Gnd/Combat/SINGLE ROCKET SELF PROPELLED
+Description: SINGLE ROCKET SELF PROPELLED
+
+CoT: a-.-G-U-C-F-R-S-T
+Name: Gnd/Combat/SINGLE ROCKET TOWED
+Description: SINGLE ROCKET TOWED
+
+CoT: a-.-G-U-C-F-S
+Name: Gnd/Combat/ARTILLERY SURVEY
+Description: ARTILLERY SURVEY
+
+CoT: a-.-G-U-C-F-S-A
+Name: Gnd/Combat/AIRBORNE
+Description: AIRBORNE
+
+CoT: a-.-G-U-C-F-S-L
+Name: Gnd/Combat/LIGHT
+Description: LIGHT
+
+CoT: a-.-G-U-C-F-S-O
+Name: Gnd/Combat/MOUNTAIN
+Description: MOUNTAIN
+
+CoT: a-.-G-U-C-F-S-S
+Name: Gnd/Combat/AIR ASSAULT
+Description: AIR ASSAULT
+
+CoT: a-.-G-U-C-F-T
+Name: Gnd/Combat/TARGET ACQUISITION
+Description: TARGET ACQUISITION
+
+CoT: a-.-G-U-C-F-T-A
+Name: Gnd/Combat/ANGLICO
+Description: ANGLICO
+
+CoT: a-.-G-U-C-F-T-C
+Name: Gnd/Combat/COLT/FIST
+Description: COLT/FIST
+
+CoT: a-.-G-U-C-F-T-C-D
+Name: Gnd/Combat/DISMOUNTED COLT/FIST
+Description: DISMOUNTED COLT/FIST
+
+CoT: a-.-G-U-C-F-T-C-M
+Name: Gnd/Combat/TRACKED COLT/FIST
+Description: TRACKED COLT/FIST
+
+CoT: a-.-G-U-C-F-T-F
+Name: Gnd/Combat/FLASH (OPTICAL)
+Description: FLASH (OPTICAL)
+
+CoT: a-.-G-U-C-F-T-R
+Name: Gnd/Combat/RADAR
+Description: RADAR
+
+CoT: a-.-G-U-C-F-T-S
+Name: Gnd/Combat/SOUND
+Description: SOUND
+
+CoT: a-.-G-U-C-I
+Name: Gnd/Combat/Infantry/Troops (Open)
+Description: Troops (Open)
+
+CoT: a-.-G-U-C-I-A
+Name: Gnd/Combat/Infantry/Airborne
+Description: INFANTRY AIRBORNE
+
+CoT: a-.-G-U-C-I-C
+Name: Gnd/Combat/Infantry/Arctic
+Description: INFANTRY ARCTIC
+
+CoT: a-.-G-U-C-I-I
+Name: Gnd/Combat/Infantry/Fighting Vehicle
+Description: INFANTRY FIGHTING VEHICLE
+
+CoT: a-.-G-U-C-I-L
+Name: Gnd/Combat/Infantry/Light
+Description: INFANTRY LIGHT
+
+CoT: a-.-G-U-C-I-M
+Name: Gnd/Combat/Infantry/Motorized
+Description: INFANTRY MOTORIZED
+
+CoT: a-.-G-U-C-I-N
+Name: Gnd/Combat/Infantry/Naval
+Description: INFANTRY NAVAL
+
+CoT: a-.-G-U-C-I-O
+Name: Gnd/Combat/Infantry/Mountain
+Description: INFANTRY MOUNTAIN
+
+CoT: a-.-G-U-C-I-S
+Name: Gnd/Combat/Infantry/Air Assault
+Description: INFANTRY AIR ASSAULT
+
+CoT: a-.-G-U-C-I-Z
+Name: Gnd/Combat/Infantry/Mechanized
+Description: INFANTRY MECHANIZED
+
+CoT: a-.-G-U-C-I-d
+Name: Gnd/Combat/Infantry/DugIn
+Description: Troops (DugIn)
+
+CoT: a-.-G-U-C-M
+Name: Gnd/Combat/MISSILE (SURF SURF)
+Description: MISSILE (SURF SURF)
+
+CoT: a-.-G-U-C-M-S
+Name: Gnd/Combat/MISSILE (SURF SURF) STRATEGIC
+Description: MISSILE (SURF SURF) STRATEGIC
+
+CoT: a-.-G-U-C-M-T
+Name: Gnd/Combat/MISSILE (SURF SURF) TACTICAL
+Description: MISSILE (SURF SURF) TACTICAL
+
+CoT: a-.-G-U-C-R
+Name: Gnd/Combat/Recon/
+Description: RECONNAISSANCE
+
+CoT: a-.-G-U-C-R-A
+Name: Gnd/Combat/Recon/AIRBORNE
+Description: RECONNAISSANCE AIRBORNE
+
+CoT: a-.-G-U-C-R-C
+Name: Gnd/Combat/Recon/ARCTIC
+Description: RECONNAISSANCE ARCTIC
+
+CoT: a-.-G-U-C-R-H
+Name: Gnd/Combat/Recon/HORSE
+Description: RECONNAISSANCE HORSE
+
+CoT: a-.-G-U-C-R-L
+Name: Gnd/Combat/Recon/LIGHT
+Description: RECONNAISSANCE LIGHT
+
+CoT: a-.-G-U-C-R-O
+Name: Gnd/Combat/Recon/MOUNTAIN
+Description: RECONNAISSANCE MOUNTAIN
+
+CoT: a-.-G-U-C-R-R
+Name: Gnd/Combat/Recon/MARINE
+Description: RECONNAISSANCE MARINE
+
+CoT: a-.-G-U-C-R-R-D
+Name: Gnd/Combat/Recon/MARINE DIVISION
+Description: RECONNAISSANCE MARINE DIVISION
+
+CoT: a-.-G-U-C-R-R-F
+Name: Gnd/Combat/Recon/MARINE FORCE
+Description: RECONNAISSANCE MARINE FORCE
+
+CoT: a-.-G-U-C-R-R-L
+Name: Gnd/Combat/Recon/MARINE LIGHT ARMORED
+Description: RECONNAISSANCE MARINE LIGHT ARMORED
+
+CoT: a-.-G-U-C-R-S
+Name: Gnd/Combat/Recon/AIR ASSAULT
+Description: RECONNAISSANCE AIR ASSAULT
+
+CoT: a-.-G-U-C-R-V
+Name: Gnd/Combat/Recon/CAVALRY
+Description: RECONNAISSANCE CAVALRY
+
+CoT: a-.-G-U-C-R-V-A
+Name: Gnd/Combat/Recon/CAVALRY ARMORED
+Description: RECONNAISSANCE CAVALRY ARMORED
+
+CoT: a-.-G-U-C-R-V-G
+Name: Gnd/Combat/Recon/CAVALRY GROUND
+Description: RECONNAISSANCE CAVALRY GROUND
+
+CoT: a-.-G-U-C-R-V-M
+Name: Gnd/Combat/Recon/CAVALRY MOTORIZED
+Description: RECONNAISSANCE CAVALRY MOTORIZED
+
+CoT: a-.-G-U-C-R-V-O
+Name: Gnd/Combat/Recon/CAVALRY AIR
+Description: RECONNAISSANCE CAVALRY AIR
+
+CoT: a-.-G-U-C-R-X
+Name: Gnd/Combat/Recon/LONG RANGE SURVEILLANCE
+Description: RECONNAISSANCE LONG RANGE SURVEILLANCE
+
+CoT: a-.-G-U-C-S
+Name: Gnd/Combat/Security/INTERNAL SECURITY FORCES
+Description: INTERNAL SECURITY FORCES
+
+CoT: a-.-G-U-C-S-A
+Name: Gnd/Combat/Security/AVIATION
+Description: AVIATION
+
+CoT: a-.-G-U-C-S-G
+Name: Gnd/Combat/Security/GROUND
+Description: GROUND
+
+CoT: a-.-G-U-C-S-G-A
+Name: Gnd/Combat/Security/MECHANIZED GROUND
+Description: MECHANIZED GROUND
+
+CoT: a-.-G-U-C-S-G-D
+Name: Gnd/Combat/Security/DISMOUNTED GROUND
+Description: DISMOUNTED GROUND
+
+CoT: a-.-G-U-C-S-G-M
+Name: Gnd/Combat/Security/MOTORIZED GROUND
+Description: MOTORIZED GROUND
+
+CoT: a-.-G-U-C-S-M
+Name: Gnd/Combat/Security/WHEELED MECHANIZED
+Description: WHEELED MECHANIZED
+
+CoT: a-.-G-U-C-S-R
+Name: Gnd/Combat/Security/Rail
+Description: Rail
+
+CoT: a-.-G-U-C-S-W
+Name: Gnd/Combat/Security/RIVERINE
+Description: RIVERINE
+
+CoT: a-.-G-U-C-V
+Name: Gnd/Combat/Aviation/AVIATION
+Description: AVIATION
+
+CoT: a-.-G-U-C-V-C
+Name: Gnd/Combat/Aviation/COMPOSITE
+Description: COMPOSITE
+
+CoT: a-.-G-U-C-V-F
+Name: Gnd/Combat/Aviation/FIXED WING
+Description: FIXED WING
+
+CoT: a-.-G-U-C-V-F-A
+Name: Gnd/Combat/Aviation/ATTACK FIXED WING
+Description: ATTACK FIXED WING
+
+CoT: a-.-G-U-C-V-F-R
+Name: Gnd/Combat/Aviation/RECON FIXED WING
+Description: RECON FIXED WING
+
+CoT: a-.-G-U-C-V-F-U
+Name: Gnd/Combat/Aviation/UTILITY FIXED WING
+Description: UTILITY FIXED WING
+
+CoT: a-.-G-U-C-V-R
+Name: Gnd/Combat/Aviation/ROTARY WING
+Description: ROTARY WING
+
+CoT: a-.-G-U-C-V-R-A
+Name: Gnd/Combat/Aviation/ATTACK ROTARY WING
+Description: ATTACK ROTARY WING
+
+CoT: a-.-G-U-C-V-R-M
+Name: Gnd/Combat/Aviation/MINE COUNTERMEASURE ROTARY WING
+Description: MINE COUNTERMEASURE ROTARY WING
+
+CoT: a-.-G-U-C-V-R-S
+Name: Gnd/Combat/Aviation/SCOUT ROTARY WING
+Description: SCOUT ROTARY WING
+
+CoT: a-.-G-U-C-V-R-U
+Name: Gnd/Combat/Aviation/UTILITY ROTARY WING
+Description: UTILITY ROTARY WING
+
+CoT: a-.-G-U-C-V-R-U-C
+Name: Gnd/Combat/Aviation/C2 ROTARY WING
+Description: C2 ROTARY WING
+
+CoT: a-.-G-U-C-V-R-U-E
+Name: Gnd/Combat/Aviation/MEDEVAC ROTARY WING
+Description: MEDEVAC ROTARY WING
+
+CoT: a-.-G-U-C-V-R-U-H
+Name: Gnd/Combat/Aviation/HEAVY UTILITY ROTARY WING
+Description: HEAVY UTILITY ROTARY WING
+
+CoT: a-.-G-U-C-V-R-U-L
+Name: Gnd/Combat/Aviation/LIGHT UTILITY ROTARY WING
+Description: LIGHT UTILITY ROTARY WING
+
+CoT: a-.-G-U-C-V-R-U-M
+Name: Gnd/Combat/Aviation/MEDIUM UTILITY ROTARY WING
+Description: MEDIUM UTILITY ROTARY WING
+
+CoT: a-.-G-U-C-V-R-W
+Name: Gnd/Combat/Aviation/ANTISUBMARINE WARFARE ROTARY WING
+Description: ANTISUBMARINE WARFARE ROTARY WING
+
+CoT: a-.-G-U-C-V-R-d
+Name: Gnd/Combat/Aviation/Helo/Dual
+Description: Helo ground unit (Dual)
+
+CoT: a-.-G-U-C-V-R-s
+Name: Gnd/Combat/Aviation/Helo/Single
+Description: Helo ground unit (Single)
+
+CoT: a-.-G-U-C-V-S
+Name: Gnd/Combat/Aviation/SEARCH AND RESCUE
+Description: SEARCH AND RESCUE
+
+CoT: a-.-G-U-C-V-U
+Name: Gnd/Combat/Aviation/UNMANNED AERIAL VEHICLE
+Description: UNMANNED AERIAL VEHICLE
+
+CoT: a-.-G-U-C-V-U-F
+Name: Gnd/Combat/Aviation/UNMANNED AERIAL VEHICLE FIXED WING
+Description: UNMANNED AERIAL VEHICLE FIXED WING
+
+CoT: a-.-G-U-C-V-U-R
+Name: Gnd/Combat/Aviation/UNMANNED AERIAL VEHICLE ROTARY WING
+Description: UNMANNED AERIAL VEHICLE ROTARY WING
+
+CoT: a-.-G-U-C-V-V
+Name: Gnd/Combat/Aviation/VERTICAL/SHORT TAKEOFF AND LANDING
+Description: VERTICAL/SHORT TAKEOFF AND LANDING
+
+CoT: a-.-G-U-H
+Name: Gnd/SPECIAL C2 HEADQUARTERS COMPONENT
+Description: SPECIAL C2 HEADQUARTERS COMPONENT
+
+CoT: a-.-G-U-S
+Name: Gnd/COMBAT SERVICE SUPPORT
+Description: COMBAT SERVICE SUPPORT
+
+CoT: a-.-G-U-S-A
+Name: Gnd/ADMINISTRATIVE (ADMIN)
+Description: ADMINISTRATIVE (ADMIN)
+
+CoT: a-.-G-U-S-A-C
+Name: Gnd/ADMIN CORPS
+Description: ADMIN CORPS
+
+CoT: a-.-G-U-S-A-F
+Name: Gnd/FINANCE
+Description: FINANCE
+
+CoT: a-.-G-U-S-A-F-C
+Name: Gnd/FINANCE CORPS
+Description: FINANCE CORPS
+
+CoT: a-.-G-U-S-A-F-T
+Name: Gnd/FINANCE THEATER
+Description: FINANCE THEATER
+
+CoT: a-.-G-U-S-A-J
+Name: Gnd/JUDGE ADVOCATE GENERAL (JAG)
+Description: JUDGE ADVOCATE GENERAL (JAG)
+
+CoT: a-.-G-U-S-A-J-C
+Name: Gnd/JAG CORPS
+Description: JAG CORPS
+
+CoT: a-.-G-U-S-A-J-T
+Name: Gnd/JAG THEATER
+Description: JAG THEATER
+
+CoT: a-.-G-U-S-A-L
+Name: Gnd/LABOR
+Description: LABOR
+
+CoT: a-.-G-U-S-A-L-C
+Name: Gnd/LABOR CORPS
+Description: LABOR CORPS
+
+CoT: a-.-G-U-S-A-L-T
+Name: Gnd/LABOR THEATER
+Description: LABOR THEATER
+
+CoT: a-.-G-U-S-A-M
+Name: Gnd/MORTUARY/GRAVES REGISTRY
+Description: MORTUARY/GRAVES REGISTRY
+
+CoT: a-.-G-U-S-A-M-C
+Name: Gnd/MORTUARY/GRAVES REGISTRY CORPS
+Description: MORTUARY/GRAVES REGISTRY CORPS
+
+CoT: a-.-G-U-S-A-M-T
+Name: Gnd/MORTUARY/GRAVES REGISTRY THEATER
+Description: MORTUARY/GRAVES REGISTRY THEATER
+
+CoT: a-.-G-U-S-A-O
+Name: Gnd/POSTAL
+Description: POSTAL
+
+CoT: a-.-G-U-S-A-O-C
+Name: Gnd/POSTAL CORPS
+Description: POSTAL CORPS
+
+CoT: a-.-G-U-S-A-O-T
+Name: Gnd/POSTAL THEATER
+Description: POSTAL THEATER
+
+CoT: a-.-G-U-S-A-P
+Name: Gnd/PUBLIC AFFAIRS
+Description: PUBLIC AFFAIRS
+
+CoT: a-.-G-U-S-A-P-B
+Name: Gnd/PUBLIC AFFAIRS BROADCAST
+Description: PUBLIC AFFAIRS BROADCAST
+
+CoT: a-.-G-U-S-A-P-B-C
+Name: Gnd/PUBLIC AFFAIRS BROADCAST CORPS
+Description: PUBLIC AFFAIRS BROADCAST CORPS
+
+CoT: a-.-G-U-S-A-P-B-T
+Name: Gnd/PUBLIC AFFAIRS BROADCAST THEATER
+Description: PUBLIC AFFAIRS BROADCAST THEATER
+
+CoT: a-.-G-U-S-A-P-C
+Name: Gnd/PUBLIC AFFAIRS CORPS
+Description: PUBLIC AFFAIRS CORPS
+
+CoT: a-.-G-U-S-A-P-M
+Name: Gnd/PUBLIC AFFAIRS JOINT INFORMATION BUREAU
+Description: PUBLIC AFFAIRS JOINT INFORMATION BUREAU
+
+CoT: a-.-G-U-S-A-P-M-C
+Name: Gnd/PUBLIC AFFAIRS JIB CORPS
+Description: PUBLIC AFFAIRS JIB CORPS
+
+CoT: a-.-G-U-S-A-P-M-T
+Name: Gnd/PUBLIC AFFAIRS JIB THEATER
+Description: PUBLIC AFFAIRS JIB THEATER
+
+CoT: a-.-G-U-S-A-P-T
+Name: Gnd/PUBLIC AFFAIRS THEATER
+Description: PUBLIC AFFAIRS THEATER
+
+CoT: a-.-G-U-S-A-Q
+Name: Gnd/QUARTERMASTER (SUPPLY)
+Description: QUARTERMASTER (SUPPLY)
+
+CoT: a-.-G-U-S-A-Q-C
+Name: Gnd/QUARTERMASTER (SUPPLY) CORPS
+Description: QUARTERMASTER (SUPPLY) CORPS
+
+CoT: a-.-G-U-S-A-Q-T
+Name: Gnd/QUARTERMASTER (SUPPLY) THEATER
+Description: QUARTERMASTER (SUPPLY) THEATER
+
+CoT: a-.-G-U-S-A-R
+Name: Gnd/RELIGIOUS/CHAPLAIN
+Description: RELIGIOUS/CHAPLAIN
+
+CoT: a-.-G-U-S-A-R-C
+Name: Gnd/RELIGIOUS/CHAPLAIN CORPS
+Description: RELIGIOUS/CHAPLAIN CORPS
+
+CoT: a-.-G-U-S-A-R-T
+Name: Gnd/RELIGIOUS/CHAPLAIN THEATER
+Description: RELIGIOUS/CHAPLAIN THEATER
+
+CoT: a-.-G-U-S-A-S
+Name: Gnd/PERSONNEL SERVICES
+Description: PERSONNEL SERVICES
+
+CoT: a-.-G-U-S-A-S-C
+Name: Gnd/PERSONNEL CORPS
+Description: PERSONNEL CORPS
+
+CoT: a-.-G-U-S-A-S-T
+Name: Gnd/PERSONNEL THEATER
+Description: PERSONNEL THEATER
+
+CoT: a-.-G-U-S-A-T
+Name: Gnd/ADMIN THEATER
+Description: ADMIN THEATER
+
+CoT: a-.-G-U-S-A-W
+Name: Gnd/MORALE, WELFARE, RECREATION (MWR)
+Description: MORALE, WELFARE, RECREATION (MWR)
+
+CoT: a-.-G-U-S-A-W-C
+Name: Gnd/MWR CORPS
+Description: MWR CORPS
+
+CoT: a-.-G-U-S-A-W-T
+Name: Gnd/MWR THEATER
+Description: MWR THEATER
+
+CoT: a-.-G-U-S-A-X
+Name: Gnd/REPLACEMENT HOLDING UNIT (RHU)
+Description: REPLACEMENT HOLDING UNIT (RHU)
+
+CoT: a-.-G-U-S-A-X-C
+Name: Gnd/RHU CORPS
+Description: RHU CORPS
+
+CoT: a-.-G-U-S-A-X-T
+Name: Gnd/RHU THEATER
+Description: RHU THEATER
+
+CoT: a-.-G-U-S-M
+Name: Gnd/MEDICAL
+Description: MEDICAL
+
+CoT: a-.-G-U-S-M-C
+Name: Gnd/MEDICAL CORPS
+Description: MEDICAL CORPS
+
+CoT: a-.-G-U-S-M-D
+Name: Gnd/MEDICAL DENTAL
+Description: MEDICAL DENTAL
+
+CoT: a-.-G-U-S-M-D-C
+Name: Gnd/MEDICAL DENTAL CORPS
+Description: MEDICAL DENTAL CORPS
+
+CoT: a-.-G-U-S-M-D-T
+Name: Gnd/MEDICAL DENTAL THEATER
+Description: MEDICAL DENTAL THEATER
+
+CoT: a-.-G-U-S-M-M
+Name: Gnd/MEDICAL TREATMENT FACILITY
+Description: MEDICAL TREATMENT FACILITY
+
+CoT: a-.-G-U-S-M-M-C
+Name: Gnd/MEDICAL TREATMENT FACILITY CORPS
+Description: MEDICAL TREATMENT FACILITY CORPS
+
+CoT: a-.-G-U-S-M-M-T
+Name: Gnd/MEDICAL TREATMENT FACILITY THEATER
+Description: MEDICAL TREATMENT FACILITY THEATER
+
+CoT: a-.-G-U-S-M-P
+Name: Gnd/MEDICAL PSYCHOLOGICAL
+Description: MEDICAL PSYCHOLOGICAL
+
+CoT: a-.-G-U-S-M-P-C
+Name: Gnd/MEDICAL PSYCHOLOGICAL CORPS
+Description: MEDICAL PSYCHOLOGICAL CORPS
+
+CoT: a-.-G-U-S-M-P-T
+Name: Gnd/MEDICAL PSYCHOLOGICAL THEATER
+Description: MEDICAL PSYCHOLOGICAL THEATER
+
+CoT: a-.-G-U-S-M-T
+Name: Gnd/MEDICAL THEATER
+Description: MEDICAL THEATER
+
+CoT: a-.-G-U-S-M-V
+Name: Gnd/MEDICAL VETERINARY
+Description: MEDICAL VETERINARY
+
+CoT: a-.-G-U-S-M-V-C
+Name: Gnd/MEDICAL VETERINARY CORPS
+Description: MEDICAL VETERINARY CORPS
+
+CoT: a-.-G-U-S-M-V-T
+Name: Gnd/MEDICAL VETERINARY THEATER
+Description: MEDICAL VETERINARY THEATER
+
+CoT: a-.-G-U-S-S
+Name: Gnd/SUPPLY
+Description: SUPPLY
+
+CoT: a-.-G-U-S-S-1
+Name: Gnd/SUPPLY CLASS I
+Description: SUPPLY CLASS I
+
+CoT: a-.-G-U-S-S-1-C
+Name: Gnd/SUPPLY CLASS I CORPS
+Description: SUPPLY CLASS I CORPS
+
+CoT: a-.-G-U-S-S-1-T
+Name: Gnd/SUPPLY CLASS I THEATER
+Description: SUPPLY CLASS I THEATER
+
+CoT: a-.-G-U-S-S-2
+Name: Gnd/SUPPLY CLASS II
+Description: SUPPLY CLASS II
+
+CoT: a-.-G-U-S-S-2-C
+Name: Gnd/SUPPLY CLASS II CORPS
+Description: SUPPLY CLASS II CORPS
+
+CoT: a-.-G-U-S-S-2-T
+Name: Gnd/SUPPLY CLASS II THEATER
+Description: SUPPLY CLASS II THEATER
+
+CoT: a-.-G-U-S-S-3
+Name: Gnd/SUPPLY CLASS III
+Description: SUPPLY CLASS III
+
+CoT: a-.-G-U-S-S-3-A
+Name: Gnd/SUPPLY CLASS III AVIATION
+Description: SUPPLY CLASS III AVIATION
+
+CoT: a-.-G-U-S-S-3-A-C
+Name: Gnd/SUPPLY CLASS III AVIATION CORPS
+Description: SUPPLY CLASS III AVIATION CORPS
+
+CoT: a-.-G-U-S-S-3-A-T
+Name: Gnd/SUPPLY CLASS III AVIATION THEATER
+Description: SUPPLY CLASS III AVIATION THEATER
+
+CoT: a-.-G-U-S-S-3-C
+Name: Gnd/SUPPLY CLASS III CORPS
+Description: SUPPLY CLASS III CORPS
+
+CoT: a-.-G-U-S-S-3-T
+Name: Gnd/SUPPLY CLASS III THEATER
+Description: SUPPLY CLASS III THEATER
+
+CoT: a-.-G-U-S-S-4
+Name: Gnd/SUPPLY CLASS IV
+Description: SUPPLY CLASS IV
+
+CoT: a-.-G-U-S-S-4-C
+Name: Gnd/SUPPLY CLASS IV CORPS
+Description: SUPPLY CLASS IV CORPS
+
+CoT: a-.-G-U-S-S-4-T
+Name: Gnd/SUPPLY CLASS IV THEATER
+Description: SUPPLY CLASS IV THEATER
+
+CoT: a-.-G-U-S-S-5
+Name: Gnd/SUPPLY CLASS V
+Description: SUPPLY CLASS V
+
+CoT: a-.-G-U-S-S-5-C
+Name: Gnd/SUPPLY CLASS V CORPS
+Description: SUPPLY CLASS V CORPS
+
+CoT: a-.-G-U-S-S-5-T
+Name: Gnd/SUPPLY CLASS V THEATER
+Description: SUPPLY CLASS V THEATER
+
+CoT: a-.-G-U-S-S-6
+Name: Gnd/SUPPLY CLASS VI
+Description: SUPPLY CLASS VI
+
+CoT: a-.-G-U-S-S-6-C
+Name: Gnd/SUPPLY CLASS VI CORPS
+Description: SUPPLY CLASS VI CORPS
+
+CoT: a-.-G-U-S-S-6-T
+Name: Gnd/SUPPLY CLASS VI THEATER
+Description: SUPPLY CLASS VI THEATER
+
+CoT: a-.-G-U-S-S-7
+Name: Gnd/SUPPLY CLASS VII
+Description: SUPPLY CLASS VII
+
+CoT: a-.-G-U-S-S-7-C
+Name: Gnd/SUPPLY CLASS VII CORPS
+Description: SUPPLY CLASS VII CORPS
+
+CoT: a-.-G-U-S-S-7-T
+Name: Gnd/SUPPLY CLASS VII THEATER
+Description: SUPPLY CLASS VII THEATER
+
+CoT: a-.-G-U-S-S-8
+Name: Gnd/SUPPLY CLASS VIII
+Description: SUPPLY CLASS VIII
+
+CoT: a-.-G-U-S-S-8-C
+Name: Gnd/SUPPLY CLASS VIII CORPS
+Description: SUPPLY CLASS VIII CORPS
+
+CoT: a-.-G-U-S-S-8-T
+Name: Gnd/SUPPLY CLASS VIII THEATER
+Description: SUPPLY CLASS VIII THEATER
+
+CoT: a-.-G-U-S-S-9
+Name: Gnd/SUPPLY CLASS IX
+Description: SUPPLY CLASS IX
+
+CoT: a-.-G-U-S-S-9-C
+Name: Gnd/SUPPLY CLASS IX CORPS
+Description: SUPPLY CLASS IX CORPS
+
+CoT: a-.-G-U-S-S-9-T
+Name: Gnd/SUPPLY CLASS IX THEATER
+Description: SUPPLY CLASS IX THEATER
+
+CoT: a-.-G-U-S-S-C
+Name: Gnd/SUPPLY CORPS
+Description: SUPPLY CORPS
+
+CoT: a-.-G-U-S-S-L
+Name: Gnd/SUPPLY LAUNDRY/BATH
+Description: SUPPLY LAUNDRY/BATH
+
+CoT: a-.-G-U-S-S-L-C
+Name: Gnd/SUPPLY LAUNDRY/BATH CORPS
+Description: SUPPLY LAUNDRY/BATH CORPS
+
+CoT: a-.-G-U-S-S-L-T
+Name: Gnd/SUPPLY LAUNDRY/BATH THEATER
+Description: SUPPLY LAUNDRY/BATH THEATER
+
+CoT: a-.-G-U-S-S-T
+Name: Gnd/SUPPLY THEATER
+Description: SUPPLY THEATER
+
+CoT: a-.-G-U-S-S-W
+Name: Gnd/SUPPLY WATER
+Description: SUPPLY WATER
+
+CoT: a-.-G-U-S-S-W-C
+Name: Gnd/SUPPLY WATER CORPS
+Description: SUPPLY WATER CORPS
+
+CoT: a-.-G-U-S-S-W-P
+Name: Gnd/SUPPLY WATER PURIFICATION
+Description: SUPPLY WATER PURIFICATION
+
+CoT: a-.-G-U-S-S-W-P-C
+Name: Gnd/SUPPLY WATER PURIFICATION CORPS
+Description: SUPPLY WATER PURIFICATION CORPS
+
+CoT: a-.-G-U-S-S-W-P-T
+Name: Gnd/SUPPLY WATER PURIFICATION THEATER
+Description: SUPPLY WATER PURIFICATION THEATER
+
+CoT: a-.-G-U-S-S-W-T
+Name: Gnd/SUPPLY WATER THEATER
+Description: SUPPLY WATER THEATER
+
+CoT: a-.-G-U-S-S-X
+Name: Gnd/SUPPLY CLASS X
+Description: SUPPLY CLASS X
+
+CoT: a-.-G-U-S-S-X-C
+Name: Gnd/SUPPLY CLASS X CORPS
+Description: SUPPLY CLASS X CORPS
+
+CoT: a-.-G-U-S-S-X-T
+Name: Gnd/SUPPLY CLASS X THEATER
+Description: SUPPLY CLASS X THEATER
+
+CoT: a-.-G-U-S-S-d
+Name: Gnd/SupplyDepot
+Description: SupplyDepot
+
+CoT: a-.-G-U-S-T
+Name: Gnd/TRANSPORTATION
+Description: TRANSPORTATION
+
+CoT: a-.-G-U-S-T-A
+Name: Gnd/APOD/APOE
+Description: APOD/APOE
+
+CoT: a-.-G-U-S-T-A-C
+Name: Gnd/APOD/APOE CORPS
+Description: APOD/APOE CORPS
+
+CoT: a-.-G-U-S-T-A-T
+Name: Gnd/APOD/APOE THEATER
+Description: APOD/APOE THEATER
+
+CoT: a-.-G-U-S-T-C
+Name: Gnd/TRANSPORTATION CORPS
+Description: TRANSPORTATION CORPS
+
+CoT: a-.-G-U-S-T-I
+Name: Gnd/MISSILE
+Description: MISSILE
+
+CoT: a-.-G-U-S-T-I-C
+Name: Gnd/MISSILE CORPS
+Description: MISSILE CORPS
+
+CoT: a-.-G-U-S-T-I-T
+Name: Gnd/MISSILE THEATER
+Description: MISSILE THEATER
+
+CoT: a-.-G-U-S-T-M
+Name: Gnd/MOVEMENT CONTROL CENTER(MCC)
+Description: MOVEMENT CONTROL CENTER(MCC)
+
+CoT: a-.-G-U-S-T-M-C
+Name: Gnd/MCC CORPS
+Description: MCC CORPS
+
+CoT: a-.-G-U-S-T-M-T
+Name: Gnd/MCC THEATER
+Description: MCC THEATER
+
+CoT: a-.-G-U-S-T-R
+Name: Gnd/RAILHEAD
+Description: RAILHEAD
+
+CoT: a-.-G-U-S-T-R-C
+Name: Gnd/RAILHEAD CORPS
+Description: RAILHEAD CORPS
+
+CoT: a-.-G-U-S-T-R-T
+Name: Gnd/RAILHEAD THEATER
+Description: RAILHEAD THEATER
+
+CoT: a-.-G-U-S-T-S
+Name: Gnd/SPOD/SPOE
+Description: SPOD/SPOE
+
+CoT: a-.-G-U-S-T-S-C
+Name: Gnd/SPOD/SPOE CORPS
+Description: SPOD/SPOE CORPS
+
+CoT: a-.-G-U-S-T-S-T
+Name: Gnd/SPOD/SPOE THEATER
+Description: SPOD/SPOE THEATER
+
+CoT: a-.-G-U-S-T-T
+Name: Gnd/TRANSPORTATION THEATER
+Description: TRANSPORTATION THEATER
+
+CoT: a-.-G-U-S-X
+Name: Gnd/MAINTENANCE
+Description: MAINTENANCE
+
+CoT: a-.-G-U-S-X-C
+Name: Gnd/MAINTENANCE CORPS
+Description: MAINTENANCE CORPS
+
+CoT: a-.-G-U-S-X-E
+Name: Gnd/ELECTRO OPTICAL
+Description: ELECTRO OPTICAL
+
+CoT: a-.-G-U-S-X-E-C
+Name: Gnd/ELECTRO OPTICAL CORPS
+Description: ELECTRO OPTICAL CORPS
+
+CoT: a-.-G-U-S-X-E-T
+Name: Gnd/ELECTRO OPTICAL THEATER
+Description: ELECTRO OPTICAL THEATER
+
+CoT: a-.-G-U-S-X-H
+Name: Gnd/MAINTENANCE HEAVY
+Description: MAINTENANCE HEAVY
+
+CoT: a-.-G-U-S-X-H-C
+Name: Gnd/MAINTENANCE HEAVY CORPS
+Description: MAINTENANCE HEAVY CORPS
+
+CoT: a-.-G-U-S-X-H-T
+Name: Gnd/MAINTENANCE HEAVY THEATER
+Description: MAINTENANCE HEAVY THEATER
+
+CoT: a-.-G-U-S-X-O
+Name: Gnd/ORDNANCE
+Description: ORDNANCE
+
+CoT: a-.-G-U-S-X-O-C
+Name: Gnd/ORDNANCE CORPS
+Description: ORDNANCE CORPS
+
+CoT: a-.-G-U-S-X-O-M
+Name: Gnd/ORDNANCE MISSILE
+Description: ORDNANCE MISSILE
+
+CoT: a-.-G-U-S-X-O-M-C
+Name: Gnd/ORDNANCE MISSILE CORPS
+Description: ORDNANCE MISSILE CORPS
+
+CoT: a-.-G-U-S-X-O-M-T
+Name: Gnd/ORDNANCE MISSILE THEATER
+Description: ORDNANCE MISSILE THEATER
+
+CoT: a-.-G-U-S-X-O-T
+Name: Gnd/ORDNANCE THEATER
+Description: ORDNANCE THEATER
+
+CoT: a-.-G-U-S-X-R
+Name: Gnd/MAINTENANCE RECOVERY
+Description: MAINTENANCE RECOVERY
+
+CoT: a-.-G-U-S-X-R-C
+Name: Gnd/MAINTENANCE RECOVERY CORPS
+Description: MAINTENANCE RECOVERY CORPS
+
+CoT: a-.-G-U-S-X-R-T
+Name: Gnd/MAINTENANCE RECOVERY THEATER
+Description: MAINTENANCE RECOVERY THEATER
+
+CoT: a-.-G-U-S-X-T
+Name: Gnd/MAINTENANCE THEATER
+Description: MAINTENANCE THEATER
+
+CoT: a-.-G-U-U
+Name: Gnd/COMBAT SUPPORT
+Description: COMBAT SUPPORT
+
+CoT: a-.-G-U-U-A
+Name: Gnd/COMBAT SUPPORT NBC
+Description: COMBAT SUPPORT NBC
+
+CoT: a-.-G-U-U-A-B
+Name: Gnd/BIOLOGICAL
+Description: BIOLOGICAL
+
+CoT: a-.-G-U-U-A-B-R
+Name: Gnd/RECON EQUIPPED
+Description: RECON EQUIPPED
+
+CoT: a-.-G-U-U-A-C
+Name: Gnd/CHEMICAL
+Description: CHEMICAL
+
+CoT: a-.-G-U-U-A-C-C
+Name: Gnd/SMOKE/DECON
+Description: SMOKE/DECON
+
+CoT: a-.-G-U-U-A-C-C-K
+Name: Gnd/MECHANIZED SMOKE/DECON
+Description: MECHANIZED SMOKE/DECON
+
+CoT: a-.-G-U-U-A-C-C-M
+Name: Gnd/MOTORIZED SMOKE/DECON
+Description: MOTORIZED SMOKE/DECON
+
+CoT: a-.-G-U-U-A-C-R
+Name: Gnd/CHEMICAL RECON
+Description: CHEMICAL RECON
+
+CoT: a-.-G-U-U-A-C-R-S
+Name: Gnd/CHEMICAL WHEELED ARMORED VEHICLE
+Description: CHEMICAL WHEELED ARMORED VEHICLE
+
+CoT: a-.-G-U-U-A-C-R-W
+Name: Gnd/CHEMICAL WHEELED ARMORED VEHICLE
+Description: CHEMICAL WHEELED ARMORED VEHICLE
+
+CoT: a-.-G-U-U-A-C-S
+Name: Gnd/SMOKE
+Description: SMOKE
+
+CoT: a-.-G-U-U-A-C-S-A
+Name: Gnd/ARMOR SMOKE
+Description: ARMOR SMOKE
+
+CoT: a-.-G-U-U-A-C-S-M
+Name: Gnd/MOTORIZED SMOKE
+Description: MOTORIZED SMOKE
+
+CoT: a-.-G-U-U-A-D
+Name: Gnd/DECONTAMINATION
+Description: DECONTAMINATION
+
+CoT: a-.-G-U-U-A-N
+Name: Gnd/NUCLEAR
+Description: NUCLEAR
+
+CoT: a-.-G-U-U-E
+Name: Gnd/EXPLOSIVE ORDINANCE DISPOSAL
+Description: EXPLOSIVE ORDINANCE DISPOSAL
+
+CoT: a-.-G-U-U-I
+Name: Gnd/INFORMATION WARFARE UNIT
+Description: INFORMATION WARFARE UNIT
+
+CoT: a-.-G-U-U-L
+Name: Gnd/LAW ENFORCEMENT UNIT
+Description: LAW ENFORCEMENT UNIT
+
+CoT: a-.-G-U-U-L-C
+Name: Gnd/CIVILIAN LAW ENFORCEMENT
+Description: CIVILIAN LAW ENFORCEMENT
+
+CoT: a-.-G-U-U-L-D
+Name: Gnd/CENTRAL INTELLIGENCE DIVISION (CID)
+Description: CENTRAL INTELLIGENCE DIVISION (CID)
+
+CoT: a-.-G-U-U-L-F
+Name: Gnd/SECURITY POLICE (AIR)
+Description: SECURITY POLICE (AIR)
+
+CoT: a-.-G-U-U-L-M
+Name: Gnd/MILITARY POLICE
+Description: MILITARY POLICE
+
+CoT: a-.-G-U-U-L-S
+Name: Gnd/SHORE PATROL
+Description: SHORE PATROL
+
+CoT: a-.-G-U-U-M
+Name: Gnd/MILITARY INTELLIGENCE
+Description: MILITARY INTELLIGENCE
+
+CoT: a-.-G-U-U-M-A
+Name: Gnd/AERIAL EXPLOITATION
+Description: AERIAL EXPLOITATION
+
+CoT: a-.-G-U-U-M-C
+Name: Gnd/COUNTER INTELLIGENCE
+Description: COUNTER INTELLIGENCE
+
+CoT: a-.-G-U-U-M-J
+Name: Gnd/JOINT INTELLIGENCE CENTER
+Description: JOINT INTELLIGENCE CENTER
+
+CoT: a-.-G-U-U-M-M-O
+Name: Gnd/METEOROLOGICAL
+Description: METEOROLOGICAL
+
+CoT: a-.-G-U-U-M-O
+Name: Gnd/OPERATIONS
+Description: OPERATIONS
+
+CoT: a-.-G-U-U-M-Q
+Name: Gnd/INTERROGATION
+Description: INTERROGATION
+
+CoT: a-.-G-U-U-M-R
+Name: Gnd/SURVEILLANCE
+Description: SURVEILLANCE
+
+CoT: a-.-G-U-U-M-R-G
+Name: Gnd/GROUND SURVEILLANCE RADAR
+Description: GROUND SURVEILLANCE RADAR
+
+CoT: a-.-G-U-U-M-R-S
+Name: Gnd/SENSOR
+Description: SENSOR
+
+CoT: a-.-G-U-U-M-R-S-S
+Name: Gnd/SENSOR SCM
+Description: SENSOR SCM
+
+CoT: a-.-G-U-U-M-R-X
+Name: Gnd/GROUND STATION MODULE
+Description: GROUND STATION MODULE
+
+CoT: a-.-G-U-U-M-S
+Name: Gnd/SIGNAL INTELLIGENCE (SIGINT)
+Description: SIGNAL INTELLIGENCE (SIGINT)
+
+CoT: a-.-G-U-U-M-S-E
+Name: Gnd/ELECTRONIC WARFARE
+Description: ELECTRONIC WARFARE
+
+CoT: a-.-G-U-U-M-S-E-A
+Name: Gnd/ARMORED WHEELED VEHICLE
+Description: ARMORED WHEELED VEHICLE
+
+CoT: a-.-G-U-U-M-S-E-C
+Name: Gnd/CORPS
+Description: CORPS
+
+CoT: a-.-G-U-U-M-S-E-D
+Name: Gnd/DIRECTION FINDING
+Description: DIRECTION FINDING
+
+CoT: a-.-G-U-U-M-S-E-I
+Name: Gnd/INTERCEPT
+Description: INTERCEPT
+
+CoT: a-.-G-U-U-M-S-E-J
+Name: Gnd/JAMMING
+Description: JAMMING
+
+CoT: a-.-G-U-U-M-S-E-T
+Name: Gnd/THEATER
+Description: THEATER
+
+CoT: a-.-G-U-U-M-T
+Name: Gnd/TACTICAL EXPLOIT
+Description: TACTICAL EXPLOIT
+
+CoT: a-.-G-U-U-P
+Name: Gnd/LANDING SUPPORT
+Description: LANDING SUPPORT
+
+CoT: a-.-G-U-U-S
+Name: Gnd/SIGNAL UNIT
+Description: SIGNAL UNIT
+
+CoT: a-.-G-U-U-S-A
+Name: Gnd/AREA
+Description: AREA
+
+CoT: a-.-G-U-U-S-C
+Name: Gnd/COMMUNICATION CONFIGURED PACKAGE
+Description: COMMUNICATION CONFIGURED PACKAGE
+
+CoT: a-.-G-U-U-S-C-L
+Name: Gnd/LARGE COMMUNICATION CONFIGURED PACKAGE
+Description: LARGE COMMUNICATION CONFIGURED PACKAGE
+
+CoT: a-.-G-U-U-S-F
+Name: Gnd/FORWARD COMMUNICATIONS
+Description: FORWARD COMMUNICATIONS
+
+CoT: a-.-G-U-U-S-M
+Name: Gnd/MULTIPLE SUBSCRIBER ELEMENT
+Description: MULTIPLE SUBSCRIBER ELEMENT
+
+CoT: a-.-G-U-U-S-M-L
+Name: Gnd/LARGE EXTENSION NODE
+Description: LARGE EXTENSION NODE
+
+CoT: a-.-G-U-U-S-M-N
+Name: Gnd/NODE CENTER
+Description: NODE CENTER
+
+CoT: a-.-G-U-U-S-M-S
+Name: Gnd/SMALL EXTENSION NODE
+Description: SMALL EXTENSION NODE
+
+CoT: a-.-G-U-U-S-O
+Name: Gnd/COMMAND OPERATIONS
+Description: COMMAND OPERATIONS
+
+CoT: a-.-G-U-U-S-R
+Name: Gnd/RADIO UNIT
+Description: RADIO UNIT
+
+CoT: a-.-G-U-U-S-R-S
+Name: Gnd/TACTICAL SATELLITE
+Description: TACTICAL SATELLITE
+
+CoT: a-.-G-U-U-S-R-T
+Name: Gnd/TELETYPE CENTER
+Description: TELETYPE CENTER
+
+CoT: a-.-G-U-U-S-R-W
+Name: Gnd/RELAY
+Description: RELAY
+
+CoT: a-.-G-U-U-S-S
+Name: Gnd/SIGNAL SUPPORT
+Description: SIGNAL SUPPORT
+
+CoT: a-.-G-U-U-S-W
+Name: Gnd/TELEPHONE SWITCH
+Description: TELEPHONE SWITCH
+
+CoT: a-.-G-U-U-S-X
+Name: Gnd/ELECTRONIC RANGING
+Description: ELECTRONIC RANGING
+
+CoT: a-.-G-U-i
+Name: Gnd/IM Resources
+Description: Incident Management Resources
+
+CoT: a-.-G-U-i-a
+Name: Gnd/IM Resources/Animal Health
+Description: Animal Health
+
+CoT: a-.-G-U-i-a-lar
+Name: Gnd/Large Animal Rescue Strike Team
+Description: Large Animal Rescue Strike Team
+
+CoT: a-.-G-U-i-a-las
+Name: Gnd/Large Animal Sheltering Team
+Description: Large Animal Sheltering Team
+
+CoT: a-.-G-U-i-a-lat
+Name: Gnd/Large Animal Transport Team
+Description: Large Animal Transport Team
+
+CoT: a-.-G-U-i-a-sar
+Name: Gnd/Small Animal Rescue Strike Team
+Description: Small Animal Rescue Strike Team
+
+CoT: a-.-G-U-i-a-sas
+Name: Gnd/Small Animal Sheltering Team
+Description: Small Animal Sheltering Team
+
+CoT: a-.-G-U-i-a-sat
+Name: Gnd/Small Animal Transport Team
+Description: Small Animal Transport Team
+
+CoT: a-.-G-U-i-a-imt
+Name: Gnd/Incident Management Team Animal Protection
+Description: Incident Management Team Animal Protection
+
+CoT: a-.-G-U-i-e
+Name: Gnd/IM Resources/Emergency Management
+Description: Emergency Management
+
+CoT: a-.-G-U-i-e-acrc
+Name: Gnd/Airborne Communications Relay (CAP)
+Description: Airborne Communications Relay(CAP)
+
+CoT: a-.-G-U-i-e-acrt
+Name: Gnd/Airborne Communications Relay Team
+Description: Airborne Communications Relay Team
+
+CoT: a-.-G-U-i-e-att
+Name: Gnd/Airborne Transport Team
+Description: Airborne Transport Team
+
+CoT: a-.-G-U-i-e-cis
+Name: Gnd/Critical Incident Stress Management Team
+Description: Critical Incident Stress Management Team
+
+CoT: a-.-G-U-i-e-cst
+Name: Gnd/Communications Support Team
+Description: Communications Support Team
+
+CoT: a-.-G-U-i-e-dc
+Name: Gnd/Donations Coordinator
+Description: Donations Coordinator
+
+CoT: a-.-G-U-i-e-dmt
+Name: Gnd/Donations Management Personnel Team
+Description: Donations Management Personnel Team
+
+CoT: a-.-G-U-i-e-ect
+Name: Gnd/Evacuation Coordination Team
+Description: Evacuation Coordination Team
+
+CoT: a-.-G-U-i-e-efa
+Name: Gnd/EOC Finance Administration
+Description: EOC Finance Administration
+
+CoT: a-.-G-U-i-e-elt
+Name: Gnd/Evacuation Liaison Team
+Description: Evacuation Liaison Team
+
+CoT: a-.-G-U-i-e-ems
+Name: Gnd/EOC Management Support Team
+Description: EOC Management Support Team
+
+CoT: a-.-G-U-i-e-eos
+Name: Gnd/EOC Operations Section Chief
+Description: EOC Operations Section Chief
+
+CoT: a-.-G-U-i-e-eps
+Name: Gnd/EOC Planning Section Chief
+Description: EOC Planning Section Chief
+
+CoT: a-.-G-U-i-e-ial
+Name: Gnd/Individual Assistance Disaster Assessment Team Leader
+Description: Individual Assistance Disaster Assessment Team Leader
+
+CoT: a-.-G-U-i-e-iat
+Name: Gnd/Individual Assistance Disaster Assessment Team
+Description: Individual Assistance Disaster Assessment Team
+
+CoT: a-.-G-U-i-e-imt
+Name: Gnd/Incident Management Team
+Description: Incident Management Team
+
+CoT: a-.-G-U-i-e-mcc
+Name: Gnd/Mobile Communications Center
+Description: Mobile Communications Center
+
+CoT: a-.-G-U-i-e-mfk
+Name: Gnd/Mobile Feeding Kitchen
+Description: Mobile Feeding Kitchen
+
+CoT: a-.-G-U-i-e-pac
+Name: Gnd/Public Assistance Coordinator
+Description: Public Assistance Coordinator
+
+CoT: a-.-G-U-i-e-rna
+Name: Gnd/Rapid Needs Assessment Team
+Description: Rapid Needs Assessment Team
+
+CoT: a-.-G-U-i-e-smt
+Name: Gnd/Shelter Management Team
+Description: Shelter Management Team
+
+CoT: a-.-G-U-i-e-val
+Name: Gnd/Volunteer Agency Liaison
+Description: Volunteer Agency Liaison
+
+CoT: a-.-G-U-i-m
+Name: Gnd/IM Resources/Emergency Medical Services
+Description: Emergency Medical Services
+
+CoT: a-.-G-U-i-m-aaf
+Name: Gnd/Air Ambulance (Fixed-Wing)
+Description: Air Ambulance (Fixed-Wing)
+
+CoT: a-.-G-U-i-m-aar
+Name: Gnd/Air Ambulance (Rotary-Wing)
+Description: Air Ambulance (Rotary-Wing)
+
+CoT: a-.-G-U-i-m-ag
+Name: Gnd/Ambulances (Ground)
+Description: Ambulances (Ground)
+
+CoT: a-.-G-U-i-m-ast
+Name: Gnd/Ambulance Strike Team
+Description: Ambulance Strike Team
+
+CoT: a-.-G-U-i-m-atf
+Name: Gnd/Ambulance Task Force
+Description: Ambulance Task Force
+
+CoT: a-.-G-U-i-m-etf
+Name: Gnd/Emergency Medical Task Force
+Description: Emergency Medical Task Force
+
+CoT: a-.-G-U-i-f
+Name: Gnd/IM Resources/Fire HAZMAT
+Description: Fire HAZMAT
+
+CoT: a-.-G-U-i-f-act
+Name: Gnd/Area Command Team, Firefighting
+Description: Area Command Team, Firefighting
+
+CoT: a-.-G-U-i-f-bp
+Name: Gnd/Brush Patrol
+Description: Brush Patrol
+
+CoT: a-.-G-U-i-f-ct
+Name: Gnd/Crew Transport
+Description: Crew Transport
+
+CoT: a-.-G-U-i-f-efp
+Name: Gnd/Engine, Fire (Pumper)
+Description: Engine, Fire (Pumper)
+
+CoT: a-.-G-U-i-f-fb
+Name: Gnd/Fire Boat
+Description: Fire Boat
+
+CoT: a-.-G-U-i-f-ft
+Name: Gnd/Fuel Tender
+Description: Fuel Tender
+
+CoT: a-.-G-U-i-f-fta
+Name: Gnd/Fire Truck
+Description: Fire Truck
+
+CoT: a-.-G-U-i-f-ftf
+Name: Gnd/Foam Tender
+Description: Foam Tender
+
+CoT: a-.-G-U-i-f-hc
+Name: Gnd/Hand Crew
+Description: Hand Crew
+
+CoT: a-.-G-U-i-f-het
+Name: Gnd/HazMat Entry Team
+Description: HazMat Entry Team
+
+CoT: a-.-G-U-i-f-hf
+Name: Gnd/Helicopters Firefighting
+Description: Helicopters, Firefighting
+
+CoT: a-.-G-U-i-f-ht
+Name: Gnd/Helitanker 
+Description: Helitanker
+
+CoT: a-.-G-U-i-f-imt
+Name: Gnd/Incident Management Team Firefighting
+Description: Incident Management Team Firefighting
+
+CoT: a-.-G-U-i-f-ibt
+Name: Gnd/Interagency Buying Team Firefighting
+Description: Interagency Buying Team Firefighting
+
+CoT: a-.-G-U-i-f-mcu
+Name: Gnd/Mobile Communications Unit
+Description: Mobile Communications Unit
+
+CoT: a-.-G-U-i-f-nsf
+Name: Gnd/USCG National Strike Force
+Description: USCG National Strike Force
+
+CoT: a-.-G-U-i-f-pp
+Name: Gnd/Portable Pump
+Description: Portable Pump
+
+CoT: a-.-G-U-i-f-st
+Name: Gnd/Strike Team, Engine (Fire)
+Description: Strike Team, Engine (Fire)
+
+CoT: a-.-G-U-i-f-wt
+Name: Gnd/Water Tender, Firefighting (Tanker)
+Description: Water Tender, Firefighting (Tanker)
+
+CoT: a-.-G-U-i-h
+Name: Gnd/IM Resources/Health and Medical
+Description: Health and Medical
+
+CoT: a-.-G-U-i-h-dmb
+Name: Gnd/Disaster Medical Assistance Team - Basic
+Description: Disaster Medical Assistance Team - Basic
+
+CoT: a-.-G-U-i-h-dmc
+Name: Gnd/Disaster Medical Assistance Team - Crush Injury Specialty
+Description: Disaster Medical Assistance Team - Crush Injury Specialty
+
+CoT: a-.-G-U-i-h-dmm
+Name: Gnd/Disaster Medical Assistance Team - Mental Health
+Description: Disaster Medical Assistance Team - Mental Health
+
+CoT: a-.-G-U-i-h-dmp
+Name: Gnd/Disaster Medical Assistance Team - Pediatric
+Description: Disaster Medical Assistance Team - Pediatric
+
+CoT: a-.-G-U-i-h-dms
+Name: Gnd/Disaster Medical Assistance Team - Burn
+Description: Disaster Medical Assistance Team - Burn
+
+CoT: a-.-G-U-i-h-mor
+Name: Gnd/Disaster Mortuary Operational Response Team
+Description: Disaster Mortuary Operational Response Team
+
+CoT: a-.-G-U-i-h-msr
+Name: Gnd/International Medical Surgical Response Team
+Description: International Medical Surgical Response Team
+
+CoT: a-.-G-U-i-h-mst
+Name: Gnd/NDMS Management Support Team
+Description: NDMS Management Support Team
+
+CoT: a-.-G-U-i-h-vma
+Name: Gnd/Veterinary Medical Assistance Team
+Description: Veterinary Medical Assistance Team
+
+CoT: a-.-G-U-i-l
+Name: Gnd/IM Resources/Law Enforcement
+Description: Law Enforcement
+
+CoT: a-.-G-U-i-l-bs
+Name: Gnd/Bomb Squad Explosives Team
+Description: Bomb Squad Explosives Team
+
+CoT: a-.-G-U-i-l-cct
+Name: Gnd/Crowd Control Team
+Description: Crowd Control Team
+
+CoT: a-.-G-U-i-l-dt
+Name: Gnd/Public Safety Dive Team
+Description: Public Safety Dive Team
+
+CoT: a-.-G-U-i-l-hps
+Name: Gnd/Aviation-Helicopters Patrol Surveillance
+Description: Aviation-Helicopters Patrol Surveillance
+
+CoT: a-.-G-U-i-l-oa
+Name: Gnd/Observation Aircraft
+Description: Observation Aircraft
+
+CoT: a-.-G-U-i-l-tt
+Name: Gnd/SWAT Tactical Team
+Description: SWAT Tactical Team
+
+CoT: a-.-G-U-i-p
+Name: Gnd/IM Resources/Public Works
+Description: Public Works
+
+CoT: a-.-G-U-i-p-acf
+Name: Gnd/Air Curtain Burners (Above Ground)
+Description: Air Curtain Burners (Above Ground)
+
+CoT: a-.-G-U-i-p-ach
+Name: Gnd/Air Conditioner Heater
+Description: Air Conditioner Heater
+
+CoT: a-.-G-U-i-p-act
+Name: Gnd/Air Curtain Burners (In Ground)
+Description: Air Curtain Burners (In Ground)
+
+CoT: a-.-G-U-i-p-atc
+Name: Gnd/All Terrain Cranes
+Description: All Terrain Cranes
+
+CoT: a-.-G-U-i-p-bh
+Name: Gnd/Backhoe Loader
+Description: Backhoe Loader
+
+CoT: a-.-G-U-i-p-cah
+Name: Gnd/Chillers Air Handlers
+Description: Chillers Air Handlers
+
+CoT: a-.-G-U-i-p-cc
+Name: Gnd/Crawler Cranes
+Description: Crawler Cranes
+
+CoT: a-.-G-U-i-p-cce
+Name: Gnd/Concrete Cutter Multi-Processor for Hydraulic Excavator
+Description: Concrete Cutter Multi-Processor for Hydraulic Excavator
+
+CoT: a-.-G-U-i-p-dat
+Name: Gnd/Disaster Assessment Team
+Description: Disaster Assessment Team
+
+CoT: a-.-G-U-i-p-dmm
+Name: Gnd/Debris Management Monitoring Team
+Description: Debris Management Monitoring Team
+
+CoT: a-.-G-U-i-p-dmr
+Name: Gnd/Debris Management Site Reduction Team
+Description: Debris Management Site Reduction Team
+
+CoT: a-.-G-U-i-p-dmt
+Name: Gnd/Debris Management Team
+Description: Debris Management Team
+
+CoT: a-.-G-U-i-p-drt
+Name: Gnd/Disaster Recovery Team
+Description: Disaster Recovery Team
+
+CoT: a-.-G-U-i-p-dt
+Name: Gnd/Dump Trailer
+Description: Dump Trailer
+
+CoT: a-.-G-U-i-p-dtf
+Name: Gnd/Dump Truck Off Road
+Description: Dump Truck Off Road
+
+CoT: a-.-G-U-i-p-dtn
+Name: Gnd/Dump Truck On Road
+Description: Dump Truck On Road
+
+CoT: a-.-G-U-i-p-epr
+Name: Gnd/Electrical Power Restoration Team
+Description: Electrical Power Restoration Team
+
+CoT: a-.-G-U-i-p-es
+Name: Gnd/Engineering Services
+Description: Engineering Services
+
+CoT: a-.-G-U-i-p-fbt
+Name: Gnd/Flat Bed Trailer Truck
+Description: Flat Bed Trailer Truck
+
+CoT: a-.-G-U-i-p-gen
+Name: Gnd/Generators 
+Description: Generators
+
+CoT: a-.-G-U-i-p-hel
+Name: Gnd/Hydraulic Excavator (Large)
+Description: Hydraulic Excavator (Large)
+
+CoT: a-.-G-U-i-p-hem
+Name: Gnd/Hydraulic Excavator (Medium)
+Description: Hydraulic Excavator (Medium)
+
+CoT: a-.-G-U-i-p-htc
+Name: Gnd/Hydraulic Truck Cranes
+Description: Hydraulic Truck Cranes
+
+CoT: a-.-G-U-i-p-ltc
+Name: Gnd/Lattice Truck Cranes
+Description: Lattice Truck Cranes
+
+CoT: a-.-G-U-i-p-tb
+Name: Gnd/Tug Boat
+Description: Tug Boat
+
+CoT: a-.-G-U-i-p-td
+Name: Gnd/Track Dozer
+Description: Track Dozer
+
+CoT: a-.-G-U-i-p-tg
+Name: Gnd/Tub Grinder
+Description: Tub Grinder
+
+CoT: a-.-G-U-i-p-tt
+Name: Gnd/Tractor Trailer
+Description: Tractor Trailer
+
+CoT: a-.-G-U-i-p-wd
+Name: Gnd/Wheel Dozer
+Description: Wheel Dozer
+
+CoT: a-.-G-U-i-p-wll
+Name: Gnd/Wheel Loaders (Large)
+Description: Wheel Loaders (Large)
+
+CoT: a-.-G-U-i-p-wlm
+Name: Gnd/Wheel Loaders (Medium)
+Description: Wheel Loaders (Medium)
+
+CoT: a-.-G-U-i-p-wls
+Name: Gnd/Wheel Loaders (Small)
+Description: Wheel Loaders (Small)
+
+CoT: a-.-G-U-i-p-wpt
+Name: Gnd/Water Purification Team
+Description: Water Purification Team
+
+CoT: a-.-G-U-i-p-wt
+Name: Gnd/Water Truck
+Description: Water Truck
+
+CoT: a-.-G-U-i-s
+Name: Gnd/IM Resources/Search and Rescue
+Description: Search and Rescue
+
+CoT: a-.-G-U-i-s-ar
+Name: Gnd/Airborne Reconnaissance
+Description: Airborne Reconnaissance
+
+CoT: a-.-G-U-i-s-ast
+Name: Gnd/Air Search Team
+Description: Air Search Team
+
+CoT: a-.-G-U-i-s-cas
+Name: Gnd/Canine SAR Team Avalanche Snow
+Description: Canine SAR Team Avalanche Snow
+
+CoT: a-.-G-U-i-s-cav
+Name: Gnd/Cave SAR Team
+Description: Cave SAR Team
+
+CoT: a-.-G-U-i-s-cdr
+Name: Gnd/Canine SAR Team Disaster Response
+Description: Canine SAR Team Disaster Response
+
+CoT: a-.-G-U-i-s-clc
+Name: Gnd/Canine SAR Team Land Cadaver
+Description: Canine SAR Team Land Cadaver
+
+CoT: a-.-G-U-i-s-col
+Name: Gnd/Collapse SAR Team
+Description: Collapse SAR Team
+
+CoT: a-.-G-U-i-s-cwa
+Name: Gnd/Canine SAR Team Water
+Description: Canine SAR Team Water
+
+CoT: a-.-G-U-i-s-cwi
+Name: Gnd/Canine SAR Team Wilderness
+Description: Canine SAR Team Wilderness
+
+CoT: a-.-G-U-i-s-cwt
+Name: Gnd/Canine SAR Team Wilderness Tracking
+Description: Canine SAR Team Wilderness Tracking
+
+CoT: a-.-G-U-i-s-mt
+Name: Gnd/Mine Tunnel SAR Team
+Description: Mine Tunnel SAR Team
+
+CoT: a-.-G-U-i-s-mnt
+Name: Gnd/Mountain SAR Team
+Description: Mountain SAR Team
+
+CoT: a-.-G-U-i-s-rdf
+Name: Gnd/Radio Direction Finding Team
+Description: Radio Direction Finding Team
+
+CoT: a-.-G-U-i-s-sfd
+Name: Gnd/Swiftwater Flood Search and Dive Rescue Team
+Description: Swiftwater Flood Search and Dive Rescue Team
+
+CoT: a-.-G-U-i-s-uis
+Name: Gnd/USAR Incident Support Team
+Description: USAR Incident Support Team
+
+CoT: a-.-G-U-i-s-utf
+Name: Gnd/USAR Task Force
+Description: USAR Task Force
+
+CoT: a-.-G-U-i-s-wi
+Name: Gnd/Wilderness SAR Team
+Description: Wilderness SAR Team
+
+CoT: a-.-G-U-i-o
+Name: Gnd/IM Resources/Other
+Description: Other
+
+CoT: a-.-S
+Name: Surface/SEA SURFACE TRACK
+Description: SEA SURFACE TRACK
+
+CoT: a-.-S-C
+Name: Surface/COMBATANT
+Description: COMBATANT
+
+CoT: a-.-S-C-A
+Name: Surface/AMPHIBIOUS WARFARE SHIP
+Description: AMPHIBIOUS WARFARE SHIP
+
+CoT: a-.-S-C-A-L-A
+Name: Surface/ASSAULT VESSEL
+Description: ASSAULT VESSEL
+
+CoT: a-.-S-C-A-L-C
+Name: Surface/LANDING CRAFT
+Description: LANDING CRAFT
+
+CoT: a-.-S-C-A-L-S
+Name: Surface/LANDING SHIP
+Description: LANDING SHIP
+
+CoT: a-.-S-C-H
+Name: Surface/HOVERCRAFT
+Description: HOVERCRAFT
+
+CoT: a-.-S-C-L
+Name: Surface/LINE
+Description: LINE
+
+CoT: a-.-S-C-L-B-B
+Name: Surface/BATTLESHIP
+Description: BATTLESHIP
+
+CoT: a-.-S-C-L-C-C
+Name: Surface/CRUISER
+Description: CRUISER
+
+CoT: a-.-S-C-L-C-V
+Name: Surface/CARRIER
+Description: CARRIER
+
+CoT: a-.-S-C-L-D-D
+Name: Surface/DESTROYER
+Description: DESTROYER
+
+CoT: a-.-S-C-L-F-F
+Name: Surface/FRIGATE/CORVETTE
+Description: FRIGATE/CORVETTE
+
+CoT: a-.-S-C-M
+Name: Surface/MINE WARFARE VESSEL
+Description: MINE WARFARE VESSEL
+
+CoT: a-.-S-C-M-M-A
+Name: Surface/MCM SUPPORT
+Description: MCM SUPPORT
+
+CoT: a-.-S-C-M-M-D
+Name: Surface/MCM DRONE
+Description: MCM DRONE
+
+CoT: a-.-S-C-M-M-H
+Name: Surface/MINEHUNTER
+Description: MINEHUNTER
+
+CoT: a-.-S-C-M-M-L
+Name: Surface/MINELAYER
+Description: MINELAYER
+
+CoT: a-.-S-C-M-M-S
+Name: Surface/MINESWEEPER
+Description: MINESWEEPER
+
+CoT: a-.-S-C-P
+Name: Surface/PATROL
+Description: PATROL
+
+CoT: a-.-S-C-P-S-B
+Name: Surface/ANTISUBMARINE WARFARE
+Description: ANTISUBMARINE WARFARE
+
+CoT: a-.-S-C-P-S-U
+Name: Surface/ANTISURFACE WARFARE
+Description: ANTISURFACE WARFARE
+
+CoT: a-.-S-G
+Name: Surface/NAVY GROUP
+Description: NAVY GROUP
+
+CoT: a-.-S-G-C
+Name: Surface/CONVOY
+Description: CONVOY
+
+CoT: a-.-S-G-G
+Name: Surface/NAVY TASK GROUP
+Description: NAVY TASK GROUP
+
+CoT: a-.-S-G-T
+Name: Surface/NAVY TASK FORCE
+Description: NAVY TASK FORCE
+
+CoT: a-.-S-G-U
+Name: Surface/NAVY TASK UNIT
+Description: NAVY TASK UNIT
+
+CoT: a-.-S-N
+Name: Surface/NONCOMBATANT
+Description: NONCOMBATANT
+
+CoT: a-.-S-N-F
+Name: Surface/FLEET SUPPORT
+Description: FLEET SUPPORT
+
+CoT: a-.-S-N-H
+Name: Surface/HOVERCRAFT
+Description: HOVERCRAFT
+
+CoT: a-.-S-N-I
+Name: Surface/INTELLIGENCE
+Description: INTELLIGENCE
+
+CoT: a-.-S-N-M
+Name: Surface/HOSPITAL SHIP
+Description: HOSPITAL SHIP
+
+CoT: a-.-S-N-N
+Name: Surface/STATION
+Description: STATION
+
+CoT: a-.-S-N-N-R
+Name: Surface/RESCUE
+Description: RESCUE
+
+CoT: a-.-S-N-R
+Name: Surface/UNDERWAY REPLENISHMENT
+Description: UNDERWAY REPLENISHMENT
+
+CoT: a-.-S-N-S
+Name: Surface/SERVICE/SUPPORT HARBOR
+Description: SERVICE/SUPPORT HARBOR
+
+CoT: a-.-S-O
+Name: Surface/OWN TRACK
+Description: OWN TRACK
+
+CoT: a-.-S-S
+Name: Surface/STATION
+Description: STATION
+
+CoT: a-.-S-S-A
+Name: Surface/ASW SHIP
+Description: ASW SHIP
+
+CoT: a-.-S-S-P
+Name: Surface/PICKET
+Description: PICKET
+
+CoT: a-.-S-X
+Name: Surface/NON MILITARY
+Description: NON MILITARY
+
+CoT: a-.-S-X-F
+Name: Surface/FISHING
+Description: FISHING
+
+CoT: a-.-S-X-F-D-F
+Name: Surface/DRIFTER
+Description: DRIFTER
+
+CoT: a-.-S-X-F-D-R
+Name: Surface/DREDGE
+Description: DREDGE
+
+CoT: a-.-S-X-F-T-R
+Name: Surface/TRAWLER
+Description: TRAWLER
+
+CoT: a-.-S-X-H
+Name: Surface/HOVERCRAFT
+Description: HOVERCRAFT
+
+CoT: a-.-S-X-L
+Name: Surface/LAW ENFORCEMENT VESSEL
+Description: LAW ENFORCEMENT VESSEL
+
+CoT: a-.-S-X-M
+Name: Surface/MERCHANT
+Description: MERCHANT
+
+CoT: a-.-S-X-M-C
+Name: Surface/CARGO
+Description: CARGO
+
+CoT: a-.-S-X-M-F
+Name: Surface/FERRY
+Description: FERRY
+
+CoT: a-.-S-X-M-H
+Name: Surface/HAZARDOUS MATERIALS (HAZMAT)
+Description: HAZARDOUS MATERIALS (HAZMAT)
+
+CoT: a-.-S-X-M-O
+Name: Surface/OILER/TANKER
+Description: OILER/TANKER
+
+CoT: a-.-S-X-M-P
+Name: Surface/PASSENGER
+Description: PASSENGER
+
+CoT: a-.-S-X-M-R
+Name: Surface/ROLL ON/ROLL OFF
+Description: ROLL ON/ROLL OFF
+
+CoT: a-.-S-X-M-T-O
+Name: Surface/TOWING VESSEL
+Description: TOWING VESSEL
+
+CoT: a-.-S-X-M-T-U
+Name: Surface/TUG
+Description: TUG
+
+CoT: a-.-S-X-R
+Name: Surface/LEISURE CRAFT
+Description: LEISURE CRAFT
+
+CoT: a-.-U
+Name: SubSurf/SUBSURFACE TRACK
+Description: SUBSURFACE TRACK
+
+CoT: a-.-U-N
+Name: SubSurf/NON SUBMARINE
+Description: NON SUBMARINE
+
+CoT: a-.-U-N-D
+Name: SubSurf/DIVER
+Description: DIVER
+
+CoT: a-.-U-S
+Name: SubSurf/SUBMARINE
+Description: SUBMARINE
+
+CoT: a-.-U-S-C
+Name: SubSurf/SUBMARINE CONVENTIONAL PROPULSION
+Description: SUBMARINE CONVENTIONAL PROPULSION
+
+CoT: a-.-U-S-N
+Name: SubSurf/SUBMARINE NUCLEAR PROPULSION
+Description: SUBMARINE NUCLEAR PROPULSION
+
+CoT: a-.-U-S-O
+Name: SubSurf/OTHER SUBMERSIBLE
+Description: OTHER SUBMERSIBLE
+
+CoT: a-.-U-S-S
+Name: SubSurf/STATION
+Description: STATION
+
+CoT: a-.-U-S-S-A
+Name: SubSurf/ASW SUBMARINE
+Description: ASW SUBMARINE
+
+CoT: a-.-U-S-U
+Name: SubSurf/UNMANNED UNDERWATER VEHICLE (UUV)
+Description: UNMANNED UNDERWATER VEHICLE (UUV)
+
+CoT: a-.-U-W
+Name: SubSurf/UNDERWATER WEAPON
+Description: UNDERWATER WEAPON
+
+CoT: a-.-U-W-D
+Name: SubSurf/UNDERWATER DECOY
+Description: UNDERWATER DECOY
+
+CoT: a-.-U-W-D-M
+Name: SubSurf/SEA MINE DECOY
+Description: SEA MINE DECOY
+
+CoT: a-.-U-W-M
+Name: SubSurf/SEA MINE
+Description: SEA MINE
+
+CoT: a-.-U-W-M-D
+Name: SubSurf/SEA MINE DEALT
+Description: SEA MINE DEALT
+
+CoT: a-.-U-W-M-F
+Name: SubSurf/SEA MINE (FLOATING)
+Description: SEA MINE (FLOATING)
+
+CoT: a-.-U-W-M-F-D
+Name: SubSurf/SEA MINE (FLOATING) DEALT
+Description: SEA MINE (FLOATING) DEALT
+
+CoT: a-.-U-W-M-G
+Name: SubSurf/SEA MINE (GROUND)
+Description: SEA MINE (GROUND)
+
+CoT: a-.-U-W-M-G-D
+Name: SubSurf/SEA MINE (GROUND) DEALT
+Description: SEA MINE (GROUND) DEALT
+
+CoT: a-.-U-W-M-M
+Name: SubSurf/SEA MINE (MOORED)
+Description: SEA MINE (MOORED)
+
+CoT: a-.-U-W-M-M-D
+Name: SubSurf/SEA MINE (MOORED) DEALT
+Description: SEA MINE (MOORED) DEALT
+
+CoT: a-.-U-W-M-O
+Name: SubSurf/SEA MINE (IN OTHER POSITION)
+Description: SEA MINE (IN OTHER POSITION)
+
+CoT: a-.-U-W-M-O-D
+Name: SubSurf/SEA MINE (IN OTHER POSITION) DEALT
+Description: SEA MINE (IN OTHER POSITION) DEALT
+
+CoT: a-.-U-W-T
+Name: SubSurf/TORPEDO
+Description: TORPEDO
+
+CoT: a-.-X
+Name: Other
+
+CoT: a-.-X-i
+Name: Other/INCIDENT
+Description: Incident
+
+CoT: a-.-X-i-g
+Name: Other/INCIDENT/GEO
+Description: Geophysical
+
+CoT: a-.-X-i-g-a
+Name: Other/INCIDENT/GEO/AVALANCHE
+Description: Geophysical Avalanche
+
+CoT: a-.-X-i-g-e
+Name: Other/INCIDENT/GEO/EARTHQUAKE
+Description: Geophysical Earthquake
+
+CoT: a-.-X-i-g-e-a
+Name: Other/INCIDENT/GEO/AFTERSHOCK
+Description: Geophysical Earthquake Aftershock
+
+CoT: a-.-X-i-g-e-e
+Name: Other/INCIDENT/GEO/EPICENTER
+Description: Geophysical Earthquake Epicenter
+
+CoT: a-.-X-i-g-l
+Name: Other/INCIDENT/GEO/LANDSLIDE
+Description: Geophysical Landslide
+
+CoT: a-.-X-i-g-s
+Name: Other/INCIDENT/GEO/SUBSISTANCE
+Description: Geophysical Subsistance
+
+CoT: a-.-X-i-g-v
+Name: Other/INCIDENT/GEO/VOLCANO
+Description: Geophysical Volcano
+
+CoT: a-.-X-i-g-v-e
+Name: Other/INCIDENT/GEO/ERUPTION
+Description: Geophysical Volcano Eruption
+
+CoT: a-.-X-i-g-v-t
+Name: Other/INCIDENT/GEO/VOLCANO THREAT
+Description: Geophysical Volcano Threat
+
+CoT: a-.-X-i-m
+Name: Other/INCIDENT/MET
+Description: Meteorological
+
+CoT: a-.-X-i-m-z
+Name: Other/INCIDENT/MET/DRIZZLE
+Description: Meteorological Drizzle
+
+CoT: a-.-X-i-m-d
+Name: Other/INCIDENT/MET/DROUGHT
+Description: Meteorological Drought
+
+CoT: a-.-X-i-m-f
+Name: Other/INCIDENT/MET/FLOOD
+Description: Meteorological Flood
+
+CoT: a-.-X-i-m-g
+Name: Other/INCIDENT/MET/FOG
+Description: Meteorological Fog
+
+CoT: a-.-X-i-m-h
+Name: Other/INCIDENT/MET/HAIL
+Description: Meteorological Hail
+
+CoT: a-.-X-i-m-i
+Name: Other/INCIDENT/MET/INVERSION
+Description: Meteorological Inversion
+
+CoT: a-.-X-i-m-r
+Name: Other/INCIDENT/MET/RAIN
+Description: Meteorological Rain
+
+CoT: a-.-X-i-m-a
+Name: Other/INCIDENT/MET/SANDSTORM
+Description: Meteorological Sandstorm
+
+CoT: a-.-X-i-m-s
+Name: Other/INCIDENT/MET/SNOW
+Description: Meteorological Snow
+
+CoT: a-.-X-i-m-u
+Name: Other/INCIDENT/METTHUNDERSTORM
+Description: Meteorological Thunderstorm
+
+CoT: a-.-X-i-m-t
+Name: Other/INCIDENT/MET/TORNADO
+Description: Meteorological Tornado
+
+CoT: a-.-X-i-m-c
+Name: Other/INCIDENT/MET/CYCLONE
+Description: Meteorological Cyclone
+
+CoT: a-.-X-i-m-n
+Name: Other/INCIDENT/MET/TSUNAMI
+Description: Meteorological Tsunami
+
+CoT: a-.-X-i-s
+Name: Other/INCIDENT/SAFETY
+Description: Safety
+
+CoT: a-.-X-i-l
+Name: Other/INCIDENT/SECURITY
+Description: Security
+
+CoT: a-.-X-i-l-c
+Name: Other/INCIDENT/SECURITY/CIVIL DISTURB
+Description: Security Civil Disturbance
+
+CoT: a-.-X-i-l-c-d
+Name: Other/INCIDENT/SECURITY/CIVIL DISTURB/DEMONSTRATION
+Description: Security Civil Disturbance Demonstration
+
+CoT: a-.-X-i-l-c-p
+Name: Other/INCIDENT/SECURITY/CIVIL DISTURB/DISPLACED
+Description: Security Civil Disturbance Displaced Population
+
+CoT: a-.-X-i-l-c-r
+Name: Other/INCIDENT/SECURITY/CIVIL DISTURB/RIOTING
+Description: Security Civil Disturbance Rioting
+
+CoT: a-.-X-i-l-l
+Name: Other/INCIDENT/SECURITY/LAW ENFORCEMENT
+Description: Security Law Enforcement Activity
+
+CoT: a-.-X-i-l-l-b
+Name: Other/INCIDENT/SECURITY/LAW ENFORCEMENT/BOMBING
+Description: Security Law Enforcement Activity Bombing
+
+CoT: a-.-X-i-l-l-b-e
+Name: Other/INCIDENT/SECURITY/LAW ENFORCEMENT/BOMB EXPLOSION
+Description: Security Law Enforcement Activity Bombing Explosion
+
+CoT: a-.-X-i-l-l-b-t
+Name: Other/INCIDENT/SECURITY/LAW ENFORCEMENTBOMB THREAT
+Description: Security Law Enforcement Activity Bombing Threat
+
+CoT: a-.-X-i-l-l-l
+Name: Other/INCIDENT/SECURITY/LAW ENFORCEMENT/LOOTING
+Description: Security Law Enforcement Activity Looting
+
+CoT: a-.-X-i-l-l-p
+Name: Other/INCIDENT/SECURITY/LAW ENFORCEMENT/POISONING
+Description: Security Law Enforcement Activity Poisoning
+
+CoT: a-.-X-i-l-l-s
+Name: Other/INCIDENT/SECURITY/LAW ENFORCEMENT/SHOOTING
+Description: Security Law Enforcement Activity Shooting
+
+CoT: a-.-X-i-r
+Name: Other/INCIDENT/RESCUE
+Description: Rescue
+
+CoT: a-.-X-i-f
+Name: Other/INCIDENT/FIRE
+Description: Incident Fire
+
+CoT: a-.-X-i-f-w
+Name: Other/INCIDENT/FIRE/WILD
+Description: Incident Fire Wild
+
+CoT: a-.-X-i-f-n
+Name: Other/INCIDENT/FIRE/NON RESIDENTIAL
+Description: Incident Fire Non-residential
+
+CoT: a-.-X-i-f-n-h
+Name: Other/INCIDENT/FIRE/NON RESIDENTIAL SPECIAL NEED
+Description: Incident Fire Non-residential Special Need
+
+CoT: a-.-X-i-f-n-s
+Name: Other/INCIDENT/FIRE/NON RESIDENTIAL SCHOOL
+Description: Incident Fire Non-residential School
+
+CoT: a-.-X-i-f-r
+Name: Other/INCIDENT/FIRE/RESIDENTIAL
+Description: Incident Fire Residential
+
+CoT: a-.-X-i-f-h
+Name: Other/INCIDENT/FIRE/HOT SPOT
+Description: Incident Fire Hot Spot
+
+CoT: a-.-X-i-f-o
+Name: Other/INCIDENT/FIRE/ORIGIN
+Description: Incident Fire Origin
+
+CoT: a-.-X-i-f-s
+Name: Other/INCIDENT/FIRE/SMOKE
+Description: Incident Fire Smoke
+
+CoT: a-.-X-i-f-p
+Name: Other/INCIDENT/FIRE/SPECIAL NEEDS
+Description: Incident Fire Special Needs
+
+CoT: a-.-X-i-h
+Name: Other/INCIDENT/MEDICAL PUBLIC HEALTH
+Description: Medical and Public Health
+
+CoT: a-.-X-i-e
+Name: Other/INCIDENT/POLLUTION ENVIRONMENTAL
+Description: Pollution and other Environmental
+
+CoT: a-.-X-i-t
+Name: Other/INCIDENT/TRANSPORTATION/
+Description: Public and Private transportation
+
+CoT: a-.-X-i-t-a
+Name: Other/INCIDENT/TRANSPORTATION/AIR
+Description: Public and Private transportation Air Incident
+
+CoT: a-.-X-i-t-a-a
+Name: Other/INCIDENT/TRANSPORTATION/AIR ACCIDENT
+Description: Public and Private transportation Air Accident
+
+CoT: a-.-X-i-t-a-h
+Name: Other/INCIDENT/TRANSPORTATION/AIR HIJACKING
+Description: Public and Private transportation Air Hijacking
+
+CoT: a-.-X-i-t-m
+Name: Other/INCIDENT/TRANSPORTATION/MARITIME
+Description: Public and Private transportation Maritime Incident
+
+CoT: a-.-X-i-t-m-a
+Name: Other/INCIDENT/TRANSPORTATION/MARITIME ACCIDENT
+Description: Public and Private transportation Maritime Accident
+
+CoT: a-.-X-i-t-m-h
+Name: Other/INCIDENT/TRANSPORTATION/MARITIME HIJACKING
+Description: Public and Private transportation Maritime Hijacking
+
+CoT: a-.-X-i-t-r
+Name: Other/INCIDENT/TRANSPORTATION/RAIL
+Description: Public and Private transportation Rail Incident
+
+CoT: a-.-X-i-t-r-a
+Name: Other/INCIDENT/TRANSPORTATION/RAIL ACCIDENT
+Description: Public and Private transportation Rail Accident
+
+CoT: a-.-X-i-t-r-h
+Name: Other/INCIDENT/TRANSPORTATION/RAIL HIJACKING
+Description: Public and Private transportation Rail Hijacking
+
+CoT: a-.-X-i-t-v
+Name: Other/INCIDENT/TRANSPORTATION/VEHICLE
+Description: Public and Private transportation Vehicle Incident
+
+CoT: a-.-X-i-t-v-a
+Name: Other/INCIDENT/TRANSPORTATION/VEHICLE ACCIDENT
+Description: Public and Private transportation Vehicle Accident
+
+CoT: a-.-X-i-t-v-h
+Name: Other/INCIDENT/TRANSPORTATION/VEHICLE HIJACKING
+Description: Public and Private transportation Vehicle Hijacking
+
+CoT: a-.-X-i-i
+Name: Other/INCIDENT/INFRASTRUCTURE
+Description: Infrastructure
+
+CoT: a-.-X-i-c
+Name: Other/INCIDENT/CBRNE
+Description: CBRNE
+
+CoT: a-.-X-i-o
+Name: Other/INCIDENT/OTHER
+Description: Other
+
+CoT: a-.-.*-9-1-1
+Name: Mayday message
+Description: MAYDAY
+
+--- Nickname to CoT Mappings ---
+Nickname: aaa -> CoT: a-h-G-E-W-A
+Nickname: ac130 -> CoT: a-f-A-M-F-g
+Nickname: ack -> CoT: y-a-r
+Nickname: apc -> CoT: a-h-G-E-V-A-A-R
+Nickname: awacs -> CoT: a-f-A-M-F-D
+Nickname: blimp -> CoT: a-f-A-M-L
+Nickname: boat -> CoT: a-h-S-X-R
+Nickname: ship -> CoT: a-h-S-X-R
+Nickname: bomber -> CoT: a-f-A-M-F-B
+Nickname: building -> CoT: a-h-G-I
+Nickname: c130 -> CoT: a-f-A-M-F-C-M
+Nickname: cantco -> CoT: y-c-f-b
+Nickname: carrier -> CoT: a-h-S-C-L-C-V
+Nickname: click -> CoT: b-m-p-m-c
+Nickname: destroy -> CoT: t-k-d
+Nickname: done -> CoT: y-c-s
+Nickname: e2c -> CoT: a-f-A-M-F-D
+Nickname: eo -> CoT: b-i-e
+Nickname: ir -> CoT: b-i-i
+Nickname: esm -> CoT: a-f-A-M-F-R-Z
+Nickname: f15 -> CoT: a-f-A-M-F-F
+Nickname: f18 -> CoT: a-f-A-M-F-F
+Nickname: fail -> CoT: y-c-f
+Nickname: fighter -> CoT: a-f-A-M-F-F
+Nickname: helo -> CoT: a-f-A-M-H
+Nickname: image -> CoT: b-i
+Nickname: isr -> CoT: t-s-i-e
+Nickname: lookup -> CoT: t-x-i
+Nickname: mortar -> CoT: a-h-G-E-W-O
+Nickname: missile -> CoT: a-h-A-W-M
+Nickname: nuclear -> CoT: b-d-n
+Nickname: poo -> CoT: b-d-l-m
+Nickname: jassm -> CoT: a-f-A-W-M
+Nickname: poi -> CoT: b-d-i-m
+Nickname: recce -> CoT: a-f-A-M-F-R-X
+Nickname: road -> CoT: a-h-G-I-r
+Nickname: rocket -> CoT: a-h-G-E-W-S
+Nickname: sam -> CoT: a-h-G-E-W-M-A-L
+Nickname: spi -> CoT: b-m-p-s-p-i
+Nickname: stale -> CoT: y-c-f-s
+Nickname: strike -> CoT: t-k-d
+Nickname: sub -> CoT: a-h-U-S-N
+Nickname: subscribe -> CoT: t-b
+Nickname: suv -> CoT: a-h-G-E-V-C
+Nickname: tank -> CoT: a-h-G-E-V-A-T
+Nickname: tanker -> CoT: a-f-A-M-F-K
+Nickname: target -> CoT: t-k-t
+Nickname: text -> CoT: b-t-f
+Nickname: torpedo -> CoT: a-h-U-W-T
+Nickname: troop -> CoT: a-h-G-U-C-I
+Nickname: tug -> CoT: a-h-S-X-M-T-U
+Nickname: uav -> CoT: a-f-A-M-F-Q
+Nickname: vehicle -> CoT: a-h-G-E-V
+Nickname: vpi -> CoT: b-m-p-v-p-i
+Nickname: vpoi -> CoT: b-m-p-v-p-i
+Nickname: wilco -> CoT: y-a-w

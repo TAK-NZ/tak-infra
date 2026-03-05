@@ -71,3 +71,10 @@ TAK-NZ-Standard-Plugins-*.zip
 backup/
 todo/
 reference/
+
+# Plugins - track source but ignore build artifacts
+plugins/**/build/
+plugins/**/.gradle/
+plugins/**/gradle/
+plugins/**/gradlew
+plugins/**/gradlew.bat__pycache__/

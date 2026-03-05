@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.description="TAK server for deployment with AWS E
 LABEL org.opencontainers.image.licenses=MIT
 ARG TAK_VERSION=takserver-docker-5.4-RELEASE-19
 RUN apt update \
-    && apt-get install -y net-tools netcat \
+    && apt-get install -y net-tools netcat gradle \
         tini cron certbot curl libxml2-utils xmlstarlet unzip zip awscli jq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -12,16 +12,40 @@ RUN apt update \
 ENV HOME=/opt/tak
 WORKDIR $HOME
 
-COPY ./docker-container/ $HOME/
 COPY ./takserver-docker-*.zip $HOME/
 
 ENV TAK_VERSION=${TAK_VERSION}
 
 RUN unzip "./${TAK_VERSION}.zip" \
-    && rm "./${TAK_VERSION}.zip" \
     && rm -rf "./${TAK_VERSION}/docker" \
     && mv ./${TAK_VERSION}/tak/* ./ \
-    && chmod +x /opt/tak/scripts/start-tak.sh
+    && rmdir ./${TAK_VERSION}/tak \
+    && rmdir ./${TAK_VERSION}
+
+COPY ./docker-container/ $HOME/
+
+RUN chmod +x /opt/tak/scripts/start-tak.sh \
+    && chmod +x /opt/tak/scripts/download-plugin-config.sh
+
+# Build tak-gpt plugin
+COPY ./docker/tak-server/extract-tak-deps.sh /tmp/
+COPY ./docker/tak-server/plugin-build.gradle /tmp/
+COPY ./plugins/tak-gpt /tmp/tak-gpt
+RUN chmod +x /tmp/extract-tak-deps.sh \
+    && cd /tmp \
+    && ./extract-tak-deps.sh "${HOME}/${TAK_VERSION}.zip" /tmp/tak-plugin-libs || echo "Warning: Failed to extract TAK deps" \
+    && cd /tmp/tak-gpt \
+    && rm -rf ./lib/src/main/java/com/google/common \
+    && cp /tmp/plugin-build.gradle ./lib/build.gradle \
+    && cd /tmp/tak-gpt \
+    && chmod +x gradlew \
+    && ./gradlew :lib:clean :lib:shadowJar --no-daemon --no-configuration-cache --no-build-cache \
+    && mkdir -p /opt/tak/lib \
+    && cp lib/build/libs/tak-gpt-all.jar /opt/tak/lib/ \
+    && chown 1000:1000 /opt/tak/lib/tak-gpt-all.jar \
+    && cd / \
+    && rm -rf /tmp/tak-gpt /tmp/tak-plugin-libs /tmp/*.sh /tmp/*.gradle /root/.gradle \
+    && rm -f "${HOME}"/takserver-docker-*-RELEASE-*.zip
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/opt/tak/scripts/start-tak.sh"]
