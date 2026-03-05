@@ -286,7 +286,7 @@ public class BedrockChatManager implements LLMChatManager {
                             .get(TIMEOUT_CONVERSE_S, TimeUnit.SECONDS);
                 } catch (TimeoutException e) {
                     LOGGER.warn("Bedrock converse timed out after {}s", TIMEOUT_CONVERSE_S);
-                    return "Unable to connect to AI model (timeout). Please try again.";
+                    return "⚠ Bot unavailable — no response received. Try again shortly.";
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -409,7 +409,7 @@ public class BedrockChatManager implements LLMChatManager {
                             .get(TIMEOUT_AGENT_S, TimeUnit.SECONDS);
                 } catch (TimeoutException e) {
                     LOGGER.warn("Bedrock agent timed out after {}s", TIMEOUT_AGENT_S);
-                    return "Unable to connect to AI model (timeout). Please try again.";
+                    return "⚠ Bot unavailable — no response received. Try again shortly.";
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -491,7 +491,7 @@ public class BedrockChatManager implements LLMChatManager {
                         .get(TIMEOUT_KB_S, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
                 LOGGER.warn("Bedrock KB timed out after {}s", TIMEOUT_KB_S);
-                return "Unable to connect to AI model (timeout). Please try again.";
+                return "⚠ Bot unavailable — no response received. Try again shortly.";
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
