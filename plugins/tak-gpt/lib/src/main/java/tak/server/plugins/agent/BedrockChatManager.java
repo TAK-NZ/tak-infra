@@ -141,6 +141,10 @@ public class BedrockChatManager implements LLMChatManager {
                     "lon", software.amazon.awssdk.core.document.Document.fromMap(Map.of(
                         "type", software.amazon.awssdk.core.document.Document.fromString("string"),
                         "description", software.amazon.awssdk.core.document.Document.fromString("The longitude of the marker")
+                    )),
+                    "iconsetpath", software.amazon.awssdk.core.document.Document.fromMap(Map.of(
+                        "type", software.amazon.awssdk.core.document.Document.fromString("string"),
+                        "description", software.amazon.awssdk.core.document.Document.fromString("Optional custom icon in format '<uuid>:<iconset/icon-name>', e.g. 'de450cbf-2ffc-47fb-bd2b-ba2db89b035e:Lifelines/communications_infrastructure-yellow-halo'. Omit to use default MIL-STD-2525B icon.")
                     ))
                 )),
                 "required", software.amazon.awssdk.core.document.Document.fromList(
@@ -173,7 +177,7 @@ public class BedrockChatManager implements LLMChatManager {
         }
     }
 
-    private Map<String, String> createMarker(String type, String callsign, String lat, String lon, Set<String> groups) {
+    private Map<String, String> createMarker(String type, String callsign, String lat, String lon, String iconsetpath, Set<String> groups) {
         LOGGER.debug("createMarker called");
         Map<String, String> map = new HashMap<>();
 
@@ -193,7 +197,7 @@ public class BedrockChatManager implements LLMChatManager {
         }
 
         try {
-            Message msg = MSG_GENERATOR.generateMarker(cotType, callsign, Float.valueOf(lat), Float.valueOf(lon), groups);
+            Message msg = MSG_GENERATOR.generateMarker(cotType, callsign, Float.valueOf(lat), Float.valueOf(lon), groups, iconsetpath);
             MSG_GENERATOR.send(msg);
             map.put("status", "success");
             map.put("report", "Created a marker of type: " + type + ", callsign: " + callsign + ", at lat: " + lat + ", lon: " + lon);
@@ -292,9 +296,10 @@ public class BedrockChatManager implements LLMChatManager {
                                 String callsign = input.asMap().get("callsign").asString();
                                 String lat = input.asMap().get("lat").asString();
                                 String lon = input.asMap().get("lon").asString();
+                                String iconsetpath = input.asMap().containsKey("iconsetpath") ? input.asMap().get("iconsetpath").asString() : null;
                                 
                                 // Execute tool
-                                Map<String, String> result = createMarker(type, callsign, lat, lon,
+                                Map<String, String> result = createMarker(type, callsign, lat, lon, iconsetpath,
                                         context != null ? context.getGroups() : null);
                                 
                                 // Add tool result
@@ -400,9 +405,10 @@ public class BedrockChatManager implements LLMChatManager {
 
                     String toolResult;
                     if ("create_tak_map_marker".equals(functionName)) {
+                        String iconsetpath = params.getOrDefault("iconsetpath", null);
                         Map<String, String> markerResult = createMarker(
                                 params.get("type"), params.get("callsign"),
-                                params.get("lat"), params.get("lon"),
+                                params.get("lat"), params.get("lon"), iconsetpath,
                                 context != null ? context.getGroups() : null);
                         toolResult = String.format("{\"status\":\"%s\",\"report\":\"%s\"}",
                                 markerResult.get("status"), markerResult.get("report"));

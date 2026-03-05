@@ -1,0 +1,5285 @@
+FENZ Fire Stations - New Zealand Fire and Emergency Station Locations
+This document contains all FENZ (Fire and Emergency New Zealand) fire station locations.
+Use this reference to find fire station locations, addresses, and contact details.
+
+Each entry shows: station name, type (Paid/Volunteer), address, locality, territorial authority, FENZ district, region, phone, and GPS coordinates.
+
+Fire Station: Whangarei (1212)
+Type: Paid
+Address: 133 Bank Street, Regent
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 438 9539
+Coordinates: lat=-35.72011822, lon=174.320789136
+
+Fire Station: Te Kopuru (1213)
+Type: Volunteer
+Address: 13 West Coast Road, Te Kopuru
+Territorial Authority: Kaipara District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 439 3045
+Coordinates: lat=-36.03190505, lon=173.921542864
+
+Fire Station: Whangarei Heads (1214)
+Type: Volunteer
+Address: 2066 Whangarei Heads Road, Whangarei Heads
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 434 0825
+Coordinates: lat=-35.8152879039999, lon=174.504661111
+
+Fire Station: Portland (1215)
+Type: Volunteer
+Address: 71 Manaia Road, Portland
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 432 2747
+Coordinates: lat=-35.8009218299999, lon=174.328145583
+
+Fire Station: Waipu (1216)
+Type: Volunteer
+Address: 23 Nova Scotia Drive, Waipu
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 432 4002
+Coordinates: lat=-35.983043223, lon=174.44835701
+
+Fire Station: Ruakaka (1217)
+Type: Volunteer
+Address: 58 Marsden Point Road, Ruakaka
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 432 7701
+Coordinates: lat=-35.9002775179999, lon=174.450091554
+
+Fire Station: Ahipara (1218)
+Type: Volunteer
+Address: 45 Takahe Road, Ahipara
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 409 4603
+Coordinates: lat=-35.166528893, lon=173.154829146
+
+Fire Station: Kamo (1219)
+Type: Volunteer
+Address: 591 Kamo Road, Kamo
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 435 3405
+Coordinates: lat=-35.681097355, lon=174.299578228
+
+Fire Station: Onerahi (1220)
+Type: Volunteer
+Address: 1 Handforth Street, Onerahi
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 436 9001
+Coordinates: lat=-35.765335305, lon=174.366790566
+
+Fire Station: Maungakaramea (1221)
+Type: Rural
+Address: 13 Tangihua Road, Maungakaramea
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 432 3205
+Coordinates: lat=-35.8445732239999, lon=174.203028531
+
+Fire Station: Marsden Point Refinery (1222)
+Type: Industry
+Address: Port Marsden Highway, Marsden Point
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 432 8311
+Coordinates: lat=-35.839082403, lon=174.491613215
+
+Fire Station: Bay Of Islands Airport (1223)
+Type: Industry
+Address: 218 Wiroa Road, Kerikeri
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: null
+Coordinates: lat=-35.263171782, lon=173.91226161
+
+Fire Station: Air Rescue Whangarei (1224)
+Type: Industry
+Address: 63 Handforth Street, Whangarei Airport
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: null
+Coordinates: lat=-35.767721767, lon=174.362358206
+
+Fire Station: Kaikohe VRFF (1245)
+Type: Rural
+Address: 1B Recreation Road, Kaikohe
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 0274501889
+Coordinates: lat=-35.411003131, lon=173.801964297
+
+Fire Station: Taupo Bay (1246)
+Type: Rural
+Address: 721 Taupo Bay Road, Taupo Bay
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 406 2475
+Coordinates: lat=-34.987805345, lon=173.681627802
+
+Fire Station: Rawhiti (1247)
+Type: Rural
+Address: 1 Rawhiti Road, Rawhiti
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 
+Coordinates: lat=-35.22069791, lon=174.25599444
+
+Fire Station: Cavalli (1248)
+Type: Rural
+Address: 1414 Matauri Bay Road, Matauri Bay
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 
+Coordinates: lat=-35.044408915, lon=173.900806271
+
+Fire Station: Karikari (1252)
+Type: Rural
+Address: 28 Matai Bay Road, Karikari Peninsula
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 408 7110
+Coordinates: lat=-34.868471885, lon=173.381564935
+
+Fire Station: Rangiputa (1253)
+Type: Rural
+Address: 699 Rangiputa Road, Karikari Peninsula
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 
+Coordinates: lat=-34.880465482, lon=173.298474349
+
+Fire Station: Houhora (1254)
+Type: Rural
+Address: 3985 Far North Road, Pukenui
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 409 8896
+Coordinates: lat=-34.8250611239999, lon=173.127357766
+
+Fire Station: Broadwood (1255)
+Type: Rural
+Address: 1089 Broadwood Road, Broadwood
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 
+Coordinates: lat=-35.259861859, lon=173.390571545
+
+Fire Station: Whananaki (1261)
+Type: Rural
+Address: 2249 Whananaki North Road, Whananaki
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 
+Coordinates: lat=-35.5098333829999, lon=174.460341513
+
+Fire Station: Dargaville (1262)
+Type: Volunteer
+Address: 66 Normanby Street, Dargaville
+Territorial Authority: Kaipara District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 439 3055
+Coordinates: lat=-35.940015635, lon=173.869602356
+
+Fire Station: Ruawai (1263)
+Type: Volunteer
+Address: 5A Well Street, Ruawai
+Territorial Authority: Kaipara District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 439 3056
+Coordinates: lat=-36.136256746, lon=174.022028073
+
+Fire Station: Hikurangi (1264)
+Type: Volunteer
+Address: 3 Alfred Street, Hikurangi
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 433 8447
+Coordinates: lat=-35.6011539359999, lon=174.286745898
+
+Fire Station: Kaikohe (1265)
+Type: Volunteer
+Address: 4 Clifford Street, Kaikohe
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 405 2026
+Coordinates: lat=-35.407023538, lon=173.799692266
+
+Fire Station: Kaeo (1266)
+Type: Volunteer
+Address: 33 Leigh Street, Kaeo
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 405 0488 DDI 91266
+Coordinates: lat=-35.099988545, lon=173.778247928
+
+Fire Station: Kerikeri (1267)
+Type: Volunteer
+Address: 5 Cobham Road, Kerikeri
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 407 8006
+Coordinates: lat=-35.228234109, lon=173.949385765
+
+Fire Station: Kohukohu (1268)
+Type: Volunteer
+Address: 24 Beach Road, Kohukohu
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 405 5819
+Coordinates: lat=-35.3600467529999, lon=173.545180104
+
+Fire Station: Okaihau (1269)
+Type: Volunteer
+Address: 7 Lake Road, Okaihau
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 401 9560
+Coordinates: lat=-35.320680441, lon=173.771259315
+
+Fire Station: Rawene (1270)
+Type: Volunteer
+Address: 51 Parnell Street, Rawene
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 405 7888
+Coordinates: lat=-35.39638179, lon=173.503791821
+
+Fire Station: Omapere (1271)
+Type: Volunteer
+Address: 191 Hokianga Harbour Drive, Omapere
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 405 8748
+Coordinates: lat=-35.5223040389999, lon=173.389258864
+
+Fire Station: Kaitaia (1272)
+Type: Volunteer
+Address: 196-198 Commerce Street, Kaitaia
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 408 6099
+Coordinates: lat=-35.1109618529999, lon=173.26069314
+
+Fire Station: Mangonui (1273)
+Type: Volunteer
+Address: 5 Wrathall Road, Mangonui
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 406 2070
+Coordinates: lat=-34.991642057, lon=173.522319255
+
+Fire Station: Kawakawa (1274)
+Type: Volunteer
+Address: 6 Station Road, Kawakawa
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 404 3006
+Coordinates: lat=-35.379853897, lon=174.063688682
+
+Fire Station: Paihia (1275)
+Type: Volunteer
+Address: 23 Selwyn Road, Paihia
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 402 7433
+Coordinates: lat=-35.281506593, lon=174.090589523
+
+Fire Station: Russell (1276)
+Type: Volunteer
+Address: 5 Baker Street, Russell
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 403 9016
+Coordinates: lat=-35.262902614, lon=174.124374548
+
+Fire Station: Maungaturoto (1277)
+Type: Volunteer
+Address: 76 Hurndall Street East, Maungaturoto
+Territorial Authority: Kaipara District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 431 1002
+Coordinates: lat=-36.1061349509999, lon=174.360868323
+
+Fire Station: Kaiwaka (1278)
+Type: Volunteer
+Address: 10 Gibbons Road, Kaiwaka
+Territorial Authority: Kaipara District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 431 2290
+Coordinates: lat=-36.159850462, lon=174.443786252
+
+Fire Station: Ngunguru (1279)
+Type: Volunteer
+Address: 29 Waiotoi Road, Ngunguru
+Territorial Authority: Whangarei District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 434 3800 Centrix 91279
+Coordinates: lat=-35.626205034, lon=174.505227099
+
+Fire Station: Mangawhai (1280)
+Type: Volunteer
+Address: 197 Molesworth Drive, Mangawhai Heads
+Territorial Authority: Kaipara District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 431 3000
+Coordinates: lat=-36.1016872279999, lon=174.586571764
+
+Fire Station: Paparoa (1281)
+Type: Rural
+Address: 10 Depot Road, Paparoa
+Territorial Authority: Kaipara District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 431 7497
+Coordinates: lat=-36.1081141349999, lon=174.227777187
+
+Fire Station: Towai (1287)
+Type: Rural
+Address: 32 Towai Road, Towai
+Territorial Authority: Far North District
+FENZ District: Northland, Region: Te Hiku
+Phone: 09 433 4894
+Coordinates: lat=-35.4939697849999, lon=174.131678226
+
+Fire Station: Tinopai (1288)
+Type: Rural
+Address: 3 Komiti Road, Tinopai
+Territorial Authority: Kaipara District
+FENZ District: Northland, Region: Te Hiku
+Phone: 022 037 8001
+Coordinates: lat=-36.2487005369999, lon=174.24753034
+
+Fire Station: Kawau Island (1419)
+Type: Rural
+Address: Wilson Avenue, Kawau Island
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 021 2607086
+Coordinates: lat=-36.4311226029999, lon=174.819886542
+
+Fire Station: Auckland City (1420)
+Type: Paid
+Address: 40 Pitt Street, Auckland Central
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 302 5142
+Coordinates: lat=-36.8561911269999, lon=174.759182269
+
+Fire Station: Remuera (1421)
+Type: Paid
+Address: 291 Remuera Road, Remuera
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 520 0252
+Coordinates: lat=-36.880634432, lon=174.795226288
+
+Fire Station: Onehunga (1422)
+Type: Paid
+Address: 408 Onehunga Mall, Onehunga
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 636 5459
+Coordinates: lat=-36.914238767, lon=174.783977018
+
+Fire Station: Mount Wellington (1423)
+Type: Paid
+Address: 30-32 Pilkington Road, Panmure
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 570 4011
+Coordinates: lat=-36.8976537579999, lon=174.85408933
+
+Fire Station: Saint Heliers (1424)
+Type: Paid
+Address: 179 Long Drive, St Heliers
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 575 5033
+Coordinates: lat=-36.862461974, lon=174.855722413
+
+Fire Station: Parnell (1425)
+Type: Paid
+Address: 2-16 The Strand, Parnell
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 379 3199
+Coordinates: lat=-36.850113955, lon=174.775922274
+
+Fire Station: Grey Lynn (1426)
+Type: Paid
+Address: 134 Williamson Avenue, Grey Lynn
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 376 3558
+Coordinates: lat=-36.8644825379999, lon=174.739190778
+
+Fire Station: Ellerslie (1427)
+Type: Paid
+Address: 634 Great South Road, Ellerslie
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 579 4400
+Coordinates: lat=-36.8994481309999, lon=174.804763965
+
+Fire Station: Manurewa (1430)
+Type: Paid
+Address: 225 Great South Road, Manurewa
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 269 5710
+Coordinates: lat=-37.0246728769999, lon=174.899627319
+
+Fire Station: Otahuhu (1431)
+Type: Paid
+Address: 14 Albion Road, Otahuhu
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 276 4364
+Coordinates: lat=-36.939645513, lon=174.840893721
+
+Fire Station: Howick (1432)
+Type: Composite
+Address: 511 Pakuranga Road, Highland Park
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 534 6601
+Coordinates: lat=-36.898970908, lon=174.909756195
+
+Fire Station: Otara (1433)
+Type: Paid
+Address: 341 East Tamaki Road, East Tamaki
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 274 8097
+Coordinates: lat=-36.954215572, lon=174.891175471
+
+Fire Station: Papatoetoe (1434)
+Type: Paid
+Address: 15A Lambie Drive, Papatoetoe
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 262 0763
+Coordinates: lat=-36.986896536, lon=174.871593416
+
+Fire Station: Mangere (1435)
+Type: Paid
+Address: 88 Bader Drive, Mangere
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 275 7554
+Coordinates: lat=-36.966718869, lon=174.797322452
+
+Fire Station: Auckland International Airport Rescue (1436)
+Type: Industry
+Address: Walsh Brothers Place, Auckland Airport
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 256 8843
+Coordinates: lat=-37.005735068, lon=174.795370363
+
+Fire Station: Papakura (1438)
+Type: Composite
+Address: 76 Great South Road, Papakura
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 299 8141
+Coordinates: lat=-37.0572714379999, lon=174.939625993
+
+Fire Station: Oneroa (1440)
+Type: Volunteer
+Address: 3 Weka Road, Oneroa
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 372 8473
+Coordinates: lat=-36.783411401, lon=175.009730456
+
+Fire Station: Onetangi (1441)
+Type: Volunteer
+Address: 10 Totara Road, Onetangi
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 
+Coordinates: lat=-36.79320811, lon=175.07669241
+
+Fire Station: Kaiaua (1442)
+Type: Rural
+Address: 29 Pohutukawa Avenue, Kaiaua
+Territorial Authority: Hauraki District
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 232 2795
+Coordinates: lat=-37.10602883, lon=175.296578872
+
+Fire Station: Beachlands (1443)
+Type: Volunteer
+Address: 2 Bell Road, Beachlands
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 536 6728
+Coordinates: lat=-36.886432718, lon=174.999630365
+
+Fire Station: Kawakawa Bay (1444)
+Type: Volunteer
+Address: 6 Banks Road, Kawakawa Bay
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 292 2727
+Coordinates: lat=-36.949901037, lon=175.169090424
+
+Fire Station: Orere Point (1445)
+Type: Rural
+Address: 8 Orere Point Road, Orere Point
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 292 2989
+Coordinates: lat=-36.959955764, lon=175.242380558
+
+Fire Station: Clevedon (1446)
+Type: Volunteer
+Address: 40 Clevedon-Kawakawa Road, Clevedon
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 292 8612
+Coordinates: lat=-36.988675966, lon=175.041929804
+
+Fire Station: Hunua (1447)
+Type: Rural
+Address: 4 Lockwood Road, Hunua
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 292 4111
+Coordinates: lat=-37.0786959559999, lon=175.071371167
+
+Fire Station: Avondale (1460)
+Type: Paid
+Address: 162 Blockhouse Bay Road, Avondale
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 828 8250
+Coordinates: lat=-36.897237715, lon=174.701378171
+
+Fire Station: Balmoral (1461)
+Type: Paid
+Address: 211 Balmoral Road, Mount Eden
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 638 9546
+Coordinates: lat=-36.8863048119999, lon=174.744943568
+
+Fire Station: Mount Roskill (1462)
+Type: Paid
+Address: 1169 Dominion Road, Mount Roskill
+Territorial Authority: Auckland
+FENZ District: Auckland, Region: Te Hiku
+Phone: 09 620 9552
+Coordinates: lat=-36.915801883, lon=174.737832252
+
+Fire Station: Glen Eden (1464)
+Type: Paid
+Address: 4 Glenview Road, Glen Eden
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 818 6415
+Coordinates: lat=-36.9090026169999, lon=174.651685638
+
+Fire Station: Henderson (1465)
+Type: Composite
+Address: 90 Railside Avenue, Henderson
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 838 8466
+Coordinates: lat=-36.884338811, lon=174.631698329
+
+Fire Station: Te Atatu (1466)
+Type: Composite
+Address: 297 Te Atatu Road, Te Atatu South
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 834 8471
+Coordinates: lat=-36.860673059, lon=174.651042898
+
+Fire Station: West Harbour (1467)
+Type: Composite
+Address: 21 Hobsonville Road, West Harbour
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 417 0873
+Coordinates: lat=-36.8183172519999, lon=174.616033876
+
+Fire Station: RNZAF Base Auckland F5204 (1468)
+Type: Defence
+Address: Tainui Crescent, Whenuapai
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 417 7426
+Coordinates: lat=-36.78627261, lon=174.625981544
+
+Fire Station: Titirangi (1469)
+Type: Composite
+Address: 525 South Titirangi Road, Titirangi
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 817 7878
+Coordinates: lat=-36.9400555719999, lon=174.655002296
+
+Fire Station: Laingholm (1470)
+Type: Volunteer
+Address: 75 Victory Road, Laingholm
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 817 5475
+Coordinates: lat=-36.963484755, lon=174.628920925
+
+Fire Station: Waiatarua (1471)
+Type: Volunteer
+Address: 464A Scenic Drive, Waiatarua
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 814 9213
+Coordinates: lat=-36.933926201, lon=174.577804124
+
+Fire Station: Huia (1472)
+Type: Volunteer
+Address: 1282-1284 Huia Road, Huia
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 811 8885
+Coordinates: lat=-37.001423094, lon=174.564122246
+
+Fire Station: Karekare (1473)
+Type: Rural
+Address: Lone Kauri Road, Karekare
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 812 8747
+Coordinates: lat=-36.988656068, lon=174.501384172
+
+Fire Station: Puhoi (1474)
+Type: Rural
+Address: 52 Ahuroa Road, Puhoi
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 425 8659
+Coordinates: lat=-36.509209426, lon=174.657012173
+
+Fire Station: Bethells Valley (1475)
+Type: Rural
+Address: Bethells Road, Waitakere
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 810 9142
+Coordinates: lat=-36.86877971, lon=174.490770365
+
+Fire Station: Piha (1476)
+Type: Volunteer
+Address: 50 Seaview Road, Piha
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 812 8837
+Coordinates: lat=-36.954060757, lon=174.474431392
+
+Fire Station: Waitakere (1477)
+Type: Volunteer
+Address: 8 Township Road, Waitakere
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 810 9251
+Coordinates: lat=-36.8487877539999, lon=174.544181401
+
+Fire Station: Kaukapakapa (Under Construction) (1478)
+Type: Rural
+Address: 941 Kaipara Coast Highway, Kaukapakapa
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 420 4342
+Coordinates: lat=-36.618836372, lon=174.496200206
+
+Fire Station: Ahuroa (1479)
+Type: Rural
+Address: 383 West Coast Road, Makarau
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 422 4023
+Coordinates: lat=-36.499242254, lon=174.495786486
+
+Fire Station: Takapuna (1480)
+Type: Paid
+Address: 83 Wairau Road, Wairau Valley
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 440 9594
+Coordinates: lat=-36.7768980399999, lon=174.744784348
+
+Fire Station: Devonport (1481)
+Type: Composite
+Address: 23 Lake Road, Devonport
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 445 2297
+Coordinates: lat=-36.8219724099999, lon=174.796800181
+
+Fire Station: Birkenhead (1482)
+Type: Composite
+Address: 154 Mokoia Road, Chatswood
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 419 4011
+Coordinates: lat=-36.8110549899999, lon=174.715816719
+
+Fire Station: East Coast Bays (1483)
+Type: Composite
+Address: 984 East Coast Road, Northcross
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 478 8110
+Coordinates: lat=-36.7067509789999, lon=174.724565028
+
+Fire Station: Greenhithe (1484)
+Type: Volunteer
+Address: 5 Greenhithe Road, Greenhithe
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 413 9847
+Coordinates: lat=-36.776367034, lon=174.670434871
+
+Fire Station: Albany (1485)
+Type: Paid
+Address: 8 Ride Way, Rosedale
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 415 5850
+Coordinates: lat=-36.752176334, lon=174.704027876
+
+Fire Station: Kumeu (1486)
+Type: Volunteer
+Address: 331 Main Road, Huapai
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 412 8937
+Coordinates: lat=-36.772303822, lon=174.543807259
+
+Fire Station: Muriwai (1487)
+Type: Volunteer
+Address: Motutara Road, Muriwai
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 
+Coordinates: lat=-36.824476766, lon=174.433330973
+
+Fire Station: Shelly Beach (1488)
+Type: Rural
+Address: Roy Hughes Lane, Shelly Beach
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 420 2503
+Coordinates: lat=-36.571763899, lon=174.377511639
+
+Fire Station: Helensville (1489)
+Type: Volunteer
+Address: 9 Rata Street, Helensville
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 420 8099
+Coordinates: lat=-36.6784149109999, lon=174.451611035
+
+Fire Station: Silverdale (1490)
+Type: Composite
+Address: 149 Hibiscus Coast Highway, Red Beach
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 426 5032
+Coordinates: lat=-36.606375455, lon=174.689967206
+
+Fire Station: Manly (1491)
+Type: Volunteer
+Address: 960 Whangaparaoa Road, Manly
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 424 6146
+Coordinates: lat=-36.6298788139999, lon=174.766391615
+
+Fire Station: Matakana (1492)
+Type: Volunteer
+Address: Omaha Flats Road, Tawharanui Peninsula
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 423 0382
+Coordinates: lat=-36.339725084, lon=174.742029625
+
+Fire Station: Warkworth (1493)
+Type: Volunteer
+Address: 2 Church Hill, Warkworth
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 425 8888
+Coordinates: lat=-36.401132016, lon=174.663610971
+
+Fire Station: Leigh (1494)
+Type: Volunteer
+Address: 28 Hauraki Road, Leigh
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 422 6081
+Coordinates: lat=-36.291894895, lon=174.803604037
+
+Fire Station: Wellsford (1495)
+Type: Volunteer
+Address: 100 Rodney Street, Wellsford
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 423 8888
+Coordinates: lat=-36.2979385089999, lon=174.524176632
+
+Fire Station: Tryphena (1496)
+Type: Rural
+Address: 32 Rosalie Bay Road, Great Barrier Island (Aotea Island)
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 429 0208
+Coordinates: lat=-36.31276546, lon=175.500550977
+
+Fire Station: Mahurangi East (1498)
+Type: Volunteer
+Address: 326 Mahurangi East Road, Snells Beach
+Territorial Authority: Auckland
+FENZ District: Waitemata, Region: Te Hiku
+Phone: 09 425 4298
+Coordinates: lat=-36.42345618, lon=174.726301907
+
+Fire Station: Kaitoke (1504)
+Type: Rural
+Address: 81 Hector Sanderson Road, Great Barrier Island (Aotea Island)
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 
+Coordinates: lat=-36.2437168989999, lon=175.466877373
+
+Fire Station: Okiwi (1505)
+Type: Rural
+Address: 1501 Aotea Road, Great Barrier Island (Aotea Island)
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 
+Coordinates: lat=-36.153878418, lon=175.404532063
+
+Fire Station: Te Kauwhata (1631)
+Type: Volunteer
+Address: 7 Baird Avenue, Te Kauwhata
+Territorial Authority: Waikato District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 826 3751
+Coordinates: lat=-37.402494224, lon=175.144202214
+
+Fire Station: Huntly (1632)
+Type: Volunteer
+Address: 21 William Street, Huntly
+Territorial Authority: Waikato District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 828 8799
+Coordinates: lat=-37.5598795609999, lon=175.161008391
+
+Fire Station: Ngaruawahia (1633)
+Type: Volunteer
+Address: 56 Herschel Street, Ngaruawahia
+Territorial Authority: Waikato District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 824 8636
+Coordinates: lat=-37.6713569349999, lon=175.149425114
+
+Fire Station: Whitikahu (1634)
+Type: Volunteer
+Address: 1967 Orini Road, Whitikahu
+Territorial Authority: Waikato District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 027 274 1261 
+Coordinates: lat=-37.594337884, lon=175.345421961
+
+Fire Station: Tahuna (1635)
+Type: Volunteer
+Address: 4 Huia Street, Tahuna
+Territorial Authority: Matamata-Piako District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 887 5888
+Coordinates: lat=-37.499805502, lon=175.493037168
+
+Fire Station: Morrinsville (1636)
+Type: Volunteer
+Address: 91 Anderson Street, Morrinsville
+Territorial Authority: Matamata-Piako District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 889 6800
+Coordinates: lat=-37.6578643459999, lon=175.523701969
+
+Fire Station: Te Aroha (1637)
+Type: Volunteer
+Address: 14 Koromiko Street, Te Aroha
+Territorial Authority: Matamata-Piako District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 884 8729
+Coordinates: lat=-37.5418779629999, lon=175.713958535
+
+Fire Station: Matamata (1638)
+Type: Volunteer
+Address: 9 Peria Road, Matamata
+Territorial Authority: Matamata-Piako District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 888 7171
+Coordinates: lat=-37.807708756, lon=175.76962109
+
+Fire Station: Raglan (1639)
+Type: Volunteer
+Address: 11 Wainui Road, Raglan
+Territorial Authority: Waikato District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 825 8249
+Coordinates: lat=-37.801067605, lon=174.868418866
+
+Fire Station: Taharoa Ironsands (1640)
+Type: Industry
+Address: 59 Kiwi Street, Taharoa
+Territorial Authority: Waitomo District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 
+Coordinates: lat=-38.1519296939999, lon=174.738299226
+
+Fire Station: Hamilton (1641)
+Type: Paid
+Address: 189 Anglesea Street, Hamilton Central
+Territorial Authority: Hamilton City
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 858 7600
+Coordinates: lat=-37.7910610599999, lon=175.282667873
+
+Fire Station: Chartwell (1642)
+Type: Paid
+Address: 70 Crosby Road, Chartwell
+Territorial Authority: Hamilton City
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 855 2005
+Coordinates: lat=-37.754830731, lon=175.288891883
+
+Fire Station: Te Rapa (1643)
+Type: Paid
+Address: 160 Arthur Porter Drive, Burbush
+Territorial Authority: Hamilton City
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 858 7678
+Coordinates: lat=-37.752837911, lon=175.228569317
+
+Fire Station: Cambridge (1644)
+Type: Volunteer
+Address: Duke Street, Cambridge
+Territorial Authority: Waipa District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 827 6546
+Coordinates: lat=-37.895168933, lon=175.468941684
+
+Fire Station: Te Awamutu (1645)
+Type: Volunteer
+Address: 14 Palmer Street, Te Awamutu
+Territorial Authority: Waipa District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 871 6195
+Coordinates: lat=-38.0114993729999, lon=175.324601228
+
+Fire Station: Otorohanga (1646)
+Type: Volunteer
+Address: 11 Ballance Street, Otorohanga
+Territorial Authority: Otorohanga District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 873 8835
+Coordinates: lat=-38.1853503369999, lon=175.210302112
+
+Fire Station: Te Kuiti (1647)
+Type: Volunteer
+Address: 52 Taupiri Street, Te Kuiti
+Territorial Authority: Waitomo District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 878 6111
+Coordinates: lat=-38.3345309059999, lon=175.166413621
+
+Fire Station: Benneydale (1648)
+Type: Volunteer
+Address: 2 School Road, Maniaiti / Benneydale
+Territorial Authority: Waitomo District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 878 4887
+Coordinates: lat=-38.522194683, lon=175.363843128
+
+Fire Station: Piopio (1649)
+Type: Volunteer
+Address: 14 Ruru Street, Piopio
+Territorial Authority: Waitomo District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 877 0049
+Coordinates: lat=-38.4675645799999, lon=175.015109725
+
+Fire Station: Kawhia (1650)
+Type: Volunteer
+Address: 7 Charleton Street, Kawhia
+Territorial Authority: Otorohanga District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 871 0890
+Coordinates: lat=-38.063513767, lon=174.821063344
+
+Fire Station: Paeroa (1651)
+Type: Volunteer
+Address: 2C Willoughby Street, Paeroa
+Territorial Authority: Hauraki District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 862 7158
+Coordinates: lat=-37.378439261, lon=175.670353821
+
+Fire Station: Ngatea (1652)
+Type: Volunteer
+Address: Dent Street, Ngatea
+Territorial Authority: Hauraki District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 867 7005
+Coordinates: lat=-37.274976125, lon=175.495837568
+
+Fire Station: Turua (1653)
+Type: Volunteer
+Address: 503 Hauraki Road, Turua
+Territorial Authority: Hauraki District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 867 5013
+Coordinates: lat=-37.2407538269999, lon=175.567795623
+
+Fire Station: Puriri (1654)
+Type: Volunteer
+Address: 10 Station Road, Puriri
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 027 413 1386 (Wayne Cryer CFO)
+Coordinates: lat=-37.230143094, lon=175.635916423
+
+Fire Station: Thames (1655)
+Type: Volunteer
+Address: 106 Pahau Street, Thames
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 867 9053
+Coordinates: lat=-37.1366006059999, lon=175.54054571
+
+Fire Station: Tapu (1656)
+Type: Volunteer
+Address: 752 Thames Coast Road, Tapu
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 868 4847
+Coordinates: lat=-36.985315444, lon=175.501765618
+
+Fire Station: Coromandel (1657)
+Type: Volunteer
+Address: 285 Tiki Road, Coromandel
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 8277
+Coordinates: lat=-36.762330025, lon=175.499948783
+
+Fire Station: Pirongia (1658)
+Type: Rural
+Address: 766 Franklin Street, Pirongia
+Territorial Authority: Waipa District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 871 9986
+Coordinates: lat=-37.99048649, lon=175.200379774
+
+Fire Station: Whitianga (1659)
+Type: Volunteer
+Address: 70 Kupe Drive, Whitianga
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 5308
+Coordinates: lat=-36.8329112869999, lon=175.694193026
+
+Fire Station: Waihi (1660)
+Type: Volunteer
+Address: 69 Kenny Street, Waihi
+Territorial Authority: Hauraki District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 863 8619
+Coordinates: lat=-37.391562682, lon=175.84330593
+
+Fire Station: Cooks Beach (1661)
+Type: Volunteer
+Address: 28 Banks Street, Cooks Beach
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 5847
+Coordinates: lat=-36.838251457, lon=175.742455109
+
+Fire Station: Hahei (1662)
+Type: Volunteer
+Address: 54 Hahei Beach Road, Hahei
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 3744
+Coordinates: lat=-36.840970929, lon=175.802268091
+
+Fire Station: Tairua (1663)
+Type: Volunteer
+Address: 233 Main Road, Tairua
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 864 8663
+Coordinates: lat=-37.001127593, lon=175.848424114
+
+Fire Station: Pauanui (1664)
+Type: Volunteer
+Address: 60 Jubilee Drive, Pauanui
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 864 8360
+Coordinates: lat=-37.024581699, lon=175.860623588
+
+Fire Station: Whangamata (1665)
+Type: Volunteer
+Address: 411 Port Road, Whangamata
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 865 8758
+Coordinates: lat=-37.20794731, lon=175.870419975
+
+Fire Station: Manaia Hauraki (1666)
+Type: Rural
+Address: 60 Goldfields Road, Manaia
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 
+Coordinates: lat=-36.8546137289999, lon=175.481242575
+
+Fire Station: Port Charles (1667)
+Type: Rural
+Address: 1297 Port Charles Road, Port Charles
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 6952
+Coordinates: lat=-36.5437044129999, lon=175.47269692
+
+Fire Station: Hamilton Airport Rescue (1668)
+Type: Industry
+Address: Airport Road, Rukuhia
+Territorial Authority: Waipa District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 843 3623
+Coordinates: lat=-37.865015703, lon=175.336429986
+
+Fire Station: Onemana-Opoutere (1679)
+Type: Rural
+Address: Whitipirorua Road, Onemana
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 865 9039
+Coordinates: lat=-37.153664454, lon=175.874061318
+
+Fire Station: Colville (1680)
+Type: Rural
+Address: 2331 Colville Road, Colville
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 6858
+Coordinates: lat=-36.633258863, lon=175.475230977
+
+Fire Station: Kennedy Bay (1681)
+Type: Rural
+Address: 1245 Kennedy Bay Road, Kennedy Bay
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 8056
+Coordinates: lat=-36.6824653959999, lon=175.548718928
+
+Fire Station: Whangapoua (1682)
+Type: Rural
+Address: 386 Tangiora Avenue, Whangapoua
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 8201
+Coordinates: lat=-36.712968491, lon=175.614139892
+
+Fire Station: Matarangi (1683)
+Type: Rural
+Address: 201B Matarangi Drive, Matarangi
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 4325
+Coordinates: lat=-36.7336518729999, lon=175.661754409
+
+Fire Station: Kuaotunu (1684)
+Type: Rural
+Address: 13 Black Jack Road, Kuaotunu
+Territorial Authority: Thames-Coromandel District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 866 4569
+Coordinates: lat=-36.7222022019999, lon=175.729979026
+
+Fire Station: Whiritoa (1686)
+Type: Rural
+Address: 44 Whiritoa Beach Road, Whiritoa
+Territorial Authority: Hauraki District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 865 0110
+Coordinates: lat=-37.283591375, lon=175.897558249
+
+Fire Station: Te Akau (1687)
+Type: Rural
+Address: 1159 Te Akau Road, Te Akau
+Territorial Authority: Waikato District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 07 825 4855
+Coordinates: lat=-37.678357287, lon=174.857834711
+
+Fire Station: Huntly Power Station (1689)
+Type: Industry
+Address: Te Ohaki Road, Huntly
+Territorial Authority: Waikato District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: null
+Coordinates: lat=-37.545453145, lon=175.149576502
+
+Fire Station: Hamilton Volunteer (1690)
+Type: Volunteer
+Address: 70A Crosby Road, Chartwell
+Territorial Authority: Hamilton City
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: null
+Coordinates: lat=-37.7551667549999, lon=175.289098423
+
+Fire Station: Glenbrook Steel Mill (1739)
+Type: Industry
+Address: Mission Bush Road, Glenbrook
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 3758258
+Coordinates: lat=-37.209051615, lon=174.729194428
+
+Fire Station: Mangatangi (1748)
+Type: Volunteer
+Address: 2084 Miranda Road, Mangatangi
+Territorial Authority: Waikato District
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 232 7880
+Coordinates: lat=-37.2004704289999, lon=175.20062614
+
+Fire Station: Maramarua (1749)
+Type: Rural
+Address: 2258 SH 2, Maramarua
+Territorial Authority: Waikato District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 09 232 5797
+Coordinates: lat=-37.253333095, lon=175.233527935
+
+Fire Station: Pokeno (1750)
+Type: Volunteer
+Address: 37 Great South Road, Pokeno
+Territorial Authority: Waikato District
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 232 6655
+Coordinates: lat=-37.246984292, lon=175.023754173
+
+Fire Station: Tuakau (1751)
+Type: Volunteer
+Address: Hall Street, Tuakau
+Territorial Authority: Waikato District
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 236 8400
+Coordinates: lat=-37.2600645059999, lon=174.945219465
+
+Fire Station: Onewhero (1752)
+Type: Rural
+Address: 621 Onewhero-Tuakau Bridge Road, Onewhero
+Territorial Authority: Waikato District
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 232 8119
+Coordinates: lat=-37.329459917, lon=174.913883692
+
+Fire Station: Port Waikato (1753)
+Type: Volunteer
+Address: 83B Maunsell Road, Port Waikato
+Territorial Authority: Waikato District
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 232 9803
+Coordinates: lat=-37.391235943, lon=174.724649028
+
+Fire Station: Pukekohe (1755)
+Type: Volunteer
+Address: 24 Wellington Street, Pukekohe
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 238 7669
+Coordinates: lat=-37.2044589889999, lon=174.898050018
+
+Fire Station: Patumahoe (1756)
+Type: Volunteer
+Address: 3 Johns Street, Patumahoe
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 236 3686
+Coordinates: lat=-37.188492513, lon=174.82767709
+
+Fire Station: Waiuku (1757)
+Type: Volunteer
+Address: 13 King Street, Waiuku
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 235 8444
+Coordinates: lat=-37.247354086, lon=174.729082677
+
+Fire Station: Waiau Pa (1758)
+Type: Volunteer
+Address: Clarks Beach Road, Waiau Pa
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 232 0203
+Coordinates: lat=-37.136845783, lon=174.751720199
+
+Fire Station: Awhitu (1759)
+Type: Rural
+Address: 2678 Awhitu Road, Awhitu
+Territorial Authority: Auckland
+FENZ District: Counties Manukau, Region: Te Hiku
+Phone: 09 235 1027
+Coordinates: lat=-37.108197806, lon=174.621119849
+
+Fire Station: Taupo (1821)
+Type: Composite
+Address: 1 Kaimanawa Street, Taupo
+Territorial Authority: Taupo District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 378 5060
+Coordinates: lat=-38.692959478, lon=176.076141366
+
+Fire Station: Kinloch (1822)
+Type: Volunteer
+Address: 10 Mata Place, Kinloch
+Territorial Authority: Taupo District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 378 9070
+Coordinates: lat=-38.6626317569999, lon=175.920426542
+
+Fire Station: Turangi (1823)
+Type: Volunteer
+Address: 16 Ohuanga Road, Turangi
+Territorial Authority: Taupo District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 386 8580
+Coordinates: lat=-38.990255104, lon=175.806336138
+
+Fire Station: Lake Taupo (1829)
+Type: Rural
+Address: 3/17 Matai Street, Tauhara
+Territorial Authority: Taupo District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 
+Coordinates: lat=-38.68701965, lon=176.10347334
+
+Fire Station: Southern Lakes (1830)
+Type: Rural
+Address: 220 Omori Road, Kuratau
+Territorial Authority: Taupo District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 
+Coordinates: lat=-38.896756958, lon=175.761477611
+
+Fire Station: Ruatahuna (1858)
+Type: Industry
+Address: 5905 Ruatahuna Road, Ruatahuna
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: null
+Coordinates: lat=-38.613234604, lon=176.958628147
+
+Fire Station: Minginui (1859)
+Type: Rural
+Address: 9 Rimu Crescent, Minginui
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: (07)366 3036
+Coordinates: lat=-38.642443181, lon=176.730400122
+
+Fire Station: Eastern Bay (1860)
+Type: Rural
+Address: 42 Te Tahi Street, Whakatane
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 027 415 1610
+Coordinates: lat=-37.9798673569999, lon=176.985382754
+
+Fire Station: Kaingaroa (1861)
+Type: Volunteer
+Address: Dun Road, Kaingaroa Forest
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 366 9766
+Coordinates: lat=-38.408235879, lon=176.564846827
+
+Fire Station: Kinleith Mill (1862)
+Type: Industry
+Address: Kinleith Mill Road, Kinleith
+Territorial Authority: South Waikato District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 885 5777 (Emergency only)
+Coordinates: lat=-38.2769298649999, lon=175.887655988
+
+Fire Station: Reporoa Dairy Company (1863)
+Type: Industry
+Address: SH 5, Reporoa
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: null
+Coordinates: lat=-38.424580449, lon=176.314642784
+
+Fire Station: Lake Okareka (1865)
+Type: Rural
+Address: 1 Acacia Road, Lake Okareka
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 362 8757
+Coordinates: lat=-38.1757605339999, lon=176.347266783
+
+Fire Station: Lake Tarawera (1866)
+Type: Rural
+Address: 151 Spencer Road, Lake Tarawera
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 362 8429
+Coordinates: lat=-38.1912081839999, lon=176.394818341
+
+Fire Station: Waihi Beach (1867)
+Type: Volunteer
+Address: 1 Fyfe Road, Waihi Beach
+Territorial Authority: Western Bay of Plenty District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: null
+Coordinates: lat=-37.399824598, lon=175.935354943
+
+Fire Station: Mayor View (1868)
+Type: Volunteer
+Address: 43 Roretana Drive, Athenree
+Territorial Authority: Western Bay of Plenty District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 021 870 824
+Coordinates: lat=-37.4451098179999, lon=175.963529893
+
+Fire Station: Okere Falls (1869)
+Type: Rural
+Address: 15 Okere Road, Okere Falls
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 362 4920
+Coordinates: lat=-38.018058072, lon=176.358257012
+
+Fire Station: Matakana Island (1870)
+Type: Rural
+Address: 114 Waihirere Road, Matakana Island
+Territorial Authority: Western Bay of Plenty District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 578 8205
+Coordinates: lat=-37.591624549, lon=176.075069828
+
+Fire Station: Tauranga (1871)
+Type: Composite
+Address: 195 Cameron Road, Tauranga
+Territorial Authority: Tauranga City
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 858 7658
+Coordinates: lat=-37.685395555, lon=176.165387629
+
+Fire Station: Mount Maunganui (1872)
+Type: Composite
+Address: 4 Golf Road, Mount Maunganui
+Territorial Authority: Tauranga City
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 574 8953
+Coordinates: lat=-37.664408137, lon=176.208834951
+
+Fire Station: Papamoa (1873)
+Type: Volunteer
+Address: 50 Parton Road, Papamoa Beach
+Territorial Authority: Tauranga City
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 579 0240
+Coordinates: lat=-37.710135786, lon=176.315655157
+
+Fire Station: Maketu (1874)
+Type: Volunteer
+Address: 668 Wilson Road North, Maketu
+Territorial Authority: Western Bay of Plenty District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 533 2160
+Coordinates: lat=-37.759959566, lon=176.452250289
+
+Fire Station: Greerton (1875)
+Type: Composite
+Address: 169 Maleme Street, Greerton
+Territorial Authority: Tauranga City
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 541 1357
+Coordinates: lat=-37.734047328, lon=176.127010783
+
+Fire Station: Katikati (1876)
+Type: Volunteer
+Address: 15 Sheffield Street, Katikati
+Territorial Authority: Western Bay of Plenty District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 549 0239
+Coordinates: lat=-37.5605151949999, lon=175.918591505
+
+Fire Station: Omokoroa (1877)
+Type: Volunteer
+Address: 335 Omokoroa Road, Omokoroa
+Territorial Authority: Western Bay of Plenty District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 548 0880
+Coordinates: lat=-37.653098929, lon=176.02645149
+
+Fire Station: Pukehina (1878)
+Type: Volunteer
+Address: 14 Pukehina Parade, Pukehina
+Territorial Authority: Western Bay of Plenty District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 533 3676
+Coordinates: lat=-37.789332912, lon=176.527540145
+
+Fire Station: Te Puke (1879)
+Type: Volunteer
+Address: 37 Boucher Avenue, Te Puke
+Territorial Authority: Western Bay of Plenty District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 573 0015
+Coordinates: lat=-37.786633179, lon=176.324401443
+
+Fire Station: Rotorua (1881)
+Type: Composite
+Address: 19-29 Biak Street, Mangakakahi
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 348 3198
+Coordinates: lat=-38.132738817, lon=176.236163217
+
+Fire Station: Ngongotaha (1882)
+Type: Volunteer
+Address: 2 Kokiri Street, Ngongotaha
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 357 4085
+Coordinates: lat=-38.084232893, lon=176.211883717
+
+Fire Station: Rotoma (1883)
+Type: Volunteer
+Address: 167 SH 30, Lake Rotoma
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 362 0709
+Coordinates: lat=-38.0526991249999, lon=176.569204233
+
+Fire Station: Mamaku (1884)
+Type: Volunteer
+Address: 31 Mamaku Street, Mamaku
+Territorial Authority: Rotorua District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 332 5799
+Coordinates: lat=-38.0942618879999, lon=176.078999587
+
+Fire Station: Tirau (1885)
+Type: Volunteer
+Address: Okoroire Road, Tirau
+Territorial Authority: South Waikato District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 883 1700
+Coordinates: lat=-37.97440492, lon=175.761559712
+
+Fire Station: Putaruru (1886)
+Type: Volunteer
+Address: 7-19 Overdale Street, Putaruru
+Territorial Authority: South Waikato District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 883 8620
+Coordinates: lat=-38.05006571, lon=175.777808793
+
+Fire Station: Tokoroa (1887)
+Type: Volunteer
+Address: 85 Bridge Street, Tokoroa
+Territorial Authority: South Waikato District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 886 5463
+Coordinates: lat=-38.219119731, lon=175.868345704
+
+Fire Station: Mangakino (1888)
+Type: Volunteer
+Address: 14 College Street, Mangakino
+Territorial Authority: Taupo District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 882 8188
+Coordinates: lat=-38.3715936319999, lon=175.773569487
+
+Fire Station: Murupara (1889)
+Type: Volunteer
+Address: 100 Pine Drive, Murupara
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 366 5880 or 07 366 5889
+Coordinates: lat=-38.4544268999999, lon=176.702051609
+
+Fire Station: Kawerau (1891)
+Type: Composite
+Address: 41 River Road, Kawerau
+Territorial Authority: Kawerau District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 3231077
+Coordinates: lat=-38.0829538789999, lon=176.710349524
+
+Fire Station: Whakatane (1892)
+Type: Volunteer
+Address: 157 Commerce Street, Whakatane
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 308 6545
+Coordinates: lat=-37.9586399409999, lon=176.992874714
+
+Fire Station: Edgecumbe (1893)
+Type: Volunteer
+Address: 502 Awakeri Road, Edgecumbe
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 304 9104
+Coordinates: lat=-37.979835624, lon=176.834307477
+
+Fire Station: Matata (1894)
+Type: Volunteer
+Address: 37 Heale Street, Matata
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 322 2211
+Coordinates: lat=-37.888705488, lon=176.757670767
+
+Fire Station: Taneatua (1895)
+Type: Volunteer
+Address: 41 Tuhoe Street, Taneatua
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 312 9253
+Coordinates: lat=-38.064255827, lon=177.003330761
+
+Fire Station: Opotiki (1896)
+Type: Volunteer
+Address: 34 King Street, Opotiki
+Territorial Authority: Opotiki District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 315 6312
+Coordinates: lat=-38.0065923139999, lon=177.285979389
+
+Fire Station: Ohope (1897)
+Type: Volunteer
+Address: 2 Harbour Road, Ohope
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 312 4472
+Coordinates: lat=-37.975189428, lon=177.070173027
+
+Fire Station: Waimana (1898)
+Type: Rural
+Address: 270 Waimana Road, Waimana
+Territorial Authority: Whakatane District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 3123109
+Coordinates: lat=-38.143964024, lon=177.07722385
+
+Fire Station: Waihau Bay (1899)
+Type: Rural
+Address: Otutehapari Road, Waihau Bay
+Territorial Authority: Opotiki District
+FENZ District: Bay of Plenty, Region: Nga Tai ki te Puku
+Phone: 07 325 3619
+Coordinates: lat=-37.618648438, lon=177.906759724
+
+Fire Station: Kirikau (2321)
+Type: Rural
+Address: 151 Kirikau Valley Road, Kirikau
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.0097868989999, lon=175.137157677
+
+Fire Station: Waimarino (2322)
+Type: Rural
+Address: 103 Seddon Street, Raetihi
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 021 025 68382
+Coordinates: lat=-39.425687275, lon=175.27562627
+
+Fire Station: Ruapehu (2323)
+Type: Rural
+Address: 249 Taringamotu Road, Taringamotu
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 
+Coordinates: lat=-38.84337614, lon=175.260437344
+
+Fire Station: Ohura (2324)
+Type: Rural
+Address: 5 Ngarimu Street, Ohura
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 07 893 8807
+Coordinates: lat=-38.8408090089999, lon=174.982846532
+
+Fire Station: Taumarunui (2325)
+Type: Volunteer
+Address: 28 Manuaute Street, Taumarunui
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 07 896 7188
+Coordinates: lat=-38.88564788, lon=175.263288431
+
+Fire Station: Manunui (2326)
+Type: Volunteer
+Address: 246 Miro Street, Manunui
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 07 896 7558
+Coordinates: lat=-38.889263679, lon=175.329391992
+
+Fire Station: Owhango (2327)
+Type: Volunteer
+Address: 1 Omaki Road, Owhango
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 07 895 4827
+Coordinates: lat=-38.9984275369999, lon=175.378097009
+
+Fire Station: National Park (2328)
+Type: Volunteer
+Address: 8 Mackenzie Street, National Park
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 07 892 2815
+Coordinates: lat=-39.174664212, lon=175.396099286
+
+Fire Station: Whakapapa (2329)
+Type: Volunteer
+Address: Bruce Road, Tongariro National Park
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 07 892 3555
+Coordinates: lat=-39.2033948339999, lon=175.540981821
+
+Fire Station: Waitara (2347)
+Type: Volunteer
+Address: 46 Grey Street, Waitara
+Territorial Authority: New Plymouth District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 754 9110
+Coordinates: lat=-39.000081759, lon=174.233882826
+
+Fire Station: Stratford (2348)
+Type: Volunteer
+Address: 47 Miranda Street, Stratford
+Territorial Authority: Stratford District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 765 7542
+Coordinates: lat=-39.339080258, lon=174.28268652
+
+Fire Station: Toko (2349)
+Type: Volunteer
+Address: 867 East Road, Toko
+Territorial Authority: Stratford District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 762 2757
+Coordinates: lat=-39.3358317, lon=174.393912576
+
+Fire Station: Eltham (2351)
+Type: Volunteer
+Address: 27 London Street, Eltham
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 764 8863
+Coordinates: lat=-39.4322162989999, lon=174.298547806
+
+Fire Station: Kaponga (2352)
+Type: Volunteer
+Address: 30 Victoria Street, Kaponga
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 764 6868
+Coordinates: lat=-39.429234508, lon=174.148066973
+
+Fire Station: Opunake (2353)
+Type: Volunteer
+Address: 36 King Street, Opunake
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 761 8199
+Coordinates: lat=-39.453725839, lon=173.859489174
+
+Fire Station: Rahotu (2354)
+Type: Volunteer
+Address: 9 Lower Kahui Road, Rahotu
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 763 8820
+Coordinates: lat=-39.327667796, lon=173.802610032
+
+Fire Station: Hawera (2355)
+Type: Volunteer
+Address: 201 South Road, Hawera
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 278 0205
+Coordinates: lat=-39.5950680729999, lon=174.284665692
+
+Fire Station: Okaiawa (2356)
+Type: Volunteer
+Address: 463 Normanby Road, Okaiawa
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 272 6842
+Coordinates: lat=-39.5281115989999, lon=174.199348368
+
+Fire Station: Manaia (2357)
+Type: Volunteer
+Address: 45 Tauhuri Street, Manaia
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 274 8349
+Coordinates: lat=-39.550075771, lon=174.12471656
+
+Fire Station: Patea (2358)
+Type: Volunteer
+Address: 39 Egmont Street, Patea
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 273 8555
+Coordinates: lat=-39.757587847, lon=174.475071857
+
+Fire Station: New Plymouth (2361)
+Type: Composite
+Address: 67 Liardet Street, New Plymouth
+Territorial Authority: New Plymouth District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 757 3860
+Coordinates: lat=-39.058269364, lon=174.07685041
+
+Fire Station: New Plymouth West (2362)
+Type: Volunteer
+Address: 35 Paritutu Road, Spotswood
+Territorial Authority: New Plymouth District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 751 3511
+Coordinates: lat=-39.065866421, lon=174.026522979
+
+Fire Station: Oakura (2363)
+Type: Volunteer
+Address: 54 Dixon Street, Oakura
+Territorial Authority: New Plymouth District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 752 7725
+Coordinates: lat=-39.115097705, lon=173.956233417
+
+Fire Station: Inglewood (2364)
+Type: Volunteer
+Address: 37 Richmond Street, Inglewood
+Territorial Authority: New Plymouth District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 756 0050
+Coordinates: lat=-39.155409978, lon=174.20718457
+
+Fire Station: Okato (2365)
+Type: Volunteer
+Address: 76 Carthew Street, Okato
+Territorial Authority: New Plymouth District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 752 4110
+Coordinates: lat=-39.1916999759999, lon=173.880326321
+
+Fire Station: Urenui (2366)
+Type: Volunteer
+Address: 8 Whakapaki Street, Urenui
+Territorial Authority: New Plymouth District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 752 3673
+Coordinates: lat=-38.9988563119999, lon=174.388746945
+
+Fire Station: Ngamotu (2368)
+Type: Rural
+Address: 24 Gilmour Street, Westown
+Territorial Authority: New Plymouth District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.0735126279999, lon=174.054585827
+
+Fire Station: Tainui Mokau (2369)
+Type: Rural
+Address: 41 North Street, Mokau
+Territorial Authority: Waitomo District
+FENZ District: Waikato, Region: Nga Tai ki te Puku
+Phone: 06 752 9781
+Coordinates: lat=-38.69796579, lon=174.619953271
+
+Fire Station: Whanganui (2371)
+Type: Composite
+Address: 89 Maria Place, Whanganui
+Territorial Authority: Whanganui District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 348 0103
+Coordinates: lat=-39.937513515, lon=175.047565358
+
+Fire Station: Waverley (2372)
+Type: Volunteer
+Address: 5 Bear Street, Waverley
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 06 346 5013
+Coordinates: lat=-39.762662855, lon=174.632511361
+
+Fire Station: Kohi (2373)
+Type: Rural
+Address: 201A South Road, Hawera
+Territorial Authority: South Taranaki District
+FENZ District: Taranaki, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.5950980339999, lon=174.284239559
+
+Fire Station: Ohakune (2375)
+Type: Volunteer
+Address: 26 Goldfinch Street, Ohakune
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 385 8331
+Coordinates: lat=-39.416590495, lon=175.400185398
+
+Fire Station: Raetihi (2376)
+Type: Volunteer
+Address: 13 Duncan Street, Raetihi
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 385 4201
+Coordinates: lat=-39.425409481, lon=175.277353671
+
+Fire Station: Whanganui Rural (2377)
+Type: Rural
+Address: 89 Maria Place, Whanganui
+Territorial Authority: Whanganui District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.9376552149999, lon=175.047742294
+
+Fire Station: Koitiata (2396)
+Type: Rural
+Address: 58 Wainui Street, Koitiata
+Territorial Authority: Rangitikei District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 327 3698
+Coordinates: lat=-40.0707091739999, lon=175.140149529
+
+Fire Station: Milson (2420)
+Type: Paid
+Address: 810 Tremaine Avenue, Roslyn
+Territorial Authority: Palmerston North City
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 355 2830
+Coordinates: lat=-40.3352105709999, lon=175.620435833
+
+Fire Station: Palmerston North (2421)
+Type: Composite
+Address: 50 Cook Street, Palmerston North
+Territorial Authority: Palmerston North City
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 357 8025
+Coordinates: lat=-40.360873854, lon=175.602613666
+
+Fire Station: Ashhurst (2422)
+Type: Volunteer
+Address: 76 Winchester Street, Ashhurst
+Territorial Authority: Palmerston North City
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 326 8268
+Coordinates: lat=-40.291396434, lon=175.753465361
+
+Fire Station: Bunnythorpe (2423)
+Type: Volunteer
+Address: 16 Campbell Road, Bunnythorpe
+Territorial Authority: Palmerston North City
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 329 2824
+Coordinates: lat=-40.282668439, lon=175.63171794
+
+Fire Station: Rongotea (2425)
+Type: Volunteer
+Address: 66 Thames Street, Rongotea
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 324 8555
+Coordinates: lat=-40.2916643149999, lon=175.423556436
+
+Fire Station: Tangimoana (2426)
+Type: Volunteer
+Address: 21 Kuku Street, Tangimoana
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 324 8699
+Coordinates: lat=-40.29557263, lon=175.245495244
+
+Fire Station: Feilding (2428)
+Type: Volunteer
+Address: 205 Kimbolton Road, Feilding
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 323 4166
+Coordinates: lat=-40.221760751, lon=175.57498046
+
+Fire Station: Cheltenham (2429)
+Type: Volunteer
+Address: Kimbolton Road, Cheltenham
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 328 9842
+Coordinates: lat=-40.1392811599999, lon=175.659614663
+
+Fire Station: Apiti (2431)
+Type: Volunteer
+Address: 3 Watsons Road, Apiti
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 328 4814
+Coordinates: lat=-39.9726853839999, lon=175.870207327
+
+Fire Station: Halcombe (2432)
+Type: Volunteer
+Address: 76 Willoughby Street, Halcombe
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 328 8748
+Coordinates: lat=-40.142653273, lon=175.494546745
+
+Fire Station: Kimbolton (2433)
+Type: Volunteer
+Address: 2872 Kimbolton Road, Kimbolton
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 328 5889
+Coordinates: lat=-40.0596661979999, lon=175.780106135
+
+Fire Station: Himatangi Beach (2438)
+Type: Volunteer
+Address: 32 Koputara Road, Himatangi Beach
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 329 9570
+Coordinates: lat=-40.369022324, lon=175.234969112
+
+Fire Station: Rangiwahia (2442)
+Type: Volunteer
+Address: Maungawharariki Street, Rangiwahia
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 328 2870
+Coordinates: lat=-39.8992280809999, lon=175.90074547
+
+Fire Station: Linton (2447)
+Type: Defence
+Address: Puttick Road, Linton
+Territorial Authority: Palmerston North City
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 351 9292
+Coordinates: lat=-40.4099658019999, lon=175.588480695
+
+Fire Station: Ratana (2473)
+Type: Volunteer
+Address: Ratana Road, Ratana
+Territorial Authority: Rangitikei District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 342 6606
+Coordinates: lat=-40.041855472, lon=175.17718187
+
+Fire Station: Taihape (2477)
+Type: Volunteer
+Address: 33 Kuku Street, Taihape
+Territorial Authority: Rangitikei District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 388 0162
+Coordinates: lat=-39.6780057459999, lon=175.801108728
+
+Fire Station: Mangaweka (2478)
+Type: Volunteer
+Address: 20 Broadway, Mangaweka
+Territorial Authority: Rangitikei District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 382 5881
+Coordinates: lat=-39.808003688, lon=175.7891296
+
+Fire Station: Hunterville (2479)
+Type: Volunteer
+Address: 11 High Street, Hunterville
+Territorial Authority: Rangitikei District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 322 8444
+Coordinates: lat=-39.936656737, lon=175.57059997
+
+Fire Station: Marton (2481)
+Type: Volunteer
+Address: 448 Wellington Road, Marton
+Territorial Authority: Rangitikei District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 327 8888
+Coordinates: lat=-40.0783124879999, lon=175.378843076
+
+Fire Station: Bulls (2482)
+Type: Volunteer
+Address: 1 Hammond Street, Bulls
+Territorial Authority: Rangitikei District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 322 1444
+Coordinates: lat=-40.1751107819999, lon=175.383309473
+
+Fire Station: Rangitikei (2483)
+Type: Rural
+Address: 46 High Street, Marton
+Territorial Authority: Rangitikei District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 327 0084
+Coordinates: lat=-40.068106701, lon=175.374151009
+
+Fire Station: Palmerston North VFB (2484)
+Type: Rural
+Address: 50 Cook Street, Palmerston North
+Territorial Authority: Palmerston North City
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 357 8025
+Coordinates: lat=-40.3610276919999, lon=175.602514985
+
+Fire Station: RNZAF Base Ohakea F6056 (2492)
+Type: Defence
+Address: Kororareka Avenue, Ohakea
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 351 5472
+Coordinates: lat=-40.200249846, lon=175.379137225
+
+Fire Station: Waiouru C364 (2493)
+Type: Defence
+Address: Parkinson Street, Waiouru
+Territorial Authority: Ruapehu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 387 5540 (DDI)
+Coordinates: lat=-39.4675261249999, lon=175.683391361
+
+Fire Station: Manawatu (2496)
+Type: Rural
+Address: 205 Kimbolton Road, Feilding
+Territorial Authority: Manawatu District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 323 4166
+Coordinates: lat=-40.2218167189999, lon=175.574980862
+
+Fire Station: Kotemaori (2647)
+Type: Rural
+Address: 40 Willowflat Road, Kotemaori
+Territorial Authority: Wairoa District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: null
+Coordinates: lat=-39.066079456, lon=177.023709135
+
+Fire Station: Te Haroto (2648)
+Type: Rural
+Address: 4721 SH 5, Te Haroto
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: null
+Coordinates: lat=-39.1359279169999, lon=176.605568856
+
+Fire Station: Waikoau (2649)
+Type: Rural
+Address: 899 Waikoau Road, Tangoio
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.240917474, lon=176.816320067
+
+Fire Station: Heretaunga (2650)
+Type: Rural
+Address: 125 Maraekakaho Road, Camberley
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.630583897, lon=176.828661044
+
+Fire Station: Napier (2651)
+Type: Composite
+Address: 20 Taradale Road, Marewa
+Territorial Authority: Napier City
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 843 6123
+Coordinates: lat=-39.497322673, lon=176.892828608
+
+Fire Station: Haumoana (2652)
+Type: Volunteer
+Address: 28 Beach Road, Haumoana
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 875 0039
+Coordinates: lat=-39.6055412709999, lon=176.946887673
+
+Fire Station: Havelock North (2653)
+Type: Volunteer
+Address: 15 Karanema Drive, Havelock North
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 877 8692
+Coordinates: lat=-39.666927347, lon=176.879331602
+
+Fire Station: Bay View (2654)
+Type: Volunteer
+Address: 6 Petane Road, Bay View
+Territorial Authority: Napier City
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 836 6862
+Coordinates: lat=-39.4215474, lon=176.86747894
+
+Fire Station: Taradale (2655)
+Type: Volunteer
+Address: 5 Meeanee Road, Taradale
+Territorial Authority: Napier City
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 845 9440
+Coordinates: lat=-39.53752723, lon=176.849414404
+
+Fire Station: Hastings (2656)
+Type: Composite
+Address: 125 Maraekakaho Road, Camberley
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 870 4925
+Coordinates: lat=-39.630694552, lon=176.829380591
+
+Fire Station: Napier OSU (2659)
+Type: Volunteer
+Address: 20A Taradale Road, Marewa
+Territorial Authority: Napier City
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: null
+Coordinates: lat=-39.497122439, lon=176.892724471
+
+Fire Station: Maraetotara (2662)
+Type: Rural
+Address: 970 Maraetotara Road, Maraetotara
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.794391155, lon=176.918391372
+
+Fire Station: Torran (2663)
+Type: Rural
+Address: Valley Road, Raukawa
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.7169716509999, lon=176.632362542
+
+Fire Station: Maraekakaho (2665)
+Type: Rural
+Address: 64 Kereru Road, Maraekakaho
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.64883357, lon=176.618467446
+
+Fire Station: Kereru (2666)
+Type: Rural
+Address: 2028 Kereru Road, Kereru
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.6361015849999, lon=176.422396296
+
+Fire Station: Waiwhare (2668)
+Type: Rural
+Address: 3882 Taihape Road, Waiwhare
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.434481956, lon=176.468108013
+
+Fire Station: Rissington (2669)
+Type: Rural
+Address: 2467 Puketitiri Road, Rissington
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.4055916629999, lon=176.68755171
+
+Fire Station: Patoka (2670)
+Type: Rural
+Address: 3645 Puketitiri Road, Patoka
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.3463926649999, lon=176.603159527
+
+Fire Station: Matapiro (2671)
+Type: Rural
+Address: 8 Crownthorpe Road, Crownthorpe
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.57776014, lon=176.554812002
+
+Fire Station: Putorino (2672)
+Type: Rural
+Address: Waikare Road, Putorino
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 839 7314
+Coordinates: lat=-39.1347040919999, lon=177.005713164
+
+Fire Station: Te Pohue (2673)
+Type: Rural
+Address: 22 Ohurakura Road, Te Pohue
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.25498909, lon=176.697914335
+
+Fire Station: Puketitiri (2674)
+Type: Rural
+Address: 4842 Puketitiri Road, Puketitiri
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.278019225, lon=176.546276759
+
+Fire Station: Waimarama (2675)
+Type: Rural
+Address: 2230 Waimarama Road, Waimarama
+Territorial Authority: Hastings District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 874 6002
+Coordinates: lat=-39.81101017, lon=176.983703279
+
+Fire Station: Eastland (2678)
+Type: Rural
+Address: 7 Halbert Road, Makaraka
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 868 5280
+Coordinates: lat=-38.648554899, lon=177.970406616
+
+Fire Station: Ruakituri (2679)
+Type: Rural
+Address: 1986 Ruakituri Road, Ruakituri
+Territorial Authority: Wairoa District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 838 4560
+Coordinates: lat=-38.760157007, lon=177.372901313
+
+Fire Station: Tiniroto (2680)
+Type: Rural
+Address: School Road, Tiniroto
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 
+Coordinates: lat=-38.7737044309999, lon=177.568102062
+
+Fire Station: Gisborne (2681)
+Type: Composite
+Address: 185 Palmerston Road, Gisborne
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: (06) 351 3900
+Coordinates: lat=-38.664124961, lon=178.026309414
+
+Fire Station: Manutuke (2682)
+Type: Volunteer
+Address: 92 Whakato Road, Manutuke
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 862 8830
+Coordinates: lat=-38.678497396, lon=177.909069796
+
+Fire Station: Patutahi (2683)
+Type: Volunteer
+Address: 17 Biggs Street, Patutahi
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 862 7774
+Coordinates: lat=-38.623898024, lon=177.887660584
+
+Fire Station: Matawai (2684)
+Type: Volunteer
+Address: 16 Raumati Street, Matawai
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 862 4802
+Coordinates: lat=-38.358298264, lon=177.534550891
+
+Fire Station: Te Karaka (2685)
+Type: Volunteer
+Address: 23 Library Road, Te Karaka
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 862 3503
+Coordinates: lat=-38.4684760439999, lon=177.86419158
+
+Fire Station: Whatatutu (2686)
+Type: Volunteer
+Address: Whatatutu Road, Whatatutu
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 862 1819
+Coordinates: lat=-38.38197156, lon=177.833582939
+
+Fire Station: Tolaga Bay (2687)
+Type: Volunteer
+Address: Solander Street, Tolaga Bay
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 862 6895
+Coordinates: lat=-38.371927934, lon=178.296413598
+
+Fire Station: Ruatoria (2688)
+Type: Volunteer
+Address: 190 Waiomatatini Road, Ruatoria
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 864 9123
+Coordinates: lat=-37.88792498, lon=178.319387343
+
+Fire Station: Te Araroa (2689)
+Type: Volunteer
+Address: 51 Pohutu Road, Te Araroa
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 864 4760
+Coordinates: lat=-37.6355174, lon=178.369172066
+
+Fire Station: Hicks Bay (2690)
+Type: Rural
+Address: 5392C Te Araroa Road, Hicks Bay
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 864 4654
+Coordinates: lat=-37.593757602, lon=178.290011665
+
+Fire Station: Tikitiki (2691)
+Type: Volunteer
+Address: 9 Rangitukia Road, Tikitiki
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 864 3758
+Coordinates: lat=-37.794593208, lon=178.410839588
+
+Fire Station: Tokomaru Bay (2692)
+Type: Volunteer
+Address: 33 Waitangi Street, Tokomaru Bay
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 864 5782
+Coordinates: lat=-38.129898306, lon=178.314859579
+
+Fire Station: Te Puia Springs (2693)
+Type: Volunteer
+Address: 4679 Waiapu Road, Te Puia Springs
+Territorial Authority: Gisborne District
+FENZ District: Tairawhiti, Region: Nga Tai ki te Puku
+Phone: 06 864 6888
+Coordinates: lat=-38.0579575739999, lon=178.305723761
+
+Fire Station: Wairoa (2694)
+Type: Volunteer
+Address: 67 Lucknow Street, Wairoa
+Territorial Authority: Wairoa District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 838 7755
+Coordinates: lat=-39.035146927, lon=177.420563866
+
+Fire Station: Nuhaka (2695)
+Type: Volunteer
+Address: 2 Ringawhero Street, Nuhaka
+Territorial Authority: Wairoa District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 837 8799
+Coordinates: lat=-39.043515263, lon=177.743326215
+
+Fire Station: Mahia (2697)
+Type: Rural
+Address: 54 Newcastle Street, Mahia
+Territorial Authority: Wairoa District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 837 5555
+Coordinates: lat=-39.077203282, lon=177.875200772
+
+Fire Station: Tuai (2698)
+Type: Rural
+Address: Tuai Main Road, Tuai
+Territorial Authority: Wairoa District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 837 3797
+Coordinates: lat=-38.813411978, lon=177.146135963
+
+Fire Station: Eketahuna (2741)
+Type: Volunteer
+Address: 20 Main Street, Eketahuna
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 375 8218
+Coordinates: lat=-40.6458022899999, lon=175.704216745
+
+Fire Station: Woodville (2743)
+Type: Volunteer
+Address: 73 Ormond Street, Woodville
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 376 5144
+Coordinates: lat=-40.336472941, lon=175.868153913
+
+Fire Station: Pongaroa (2744)
+Type: Volunteer
+Address: 10801 Route 52, Pongaroa
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 376 2827
+Coordinates: lat=-40.5427229599999, lon=176.192643516
+
+Fire Station: Pahiatua (2745)
+Type: Volunteer
+Address: 2 Tui Street, Pahiatua
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 376 7555
+Coordinates: lat=-40.4510349079999, lon=175.841152657
+
+Fire Station: Akitio (2746)
+Type: Rural
+Address: Akitio Esplanade, Akitio
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 374 3552
+Coordinates: lat=-40.616075291, lon=176.414153283
+
+Fire Station: Tiraumea (2747)
+Type: Rural
+Address: 12800 Route 52, Tiraumea
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-40.6314051049999, lon=176.050066563
+
+Fire Station: Tamatea (2756)
+Type: Rural
+Address: 18 Lindsay Road, Waipukurau
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.9867660629999, lon=176.556805489
+
+Fire Station: Otane (2757)
+Type: Volunteer
+Address: 4 Campbell Street, Otane
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 856 8344
+Coordinates: lat=-39.8953842249999, lon=176.627946029
+
+Fire Station: Waipukurau (2758)
+Type: Volunteer
+Address: 32 Russell Street, Waipukurau
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 858 8001
+Coordinates: lat=-39.9941555259999, lon=176.555889491
+
+Fire Station: Porangahau (2759)
+Type: Volunteer
+Address: 9 Keppel Street, Porangahau
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 855 5212
+Coordinates: lat=-40.3021110939999, lon=176.611718459
+
+Fire Station: Takapau (2761)
+Type: Volunteer
+Address: Charlotte Street, Takapau
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 855 8088
+Coordinates: lat=-40.026824016, lon=176.350189401
+
+Fire Station: Ashley Clinton (2762)
+Type: Volunteer
+Address: 740 Ashley Clinton Road, Ashley Clinton
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 855 6842
+Coordinates: lat=-39.9503935559999, lon=176.261916989
+
+Fire Station: Waipawa (2763)
+Type: Volunteer
+Address: 42 Waverley Street, Waipawa
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 857 8321
+Coordinates: lat=-39.942172316, lon=176.585881188
+
+Fire Station: Ongaonga (2764)
+Type: Volunteer
+Address: 91 Bridge Street, Ongaonga
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 856 6892
+Coordinates: lat=-39.912040917, lon=176.414873581
+
+Fire Station: Tikokino (2766)
+Type: Volunteer
+Address: 40 Owen Street, Tikokino
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 856 5878
+Coordinates: lat=-39.820193955, lon=176.453443547
+
+Fire Station: Dannevirke (2767)
+Type: Volunteer
+Address: 32 Denmark Street, Dannevirke
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 374 4188
+Coordinates: lat=-40.2110675989999, lon=176.097717728
+
+Fire Station: Norsewood (2768)
+Type: Volunteer
+Address: Hovding Street, Norsewood
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 374 0885
+Coordinates: lat=-40.077095495, lon=176.216444446
+
+Fire Station: Ormondville (2769)
+Type: Volunteer
+Address: 605 Norsewood Ormondville Road, Ormondville
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 374 1850
+Coordinates: lat=-40.109114366, lon=176.26531284
+
+Fire Station: Te Uri (2770)
+Type: Rural
+Address: 11 Mangapuaka Road, Te Uri
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 374 1851
+Coordinates: lat=-40.237563082, lon=176.337769615
+
+Fire Station: Omakere (2771)
+Type: Rural
+Address: 48 Long Range Road, Omakere
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 857 3530
+Coordinates: lat=-40.051682483, lon=176.754129953
+
+Fire Station: Herbertville (2773)
+Type: Rural
+Address: 32 Seaview Road, Herbertville
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 374 3456
+Coordinates: lat=-40.491802117, lon=176.557211343
+
+Fire Station: Flemington (2774)
+Type: Rural
+Address: 10 Rotohiwi Road, Flemington
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 855 4741
+Coordinates: lat=-40.1506947, lon=176.44440874
+
+Fire Station: Weber (2776)
+Type: Rural
+Address: 1 Gordon Road, Weber
+Territorial Authority: Tararua District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 06 374 3863
+Coordinates: lat=-40.4009338509999, lon=176.311145311
+
+Fire Station: Wallingford (2777)
+Type: Rural
+Address: 22 Bush Road, Wallingford
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-40.191222996, lon=176.590895905
+
+Fire Station: Koromiko (2778)
+Type: Rural
+Address: 19 Station Road, Koromiko
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.3515353779999, lon=173.953475114
+
+Fire Station: Elsthorpe (2779)
+Type: Rural
+Address: 7 Kenderdine Road, Elsthorpe
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.916229871, lon=176.814750676
+
+Fire Station: Aramoana (2781)
+Type: Rural
+Address: 70 Shoal Beach Road, Aramoana
+Territorial Authority: Central Hawke's Bay District
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-40.149848634, lon=176.843595964
+
+Fire Station: Hawkes Bay Back Country (2782)
+Type: Rural
+Address: 201 Turfrey Road, Bay View
+Territorial Authority: Napier City
+FENZ District: Hawke's Bay, Region: Te Upoko
+Phone: 
+Coordinates: lat=-39.456894582, lon=176.857998553
+
+Fire Station: Chatham Islands (2788)
+Type: Volunteer
+Address: 117 Waitangi Wharf Owenga Road, Chatham Island
+Territorial Authority: Chatham Islands Territory
+FENZ District: Wellington, Region: Te Upoko
+Phone: 03 305 0064
+Coordinates: lat=-43.953552735, lon=-176.556124902
+
+Fire Station: Tokomaru (2827)
+Type: Volunteer
+Address: 1 Tokomaru Road, Tokomaru
+Territorial Authority: Horowhenua District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 329 8830
+Coordinates: lat=-40.4747798189999, lon=175.509431944
+
+Fire Station: Levin (2834)
+Type: Composite
+Address: 32 Queen Street West, Levin
+Territorial Authority: Horowhenua District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 367 5800
+Coordinates: lat=-40.620692525, lon=175.284688274
+
+Fire Station: Waitarere Beach (2835)
+Type: Volunteer
+Address: 3 Forest Road, Waitarere Beach
+Territorial Authority: Horowhenua District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 368 0775
+Coordinates: lat=-40.5524914699999, lon=175.20589641
+
+Fire Station: Paekakariki (2836)
+Type: Volunteer
+Address: 31 Tilley Road, Paekakariki
+Territorial Authority: Kapiti Coast District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 292 8001
+Coordinates: lat=-40.9854863469999, lon=174.954764517
+
+Fire Station: Paraparaumu (2837)
+Type: Composite
+Address: 22 Te Roto Drive, Paraparaumu
+Territorial Authority: Kapiti Coast District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 296 1162
+Coordinates: lat=-40.9059010569999, lon=174.999109042
+
+Fire Station: Waikanae (2838)
+Type: Volunteer
+Address: 353 Te Moana Road, Waikanae
+Territorial Authority: Kapiti Coast District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 293 6445
+Coordinates: lat=-40.877984156, lon=175.047393323
+
+Fire Station: Shannon (2839)
+Type: Volunteer
+Address: 57 Vogel Street, Shannon
+Territorial Authority: Horowhenua District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 362 7433
+Coordinates: lat=-40.548086247, lon=175.416749768
+
+Fire Station: Otaki (2841)
+Type: Volunteer
+Address: 96 Mill Road, Otaki
+Territorial Authority: Kapiti Coast District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 364 7080
+Coordinates: lat=-40.753282897, lon=175.141892877
+
+Fire Station: Foxton Beach (2842)
+Type: Volunteer
+Address: Dawick Street, Foxton Beach
+Territorial Authority: Horowhenua District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 363 8587
+Coordinates: lat=-40.4660817179999, lon=175.230463247
+
+Fire Station: Te Horo (2846)
+Type: Rural
+Address: 58 School Road, Te Horo
+Territorial Authority: Kapiti Coast District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 364 3205
+Coordinates: lat=-40.8067288779999, lon=175.123819392
+
+Fire Station: Foxton (2847)
+Type: Volunteer
+Address: 7 Whyte Street, Foxton
+Territorial Authority: Horowhenua District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 363 7171
+Coordinates: lat=-40.472610983, lon=175.283062733
+
+Fire Station: Ngawi (2851)
+Type: Rural
+Address: 3109 Cape Palliser Road, Cape Palliser
+Territorial Authority: South Wairarapa District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 307 7770
+Coordinates: lat=-41.589039881, lon=175.234114639
+
+Fire Station: Lake Ferry (2852)
+Type: Rural
+Address: 34 Lake Ferry Road, Lake Ferry
+Territorial Authority: South Wairarapa District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 
+Coordinates: lat=-41.390437275, lon=175.146101455
+
+Fire Station: Mauriceville (2853)
+Type: Rural
+Address: 1343 Opaki Kaiparoro Road, Mauriceville
+Territorial Authority: Masterton District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 372 5939
+Coordinates: lat=-40.778251961, lon=175.700074282
+
+Fire Station: Wainuioru (2854)
+Type: Rural
+Address: 6A Westmere Road, Wainuioru
+Territorial Authority: Masterton District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 063722862
+Coordinates: lat=-41.036703581, lon=175.80907789
+
+Fire Station: Castlepoint (2855)
+Type: Rural
+Address: Jetty Road, Castlepoint
+Territorial Authority: Masterton District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 372 6784
+Coordinates: lat=-40.8987266569999, lon=176.220960955
+
+Fire Station: Tinui (2856)
+Type: Rural
+Address: 11 Blackhill Road, Tinui
+Territorial Authority: Masterton District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 372 6881
+Coordinates: lat=-40.878355002, lon=176.071172371
+
+Fire Station: Tora (2858)
+Type: Rural
+Address: 3159 White Rock Road, White Rock
+Territorial Authority: South Wairarapa District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 
+Coordinates: lat=-41.4270859009999, lon=175.471415539
+
+Fire Station: Riversdale Beach (2859)
+Type: Rural
+Address: 10 Pinedale Crescent, Riversdale Beach
+Territorial Authority: Masterton District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 372 3325
+Coordinates: lat=-41.087574686, lon=176.07123115
+
+Fire Station: Carterton (2862)
+Type: Volunteer
+Address: 61 High Street South, Carterton
+Territorial Authority: Carterton District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 379 8300
+Coordinates: lat=-41.026060914, lon=175.526804161
+
+Fire Station: Featherston (2863)
+Type: Volunteer
+Address: 46 Fox Street, Featherston
+Territorial Authority: South Wairarapa District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 308 9550
+Coordinates: lat=-41.1166779019999, lon=175.325985583
+
+Fire Station: Greytown (2864)
+Type: Volunteer
+Address: 54 Main Street, Greytown
+Territorial Authority: South Wairarapa District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 304 9401
+Coordinates: lat=-41.0777446549999, lon=175.46296813
+
+Fire Station: Martinborough (2865)
+Type: Volunteer
+Address: 9-13 Texas Street, Martinborough
+Territorial Authority: South Wairarapa District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 306 9601
+Coordinates: lat=-41.218469786, lon=175.460794196
+
+Fire Station: Wellington North (2892)
+Type: Rural
+Address: Davies Street, Tawa
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 
+Coordinates: lat=-41.16601958, lon=174.828736912
+
+Fire Station: Remutaka VFB (2894)
+Type: Rural
+Address: 35-37 Park Street, Kingsley Heights
+Territorial Authority: Upper Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 
+Coordinates: lat=-41.123465766, lon=175.078632353
+
+Fire Station: Wainuiomata Bush (2895)
+Type: Rural
+Address: 13 The Strand, Wainuiomata
+Territorial Authority: Lower Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: Depot: 04 5646310
+Coordinates: lat=-41.2580149189999, lon=174.944937175
+
+Fire Station: Horowhenua (2897)
+Type: Rural
+Address: 32 Queen Street West, Levin
+Territorial Authority: Horowhenua District
+FENZ District: Manawatu-Whanganui, Region: Te Upoko
+Phone: 06 367 5800
+Coordinates: lat=-40.620799882, lon=175.284681922
+
+Fire Station: Wellington Airport (2919)
+Type: Industry
+Address: Station Drive, Rongotai
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 385 5163
+Coordinates: lat=-41.326445905, lon=174.808918486
+
+Fire Station: Wellington City (2921)
+Type: Paid
+Address: 2-38 Oriental Parade, Oriental Bay
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 801 2144
+Coordinates: lat=-41.293308386, lon=174.784820606
+
+Fire Station: Newtown (2922)
+Type: Paid
+Address: 318 Mansfield Street, Newtown
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 389 4159
+Coordinates: lat=-41.318197906, lon=174.780977436
+
+Fire Station: Thorndon (2923)
+Type: Paid
+Address: 97 Thorndon Quay, Pipitea
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 472 7531
+Coordinates: lat=-41.275294141, lon=174.782986716
+
+Fire Station: Kilbirnie (2924)
+Type: Composite
+Address: 161 Rongotai Road, Kilbirnie
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 387 3078
+Coordinates: lat=-41.318190611, lon=174.803202265
+
+Fire Station: Brooklyn (2925)
+Type: Paid
+Address: 51 Cleveland Street, Brooklyn
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 384 6513
+Coordinates: lat=-41.305339966, lon=174.764386517
+
+Fire Station: Karori (2926)
+Type: Paid
+Address: 84 Karori Road, Karori
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 476 3640
+Coordinates: lat=-41.280629109, lon=174.750926256
+
+Fire Station: Johnsonville (2928)
+Type: Composite
+Address: 13-15 Burgess Road, Johnsonville
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 478 5007
+Coordinates: lat=-41.2216338269999, lon=174.808357542
+
+Fire Station: Newlands (2929)
+Type: Volunteer
+Address: 1/6 Hurring Place, Newlands
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 8064078
+Coordinates: lat=-41.2323822449999, lon=174.812801021
+
+Fire Station: Porirua (2931)
+Type: Composite
+Address: 10 Mungavin Avenue, Ranui
+Territorial Authority: Porirua City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 237 9903
+Coordinates: lat=-41.138437186, lon=174.847178057
+
+Fire Station: Tawa (2933)
+Type: Volunteer
+Address: 16 Lyndhurst Road, Tawa
+Territorial Authority: Wellington City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 232 7228
+Coordinates: lat=-41.1711463899999, lon=174.822382195
+
+Fire Station: Titahi Bay (2934)
+Type: Volunteer
+Address: 5 Te Pene Avenue, Titahi Bay
+Territorial Authority: Porirua City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 236 8073
+Coordinates: lat=-41.1086057439999, lon=174.836554348
+
+Fire Station: Plimmerton (2935)
+Type: Volunteer
+Address: Sunset Parade, Plimmerton
+Territorial Authority: Porirua City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 233 8912
+Coordinates: lat=-41.0827297339999, lon=174.863079356
+
+Fire Station: Hutt City (2940)
+Type: Paid
+Address: 39 Marsden Street, Melling
+Territorial Authority: Lower Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 566 4505
+Coordinates: lat=-41.211750853, lon=174.896592662
+
+Fire Station: Avalon (2941)
+Type: Paid
+Address: 955 High Street, Avalon
+Territorial Authority: Lower Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 577 8380
+Coordinates: lat=-41.1927040699999, lon=174.945186923
+
+Fire Station: Seaview (2942)
+Type: Composite
+Address: 51 Parkside Road, Gracefield
+Territorial Authority: Lower Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 568 8657
+Coordinates: lat=-41.2369379899999, lon=174.91078997
+
+Fire Station: Stokes Valley (2943)
+Type: Volunteer
+Address: 374 Stokes Valley Road, Stokes Valley
+Territorial Authority: Lower Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 563 7467
+Coordinates: lat=-41.184033998, lon=174.982367787
+
+Fire Station: Wainuiomata (2944)
+Type: Volunteer
+Address: 34 Fitzherbert Road, Wainuiomata
+Territorial Authority: Lower Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 564 8340
+Coordinates: lat=-41.2570728119999, lon=174.947927946
+
+Fire Station: Eastbourne (2946)
+Type: Volunteer
+Address: 2 Makaro Street, Eastbourne
+Territorial Authority: Lower Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 562 7001
+Coordinates: lat=-41.291945695, lon=174.896764054
+
+Fire Station: Silverstream (2947)
+Type: Volunteer
+Address: 43 Kiln Street, Silverstream
+Territorial Authority: Upper Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 528 5220
+Coordinates: lat=-41.1488178449999, lon=175.00923853
+
+Fire Station: Trentham (2948)
+Type: Composite
+Address: 545 Fergusson Drive, Trentham
+Territorial Authority: Upper Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 528 2088
+Coordinates: lat=-41.1311723009999, lon=175.042728593
+
+Fire Station: Remutaka (2949)
+Type: Composite
+Address: 35 Park Street, Kingsley Heights
+Territorial Authority: Upper Hutt City
+FENZ District: Wellington, Region: Te Upoko
+Phone: 04 460 8678
+Coordinates: lat=-41.123598837, lon=175.078524344
+
+Fire Station: Masterton (2961)
+Type: Composite
+Address: 2 Chapel Street, Masterton
+Territorial Authority: Masterton District
+FENZ District: Wellington, Region: Te Upoko
+Phone: 06 370 9550
+Coordinates: lat=-40.9456751559999, lon=175.665321683
+
+Fire Station: Canvastown (3202)
+Type: Rural
+Address: 13A Wakamarina Road, Canvastown
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.2912645649999, lon=173.670480415
+
+Fire Station: Northbank (3205)
+Type: Rural
+Address: 1034 North Bank Road, Onamalutu
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.5081730319999, lon=173.699823242
+
+Fire Station: Awatere (3206)
+Type: Rural
+Address: 5 Richmond Street, Seddon
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.6725433359999, lon=174.07638261
+
+Fire Station: Blenheim VRFF (3209)
+Type: Rural
+Address: 4 Wither Road, Witherlea
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.5396538099999, lon=173.938093888
+
+Fire Station: Flaxbourne (3210)
+Type: Rural
+Address: 52 Duncan Street, Ward
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.827342904, lon=174.13833826
+
+Fire Station: RNZAF Base Woodbourne (3215)
+Type: Defence
+Address: Tancred Crescent, Woodbourne
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 577 1111 Emergency
+Coordinates: lat=-41.5144427129999, lon=173.867447177
+
+Fire Station: Nelson (3221)
+Type: Composite
+Address: 1 Gloucester Street, Nelson
+Territorial Authority: Nelson City
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 546 2100
+Coordinates: lat=-41.273696948, lon=173.276746355
+
+Fire Station: Stoke (3222)
+Type: Volunteer
+Address: 484 Main Road Stoke, Stoke
+Territorial Authority: Nelson City
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 547 6898
+Coordinates: lat=-41.3115362949999, lon=173.235099252
+
+Fire Station: Rai Valley (3223)
+Type: Volunteer
+Address: 6 Bryants Road, Rai Valley
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 571 6015
+Coordinates: lat=-41.2267454079999, lon=173.584140119
+
+Fire Station: Blenheim (3224)
+Type: Volunteer
+Address: 4 Symons Street, Blenheim
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 579 5799
+Coordinates: lat=-41.5128331729999, lon=173.959143458
+
+Fire Station: Wairau Valley (3225)
+Type: Volunteer
+Address: SH 63, Wairau Valley
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 572 2889
+Coordinates: lat=-41.5610858979999, lon=173.540508494
+
+Fire Station: Renwick (3226)
+Type: Volunteer
+Address: 10 Uxbridge Street, Renwick
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 572 8019
+Coordinates: lat=-41.506330428, lon=173.826296908
+
+Fire Station: Havelock (3227)
+Type: Volunteer
+Address: 12 Inglis Street, Havelock
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 574 2014
+Coordinates: lat=-41.279167027, lon=173.76619172
+
+Fire Station: Seddon (3229)
+Type: Volunteer
+Address: 5 Richmond Street, Seddon
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 575 7119
+Coordinates: lat=-41.672439826, lon=174.076241
+
+Fire Station: Picton (3230)
+Type: Volunteer
+Address: 87 High Street, Picton
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 573 6185
+Coordinates: lat=-41.291807353, lon=174.006371993
+
+Fire Station: Mapua (3231)
+Type: Volunteer
+Address: 3 Iwa Street, Mapua
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 540 2501
+Coordinates: lat=-41.2556873899999, lon=173.100336707
+
+Fire Station: Upper Moutere (3232)
+Type: Volunteer
+Address: 1443 Moutere Highway, Upper Moutere
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 543 2751
+Coordinates: lat=-41.264343137, lon=173.00624596
+
+Fire Station: Richmond (3233)
+Type: Volunteer
+Address: 70 Oxford Street, Richmond
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 544 8998
+Coordinates: lat=-41.3380915399999, lon=173.181706708
+
+Fire Station: Wakefield (3234)
+Type: Volunteer
+Address: 3 Pigeon Valley Road, Wakefield
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 541 8110
+Coordinates: lat=-41.40528104, lon=173.041608089
+
+Fire Station: Tapawera (3235)
+Type: Volunteer
+Address: 105 Main Road Tapawera, Tapawera
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 522 4373
+Coordinates: lat=-41.387943241, lon=172.822790631
+
+Fire Station: Motueka (3236)
+Type: Volunteer
+Address: 83 High Street, Motueka
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 528 7400
+Coordinates: lat=-41.108612125, lon=173.011598032
+
+Fire Station: Kaiteriteri (3237)
+Type: Volunteer
+Address: Inlet Road, Kaiteriteri
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 527 8072
+Coordinates: lat=-41.037043201, lon=173.015562836
+
+Fire Station: Murchison (3238)
+Type: Volunteer
+Address: 124 Fairfax Street, Murchison
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 523 9253
+Coordinates: lat=-41.805346781, lon=172.325072481
+
+Fire Station: Takaka (3239)
+Type: Volunteer
+Address: 6 Motupipi Street, Takaka
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 525 9505
+Coordinates: lat=-40.8606318079999, lon=172.806907571
+
+Fire Station: Collingwood (3240)
+Type: Volunteer
+Address: Elizabeth Street, Collingwood
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 524 8008
+Coordinates: lat=-40.676972527, lon=172.682918552
+
+Fire Station: Sounds (3241)
+Type: Rural
+Address: 63 Te Mahia Road, Te Mahia
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.216576624, lon=173.971809226
+
+Fire Station: Duncan Bay (3244)
+Type: Rural
+Address: 29 Rata Street, Duncan Bay
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 0274369485
+Coordinates: lat=-41.1198057289999, lon=173.76386823
+
+Fire Station: Okiwi Bay (3246)
+Type: Rural
+Address: 1 Karepa Crescent, Okiwi Bay
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 576 5171
+Coordinates: lat=-41.111938935, lon=173.658531214
+
+Fire Station: Tasman (3247)
+Type: Rural
+Address: 124 Queen Victoria Street, Motueka
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.123032149, lon=172.994674807
+
+Fire Station: Appleby (3248)
+Type: Rural
+Address: 2 Redwood Road, Redwood Valley
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 541 0429
+Coordinates: lat=-41.314108037, lon=173.104909997
+
+Fire Station: Waihopai (3249)
+Type: Rural
+Address: 139 Shandon Road, Waihopai Valley
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.5693380829999, lon=173.7371379
+
+Fire Station: Brightwater (3250)
+Type: Rural
+Address: 3 Spencer Place, Brightwater
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.377292927, lon=173.112804774
+
+Fire Station: Lake Rotoiti (3251)
+Type: Rural
+Address: 49 Main Road St Arnaud, St Arnaud
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 521 1893
+Coordinates: lat=-41.801352887, lon=172.848550777
+
+Fire Station: Wainui Bay (3252)
+Type: Rural
+Address: McShane Road, Wainui Bay
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-40.829151187, lon=172.94538793
+
+Fire Station: Ngatimoti (3253)
+Type: Rural
+Address: 1425 Motueka Valley Highway, Ngatimoti
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 5268214
+Coordinates: lat=-41.2016923049999, lon=172.874276602
+
+Fire Station: Upper Takaka (3254)
+Type: Rural
+Address: 50 Takaka Valley Highway, Upper Takaka
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 0274 471 5400
+Coordinates: lat=-41.029002694, lon=172.822948816
+
+Fire Station: Hira (3255)
+Type: Rural
+Address: 773 Hira Road, Hira
+Territorial Authority: Nelson City
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 544 2441
+Coordinates: lat=-41.2134519649999, lon=173.397651896
+
+Fire Station: Rarangi (3257)
+Type: Rural
+Address: 252 Rarangi Beach Road, Rarangi
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 570 5290
+Coordinates: lat=-41.4003665019999, lon=174.042838465
+
+Fire Station: Linkwater (3258)
+Type: Rural
+Address: 1357 Queen Charlotte Drive, Linkwater
+Territorial Authority: Marlborough District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.289593006, lon=173.879109101
+
+Fire Station: Marahau (3259)
+Type: Rural
+Address: 269 Sandy Bay-Marahau Road, Marahau
+Territorial Authority: Tasman District
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: 03 527 8363
+Coordinates: lat=-41.0029102619999, lon=173.00656405
+
+Fire Station: Greymouth (3261)
+Type: Volunteer
+Address: 12 High Street, Greymouth
+Territorial Authority: Grey District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 768 5066
+Coordinates: lat=-42.457962251, lon=171.204651827
+
+Fire Station: Cobden (3262)
+Type: Volunteer
+Address: 1 Newcastle Street, Cobden
+Territorial Authority: Grey District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 768 4080
+Coordinates: lat=-42.440347646, lon=171.212222214
+
+Fire Station: Brunner (3263)
+Type: Volunteer
+Address: 4 Manawatu Street, Dobson
+Territorial Authority: Grey District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 762 5507
+Coordinates: lat=-42.451991049, lon=171.308011803
+
+Fire Station: Moana (3264)
+Type: Volunteer
+Address: 1 Kehu Street, Moana
+Territorial Authority: Grey District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 738 0042
+Coordinates: lat=-42.576089451, lon=171.480051488
+
+Fire Station: Kumara (3265)
+Type: Volunteer
+Address: 62 Seddon Street, Kumara
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 736 9750
+Coordinates: lat=-42.630446842, lon=171.185621543
+
+Fire Station: Ngahere (3266)
+Type: Volunteer
+Address: 2368 SH 7, Ngahere
+Territorial Authority: Grey District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 732 4833
+Coordinates: lat=-42.3945924339999, lon=171.442488
+
+Fire Station: Blackball (3267)
+Type: Volunteer
+Address: 9 Hilton Street, Blackball
+Territorial Authority: Grey District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 732 4832
+Coordinates: lat=-42.363672416, lon=171.412195836
+
+Fire Station: Reefton (3268)
+Type: Volunteer
+Address: Church Street, Reefton
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 732 8506
+Coordinates: lat=-42.1182906129999, lon=171.864852419
+
+Fire Station: Ikamatua (3269)
+Type: Volunteer
+Address: Ikamatua Highway, Ikamatua
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 732 3890
+Coordinates: lat=-42.2713901069999, lon=171.684673828
+
+Fire Station: Runanga (3270)
+Type: Volunteer
+Address: 1 Mcgowan Street, Runanga
+Territorial Authority: Grey District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 762 7700
+Coordinates: lat=-42.402500505, lon=171.25105096
+
+Fire Station: Nelson Airport (3271)
+Type: Industry
+Address: Rapide Place, Nelson Airport
+Territorial Authority: Nelson City
+FENZ District: Nelson Marlborough, Region: Te Ihu
+Phone: null
+Coordinates: lat=-41.2981698, lon=173.226448388
+
+Fire Station: Inangahua (3294)
+Type: Rural
+Address: 38 Upper Buller Gorge Road, Inangahua
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.857109274, lon=171.952511296
+
+Fire Station: Hokitika (3371)
+Type: Volunteer
+Address: 200 Stafford Street, Hokitika
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 755 8899
+Coordinates: lat=-42.721461889, lon=170.974963917
+
+Fire Station: Fox Glacier (3372)
+Type: Volunteer
+Address: 23 Cook Flat Road, Fox Glacier
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 751 0802
+Coordinates: lat=-43.464214451, lon=170.014743925
+
+Fire Station: Franz Josef (3374)
+Type: Volunteer
+Address: 2 Main Road, Franz Josef Glacier
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 752 0724
+Coordinates: lat=-43.390322302, lon=170.182243546
+
+Fire Station: Harihari (3375)
+Type: Volunteer
+Address: 116 Main Road, Harihari
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 753 3105
+Coordinates: lat=-43.14880542, lon=170.556096432
+
+Fire Station: Whataroa (3376)
+Type: Volunteer
+Address: Whataroa Flat Road, Whataroa
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 753 4148
+Coordinates: lat=-43.2611197049999, lon=170.358977867
+
+Fire Station: Ross (3377)
+Type: Volunteer
+Address: 19 Moorhouse Street, Ross
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 755 4110
+Coordinates: lat=-42.898241592, lon=170.815730042
+
+Fire Station: Westport (3378)
+Type: Volunteer
+Address: 99 Palmerston Street, Westport
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 789 7108
+Coordinates: lat=-41.75235573, lon=171.598377898
+
+Fire Station: Granity (3379)
+Type: Volunteer
+Address: 108 Torea Street, Granity
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 782 8112
+Coordinates: lat=-41.626934246, lon=171.855664137
+
+Fire Station: Karamea (3380)
+Type: Volunteer
+Address: Waverley Street, Karamea
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 782 6701
+Coordinates: lat=-41.249361361, lon=172.121701762
+
+Fire Station: Little Wanganui (3381)
+Type: Volunteer
+Address: Karamea Highway, Little Wanganui
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 782 6739
+Coordinates: lat=-41.376704005, lon=172.076037151
+
+Fire Station: Waimangaroa (3382)
+Type: Volunteer
+Address: 62 McGill Street, Waimangaroa
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 789 9714
+Coordinates: lat=-41.713571456, lon=171.764115022
+
+Fire Station: Haast (3383)
+Type: Rural
+Address: 9 Pauareka Road, Haast
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.880621264, lon=169.040835038
+
+Fire Station: Hannahs Clearing (3385)
+Type: Rural
+Address: 5 Muturimu Road, Jackson Bay
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.940634292, lon=168.859511421
+
+Fire Station: Kokatahi And Kowhitirangi (3391)
+Type: Rural
+Address: 1 Ford Road North, Kokatahi
+Territorial Authority: Westland District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 755 6384
+Coordinates: lat=-42.838711159, lon=171.045756923
+
+Fire Station: Charleston (3392)
+Type: Rural
+Address: SH 6, Charleston
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 
+Coordinates: lat=-41.9065697849999, lon=171.438948019
+
+Fire Station: Seddonville (3393)
+Type: Rural
+Address: 100 Gladstone Street, Seddonville
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 03 782 18 22
+Coordinates: lat=-41.555306571, lon=171.990917509
+
+Fire Station: Christchurch Airport (3405)
+Type: Industry
+Address: 151 Grays Road, Christchurch Airport
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 353 7700
+Coordinates: lat=-43.4928522609999, lon=172.532590373
+
+Fire Station: Canterbury High Country (3419)
+Type: Rural
+Address: 248 Lichfield Street, Christchurch Central
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.534552971, lon=172.648445808
+
+Fire Station: Christchurch City (3421)
+Type: Paid
+Address: 200 Kilmore Street, Christchurch Central
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 377 6451
+Coordinates: lat=-43.526773775, lon=172.644235636
+
+Fire Station: Spreydon (3422)
+Type: Paid
+Address: 77 Simeon Street, Spreydon
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 332 1764
+Coordinates: lat=-43.553525747, lon=172.619772897
+
+Fire Station: Redwood (3423)
+Type: Paid
+Address: 163 Styx Mill Road, Casebrook
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 372 8644
+Coordinates: lat=-43.467748699, lon=172.604212992
+
+Fire Station: Woolston (3424)
+Type: Paid
+Address: 925 Ferry Road, Woolston
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 372 8664 
+Coordinates: lat=-43.555848533, lon=172.695747814
+
+Fire Station: Wigram (3425)
+Type: Paid
+Address: 60 Wilmers Road, Hornby
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 372 8670 
+Coordinates: lat=-43.5602028289999, lon=172.531327619
+
+Fire Station: Ilam (3426)
+Type: Paid
+Address: 79 Creyke Road, Ilam
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 367 9620
+Coordinates: lat=-43.520213574, lon=172.582355706
+
+Fire Station: Anzac (3427)
+Type: Composite
+Address: 137 Anzac Drive, Aranui
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 372 8667
+Coordinates: lat=-43.5050226, lon=172.706309203
+
+Fire Station: Sumner (3428)
+Type: Volunteer
+Address: 39 Wakefield Avenue, Sumner
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 367 9625
+Coordinates: lat=-43.571127691, lon=172.758967917
+
+Fire Station: Lyttelton (3429)
+Type: Volunteer
+Address: 59 London Street, Lyttelton
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 328 8783
+Coordinates: lat=-43.602327267, lon=172.719799502
+
+Fire Station: Diamond Harbour (3430)
+Type: Volunteer
+Address: 89 Marine Drive, Diamond Harbour
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 329 4899
+Coordinates: lat=-43.628150045, lon=172.730540187
+
+Fire Station: Spencerville (3431)
+Type: Volunteer
+Address: 361 Lower Styx Road, Spencerville
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 367 9607
+Coordinates: lat=-43.4302572559999, lon=172.693908661
+
+Fire Station: Governors Bay (3433)
+Type: Volunteer
+Address: 1 Ernest Adams Drive, Governors Bay
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 329 9777
+Coordinates: lat=-43.626930215, lon=172.64632461
+
+Fire Station: Banks Peninsula (3437)
+Type: Rural
+Address: 525 Le Bons Bay Road, Le Bons Bay
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 941 8999
+Coordinates: lat=-43.7621456909999, lon=173.060677271
+
+Fire Station: Sefton (3439)
+Type: Rural
+Address: 14C Newnham Street, Rangiora
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 027 432 8034
+Coordinates: lat=-43.3162687019999, lon=172.598959634
+
+Fire Station: Kaiapoi (3440)
+Type: Volunteer
+Address: 51B Hilton Street, Kaiapoi
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 327 7399
+Coordinates: lat=-43.382927933, lon=172.654903049
+
+Fire Station: Lincoln (3441)
+Type: Volunteer
+Address: 1 James Street, Lincoln
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 325 2801
+Coordinates: lat=-43.639459614, lon=172.486283983
+
+Fire Station: Rolleston (3442)
+Type: Volunteer
+Address: 4 Chaucer Street, Rolleston
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 347 8398
+Coordinates: lat=-43.592289276, lon=172.376823395
+
+Fire Station: Leeston (3443)
+Type: Volunteer
+Address: 33 Station Street, Leeston
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 324 3430
+Coordinates: lat=-43.762724588, lon=172.299840934
+
+Fire Station: Dunsandel (3444)
+Type: Volunteer
+Address: 10 Browns Road, Dunsandel
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 325 4165
+Coordinates: lat=-43.659390796, lon=172.192143302
+
+Fire Station: Southbridge (3445)
+Type: Volunteer
+Address: 2 Hastings Street, Southbridge
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 324 2866
+Coordinates: lat=-43.80992687, lon=172.250968273
+
+Fire Station: Akaroa (3446)
+Type: Volunteer
+Address: 49 Beach Road, Akaroa
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 304 7201
+Coordinates: lat=-43.808604475, lon=172.964656771
+
+Fire Station: Little River (3447)
+Type: Volunteer
+Address: 44 Western Valley Road, Little River
+Territorial Authority: Christchurch City
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 325 1102
+Coordinates: lat=-43.763917567, lon=172.794762352
+
+Fire Station: Amberley (3448)
+Type: Volunteer
+Address: 21 Markham Street, Amberley
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 314 8600
+Coordinates: lat=-43.153220748, lon=172.726418794
+
+Fire Station: Hawarden (3449)
+Type: Volunteer
+Address: 7 High Street, Hawarden
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 314 4109
+Coordinates: lat=-42.9233233049999, lon=172.64269352
+
+Fire Station: Waikari (3460)
+Type: Volunteer
+Address: 87 Princes Street, Waikari
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 314 4200
+Coordinates: lat=-42.967475051, lon=172.686859789
+
+Fire Station: Waipara (3461)
+Type: Volunteer
+Address: 94 Glenmark Drive, Waipara
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 314 6704
+Coordinates: lat=-43.057319687, lon=172.757913847
+
+Fire Station: Ashburton (3462)
+Type: Volunteer
+Address: 332 Burnett Street, Ashburton
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 308 4199
+Coordinates: lat=-43.907010338, lon=171.750464324
+
+Fire Station: Methven (3463)
+Type: Volunteer
+Address: 12 Mckerrow Street, Methven
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 302 8501
+Coordinates: lat=-43.631361442, lon=171.64594426
+
+Fire Station: Rakaia (3464)
+Type: Volunteer
+Address: 28 Elizabeth Avenue, Rakaia
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 302 7013
+Coordinates: lat=-43.754775926, lon=172.019520695
+
+Fire Station: Cheviot (3465)
+Type: Volunteer
+Address: 6 McQueen Road, Cheviot
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 319 8731
+Coordinates: lat=-42.813461945, lon=173.275051831
+
+Fire Station: Culverden (3466)
+Type: Volunteer
+Address: 12 Mountainview Road, Culverden
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 315 8197
+Coordinates: lat=-42.7760842819999, lon=172.847366082
+
+Fire Station: Alford Forest (3486)
+Type: Rural
+Address: 4941 Arundel Rakaia Gorge Road, Alford Forest
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.612013826, lon=171.503038307
+
+Fire Station: Upper Rakaia (3487)
+Type: Rural
+Address: 2625 Double Hill Run Road, Double Hill
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.3160522269999, lon=171.377023824
+
+Fire Station: Lauriston (3488)
+Type: Rural
+Address: 19 Lauriston Barrhill Road, Lauriston
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.731981877, lon=171.779602291
+
+Fire Station: Pendarves (3489)
+Type: Rural
+Address: 1032 Chertsey Kyle Road, Pendarves
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.887039476, lon=171.982296162
+
+Fire Station: Ashburton VRFF (3490)
+Type: Rural
+Address: 332 Burnett Street, Ashburton
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.9070643009999, lon=171.750521209
+
+Fire Station: Burnham Camp (3491)
+Type: Defence
+Address: Queens Drive, Burnham
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 363 0067
+Coordinates: lat=-43.614803845, lon=172.304522101
+
+Fire Station: Scargill (3492)
+Type: Rural
+Address: 4 Valley Road, Greta Valley
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 314 3453
+Coordinates: lat=-42.964712473, lon=172.967857748
+
+Fire Station: Hinds (3493)
+Type: Rural
+Address: 15 Isleworth Road, Hinds
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.003960154, lon=171.571491075
+
+Fire Station: Mayfield (3494)
+Type: Rural
+Address: 1971 Arundel Rakaia Gorge Road, Mayfield
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 303 6552
+Coordinates: lat=-43.821563743, lon=171.419267565
+
+Fire Station: West Melton (3495)
+Type: Rural
+Address: 729 Weedons Ross Road, West Melton
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 347 8411
+Coordinates: lat=-43.5232954529999, lon=172.369191041
+
+Fire Station: Mount Somers (3496)
+Type: Rural
+Address: Pattons Road, Mount Somers
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.7057820649999, lon=171.402893553
+
+Fire Station: Motunau (3497)
+Type: Rural
+Address: Lindsay Terrace, Motunau
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 314 3523
+Coordinates: lat=-43.048078538, lon=173.075304645
+
+Fire Station: Willowby (3499)
+Type: Rural
+Address: 471 Longbeach Road, Willowby
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.9811189989999, lon=171.683066453
+
+Fire Station: Lake Clearwater (3501)
+Type: Rural
+Address: 106A Two Thumbs Street, Ashburton Lakes
+Territorial Authority: Ashburton District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.610469639, lon=171.045068412
+
+Fire Station: Goose Bay (3506)
+Type: Rural
+Address: 15 Makura Road, Goose Bay
+Territorial Authority: Kaikoura District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-42.477743237, lon=173.525948723
+
+Fire Station: Conway Flat (3508)
+Type: Rural
+Address: 219 Claverley Road, Hundalee
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 319 2740
+Coordinates: lat=-42.6080213189999, lon=173.439737588
+
+Fire Station: Hurunui (3509)
+Type: Rural
+Address: 75 Princes Street, Waikari
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 021 310 644
+Coordinates: lat=-42.967929838, lon=172.690378968
+
+Fire Station: Lyford (3510)
+Type: Rural
+Address: 1953 Inland Road, Lyford
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-42.516297531, lon=173.135260301
+
+Fire Station: Hanmer VRFF (3513)
+Type: Rural
+Address: 205 Jacks Pass Road, Hanmer Springs
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-42.5133382289999, lon=172.812393211
+
+Fire Station: Swannanoa (3517)
+Type: Rural
+Address: 1160A Tram Road, Swannanoa
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.3728074439999, lon=172.513863383
+
+Fire Station: Waikuku Beach (3518)
+Type: Rural
+Address: Domain Terrace, Waikuku Beach
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 312 2336
+Coordinates: lat=-43.2871990209999, lon=172.717946706
+
+Fire Station: Pines Beach (3519)
+Type: Rural
+Address: 31B Dunns Avenue, The Pines Beach
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.3773133449999, lon=172.700944939
+
+Fire Station: Cave (3550)
+Type: Rural
+Address: Elizabeth Street, Cave
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.3104105039999, lon=170.949689605
+
+Fire Station: Rangitata (3551)
+Type: Rural
+Address: 1060 Orari-rangitata Highway, Rangitata
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.066386899, lon=171.37237218
+
+Fire Station: Peel Forest (3552)
+Type: Rural
+Address: 1166 Peel Forest Road, Peel Forest
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.913604232, lon=171.261704358
+
+Fire Station: Clandeboye (3553)
+Type: Rural
+Address: 1068 Milford Clandeboye Road, Clandeboye
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.211166329, lon=171.379185455
+
+Fire Station: Aorangi (3554)
+Type: Rural
+Address: 23 Latter Street, Timaru
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 684 1200
+Coordinates: lat=-44.398632286, lon=171.252789206
+
+Fire Station: Rangitata Gorge (3555)
+Type: Rural
+Address: 3623 Rangitata Gorge Road, Peel Forest
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.699697283, lon=171.012660991
+
+Fire Station: Hakataramea (3556)
+Type: Rural
+Address: 3321 Hakataramea Valley Road, Cattle Creek
+Territorial Authority: Waimate District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.5104098199999, lon=170.674563952
+
+Fire Station: Waihaorunga (3557)
+Type: Rural
+Address: Pentland Hills Road, Waihaorunga
+Territorial Authority: Waimate District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.7312479349999, lon=170.825123982
+
+Fire Station: Cannington (3558)
+Type: Rural
+Address: 697 Pareora Gorge Road, Maungati
+Territorial Authority: Waimate District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.379425496, lon=170.979905715
+
+Fire Station: Twizel VRFF (3561)
+Type: Rural
+Address: 17 MacKenzie Drive, Twizel
+Territorial Authority: Mackenzie District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.2602059979999, lon=170.097756411
+
+Fire Station: Hanmer Springs (3567)
+Type: Volunteer
+Address: 39B Amuri Avenue, Hanmer Springs
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 315 7013
+Coordinates: lat=-42.523064883, lon=172.830485553
+
+Fire Station: Waiau (3568)
+Type: Volunteer
+Address: 18 Cheviot Street, Waiau
+Territorial Authority: Hurunui District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 315 6195
+Coordinates: lat=-42.6542249729999, lon=173.041174891
+
+Fire Station: Darfield (3569)
+Type: Volunteer
+Address: 21 North Terrace, Darfield
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 318 8005   
+Coordinates: lat=-43.4888691579999, lon=172.113944312
+
+Fire Station: Coalgate (3570)
+Type: Volunteer
+Address: 67 Bridge Street, Coalgate
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 318 2888
+Coordinates: lat=-43.48213663, lon=171.965580779
+
+Fire Station: Sheffield (3571)
+Type: Volunteer
+Address: Railway Terrace East, Sheffield
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 318 3888
+Coordinates: lat=-43.388055569, lon=172.019276013
+
+Fire Station: Kirwee (3572)
+Type: Volunteer
+Address: 11 Tramway Road, Kirwee
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 318 1888
+Coordinates: lat=-43.4989840879999, lon=172.212898339
+
+Fire Station: Hororata (3573)
+Type: Volunteer
+Address: 2540 Bealey Road, Hororata
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 318 0888
+Coordinates: lat=-43.5393103919999, lon=171.9605138
+
+Fire Station: Springfield (3574)
+Type: Volunteer
+Address: Tramway Road, Springfield
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 318 4888
+Coordinates: lat=-43.336747537, lon=171.92987426
+
+Fire Station: Kaikoura (3575)
+Type: Volunteer
+Address: 28-32 Churchill Street, Kaikoura
+Territorial Authority: Kaikoura District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 319 6008
+Coordinates: lat=-42.404533907, lon=173.679124506
+
+Fire Station: Rangiora (3576)
+Type: Volunteer
+Address: 134 Percival Street, Rangiora
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 313 6278
+Coordinates: lat=-43.305041961, lon=172.594045213
+
+Fire Station: Woodend (3577)
+Type: Volunteer
+Address: 4 Eders Road, Woodend
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 312 7794
+Coordinates: lat=-43.322354386, lon=172.666737773
+
+Fire Station: Cust (3578)
+Type: Volunteer
+Address: 1683 Cust Road, Cust
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 312 5898
+Coordinates: lat=-43.311386758, lon=172.379648905
+
+Fire Station: Oxford (3579)
+Type: Volunteer
+Address: 4 Burnett Street, Oxford
+Territorial Authority: Waimakariri District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 03 312 4005
+Coordinates: lat=-43.29696526, lon=172.194545842
+
+Fire Station: Timaru (3580)
+Type: Paid
+Address: 17 Latter Street, Timaru
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 684 1212
+Coordinates: lat=-44.399036929, lon=171.252993599
+
+Fire Station: Washdyke (3581)
+Type: Paid
+Address: 13 Bridge Road, Smithfield
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 684 4479
+Coordinates: lat=-44.370806564, lon=171.243956803
+
+Fire Station: Fairlie (3582)
+Type: Volunteer
+Address: Denmark Street, Fairlie
+Territorial Authority: Mackenzie District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 685 8409
+Coordinates: lat=-44.096765934, lon=170.828640831
+
+Fire Station: Lake Tekapo (3583)
+Type: Volunteer
+Address: Tekapo-Twizel Road, Lake Tekapo
+Territorial Authority: Mackenzie District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 680 6877
+Coordinates: lat=-44.006291728, lon=170.479175832
+
+Fire Station: Geraldine (3584)
+Type: Volunteer
+Address: 118 Talbot Street, Geraldine
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 693 8500
+Coordinates: lat=-44.097202635, lon=171.243879466
+
+Fire Station: Pleasant Point (3585)
+Type: Volunteer
+Address: 8 Halstead Road, Pleasant Point
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 614 7006
+Coordinates: lat=-44.25971981, lon=171.130579746
+
+Fire Station: Temuka (3586)
+Type: Volunteer
+Address: 13 Wood Street, Temuka
+Territorial Authority: Timaru District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 615 7131
+Coordinates: lat=-44.241836876, lon=171.278917353
+
+Fire Station: Saint Andrews (3587)
+Type: Volunteer
+Address: 6 Hall Street, Saint Andrews
+Territorial Authority: Waimate District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 612 6416
+Coordinates: lat=-44.528274457, lon=171.189140709
+
+Fire Station: Waimate (3588)
+Type: Volunteer
+Address: 43 John Street, Waimate
+Territorial Authority: Waimate District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 689 8888
+Coordinates: lat=-44.7374341359999, lon=171.044686659
+
+Fire Station: Glenavy (3589)
+Type: Volunteer
+Address: 3 Pyke Street, Glenavy
+Territorial Authority: Waimate District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 689 3828
+Coordinates: lat=-44.9149106149999, lon=171.101433564
+
+Fire Station: Twizel (3590)
+Type: Volunteer
+Address: 17 Mackenzie Drive, Twizel
+Territorial Authority: Mackenzie District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 435 0799
+Coordinates: lat=-44.2602689569999, lon=170.097749997
+
+Fire Station: Mount Cook (3591)
+Type: Volunteer
+Address: 104 Kitchener Drive, Aoraki Mount Cook National Park
+Territorial Authority: Mackenzie District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.740956051, lon=170.101736997
+
+Fire Station: Burkes Pass (3592)
+Type: Rural
+Address: 30 Rollesby Valley Road, Burkes Pass
+Territorial Authority: Mackenzie District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-44.0907895029999, lon=170.65597502
+
+Fire Station: Darfield South (3595)
+Type: Rural
+Address: 25 North Terrace, Darfield
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-43.4888175, lon=172.113448081
+
+Fire Station: Arthur's Pass (3596)
+Type: Rural
+Address: 109 West Coast Road, Arthur's Pass National Park
+Territorial Authority: Selwyn District
+FENZ District: Canterbury, Region: Te Ihu
+Phone: 
+Coordinates: lat=-42.93903934, lon=171.562101645
+
+Fire Station: Albury (3597)
+Type: Rural
+Address: Station Street, Albury
+Territorial Authority: Mackenzie District
+FENZ District: Mid-South Canterbury, Region: Te Ihu
+Phone: 03 685 5789
+Coordinates: lat=-44.2312335459999, lon=170.872038928
+
+Fire Station: Springs Junction (3598)
+Type: Rural
+Address: 12 SH 7, Springs Junction
+Territorial Authority: Buller District
+FENZ District: West Coast, Region: Te Ihu
+Phone: 
+Coordinates: lat=-42.334612963, lon=172.180290553
+
+Fire Station: Dunedin (3621)
+Type: Paid
+Address: 85 Castle Street, Dunedin Central
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 474 0709
+Coordinates: lat=-45.872784079, lon=170.50974434
+
+Fire Station: St Kilda (3622)
+Type: Paid
+Address: 18 Queens Drive, Saint Kilda
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 455 4321
+Coordinates: lat=-45.89870267, lon=170.509662318
+
+Fire Station: Lookout Point (3623)
+Type: Paid
+Address: 184 Mornington Road, Kenmure
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 487 7444
+Coordinates: lat=-45.896453107, lon=170.462532934
+
+Fire Station: Roslyn (3624)
+Type: Paid
+Address: 37 Nairn Street, Kaikorai
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 466 7795
+Coordinates: lat=-45.864208095, lon=170.486346788
+
+Fire Station: Willowbank (3625)
+Type: Paid
+Address: 6 Willowbank, North Dunedin
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 473 0618
+Coordinates: lat=-45.8553796049999, lon=170.5153434
+
+Fire Station: Waitati (3626)
+Type: Volunteer
+Address: 11 Harvey Street, Waitati
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 482 2668
+Coordinates: lat=-45.7473561099999, lon=170.57008948
+
+Fire Station: Port Chalmers (3627)
+Type: Volunteer
+Address: 18 Beach Street, Port Chalmers
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 472 8104
+Coordinates: lat=-45.814654817, lon=170.621844332
+
+Fire Station: Ravensbourne (3628)
+Type: Volunteer
+Address: 243 Ravensbourne Road, Ravensbourne
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 471 0013
+Coordinates: lat=-45.8660001279999, lon=170.555130447
+
+Fire Station: Portobello (3629)
+Type: Volunteer
+Address: 1 Hereweka Street, Portobello
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 478 0700
+Coordinates: lat=-45.8403174699999, lon=170.650969225
+
+Fire Station: Mosgiel (3631)
+Type: Composite
+Address: 16A Green Street, Mosgiel
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 489 7999
+Coordinates: lat=-45.8762248529999, lon=170.353158336
+
+Fire Station: Outram (3632)
+Type: Volunteer
+Address: 5 Bell Street, Outram
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 486 1671
+Coordinates: lat=-45.860755237, lon=170.23066801
+
+Fire Station: Brighton (3633)
+Type: Volunteer
+Address: 8 Cole Street, Brighton
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 481 1339
+Coordinates: lat=-45.949458858, lon=170.328373787
+
+Fire Station: Dunedin Airport (3634)
+Type: Industry
+Address: Airport Road, Momona
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 470 0412
+Coordinates: lat=-45.9248287029999, lon=170.198118661
+
+Fire Station: Middlemarch (3638)
+Type: Volunteer
+Address: 14 Bank Avenue, Middlemarch
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 464 3880
+Coordinates: lat=-45.50726237, lon=170.121761312
+
+Fire Station: Alexandra (3639)
+Type: Volunteer
+Address: 41 Centennial Avenue, Alexandra
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 448 8601
+Coordinates: lat=-45.2524890989999, lon=169.389847924
+
+Fire Station: Clyde (3641)
+Type: Volunteer
+Address: 44 Sunderland Street, Clyde
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 449 2813
+Coordinates: lat=-45.187247917, lon=169.317464626
+
+Fire Station: Cromwell (3642)
+Type: Volunteer
+Address: 96 Barry Avenue, Cromwell
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 445 1333
+Coordinates: lat=-45.0470877769999, lon=169.195421179
+
+Fire Station: Millers Flat (3643)
+Type: Volunteer
+Address: 28 Railway Terrace, Millers Flat
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 446 6827
+Coordinates: lat=-45.661458146, lon=169.413484954
+
+Fire Station: Omakau (3644)
+Type: Volunteer
+Address: 46 Leask Street, Omakau
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 447 3883
+Coordinates: lat=-45.09898462, lon=169.59788261
+
+Fire Station: Roxburgh (3645)
+Type: Volunteer
+Address: 114 Branxholm Street, Roxburgh
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 446 8400
+Coordinates: lat=-45.54131138, lon=169.313794981
+
+Fire Station: Balclutha (3646)
+Type: Volunteer
+Address: 24 Charlotte Street, Balclutha
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 418 0132
+Coordinates: lat=-46.236985384, lon=169.737968552
+
+Fire Station: Clutha Valley (3647)
+Type: Volunteer
+Address: 65 Allangrange Road, Greenfield
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 415 9021
+Coordinates: lat=-46.0964334459999, lon=169.54325806
+
+Fire Station: Kaka Point (3648)
+Type: Volunteer
+Address: 1 Moana Street, Kaka Point
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 412 8756
+Coordinates: lat=-46.3866038149999, lon=169.781920837
+
+Fire Station: Clinton (3649)
+Type: Volunteer
+Address: 8 Gorge Road, Clinton
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 415 7442
+Coordinates: lat=-46.2028159179999, lon=169.37326712
+
+Fire Station: Waiwera South (3651)
+Type: Volunteer
+Address: 17 Anderson Road, Waiwera South
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 415 7920
+Coordinates: lat=-46.216949961, lon=169.490952375
+
+Fire Station: Kaitangata (3652)
+Type: Volunteer
+Address: 15 Eddystone Street, Kaitangata
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 413 9754
+Coordinates: lat=-46.2867320939999, lon=169.845361855
+
+Fire Station: Milton (3653)
+Type: Volunteer
+Address: 10 Eden Street, Milton
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 417 8644
+Coordinates: lat=-46.120238598, lon=169.958283269
+
+Fire Station: Owaka (3654)
+Type: Volunteer
+Address: 15 Waikawa Road, Owaka
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 415 8242
+Coordinates: lat=-46.4515782989999, lon=169.658119878
+
+Fire Station: Kurow (3655)
+Type: Volunteer
+Address: 43 Bledisloe Street, Kurow
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 436 0600
+Coordinates: lat=-44.7335449079999, lon=170.469933008
+
+Fire Station: Waitaki (3662)
+Type: Rural
+Address: 185 Oamaru-Alma Road, Deborah
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-45.1084150249999, lon=170.922524593
+
+Fire Station: Blackstone (3664)
+Type: Rural
+Address: 13 Alton Street, Omakau
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-45.099032289, lon=169.595087418
+
+Fire Station: Teviot Valley (3666)
+Type: Rural
+Address: 28 Railway Terrace, Millers Flat
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-45.6618103009999, lon=169.413910851
+
+Fire Station: Dunstan (3667)
+Type: Rural
+Address: 45 Centennial Avenue, Alexandra
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-45.252228967, lon=169.389627847
+
+Fire Station: Waihola (3668)
+Type: Rural
+Address: 17 Greenwich Street, Waihola
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: (03) 417 8150
+Coordinates: lat=-46.0238253209999, lon=170.093877918
+
+Fire Station: East Otago (3670)
+Type: Rural
+Address: 7 Court Street, Waikouaiti
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-45.596739471, lon=170.671539788
+
+Fire Station: Omarama (3756)
+Type: Volunteer
+Address: 18 Chain Hills Highway, Omarama
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 438 9700
+Coordinates: lat=-44.4888165409999, lon=169.967360912
+
+Fire Station: Otematata (3757)
+Type: Volunteer
+Address: 2 Glendhu Crescent, Otematata
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 438 7870
+Coordinates: lat=-44.607412752, lon=170.19333864
+
+Fire Station: Lawrence (3758)
+Type: Volunteer
+Address: 4 Ross Place, Lawrence
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 485 9341
+Coordinates: lat=-45.912985781, lon=169.688529925
+
+Fire Station: Waitahuna (3759)
+Type: Volunteer
+Address: 13 Boyldon Street, Waitahuna
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 485 9244
+Coordinates: lat=-45.9851641229999, lon=169.757767047
+
+Fire Station: Queenstown Airport (3771)
+Type: Industry
+Address: Sir Henry Wigley Drive, Frankton
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 450 9058
+Coordinates: lat=-45.021219155, lon=168.738816981
+
+Fire Station: Oamaru (3772)
+Type: Volunteer
+Address: 240 Thames Street, Oamaru
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 434 8408
+Coordinates: lat=-45.091645292, lon=170.973493654
+
+Fire Station: Weston (3773)
+Type: Volunteer
+Address: 26 Main Street, Weston
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 434 8609
+Coordinates: lat=-45.0784724119999, lon=170.917432833
+
+Fire Station: Palmerston (3774)
+Type: Volunteer
+Address: 12 Sanday Street, Palmerston
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 465 1222
+Coordinates: lat=-45.485284635, lon=170.713412331
+
+Fire Station: Waikouaiti (3775)
+Type: Volunteer
+Address: 7 Court Street, Waikouaiti
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 03 465 7386
+Coordinates: lat=-45.596716643, lon=170.671627794
+
+Fire Station: Queenstown (3776)
+Type: Volunteer
+Address: 3 Isle Street, Queenstown
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 442 7666
+Coordinates: lat=-45.0296442599999, lon=168.658485959
+
+Fire Station: Frankton (3777)
+Type: Volunteer
+Address: 54 Douglas Street, Frankton
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 442 3072
+Coordinates: lat=-45.0254886339999, lon=168.736312021
+
+Fire Station: Arrowtown (3778)
+Type: Volunteer
+Address: 2 Hertford Street, Arrowtown
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 442 1740
+Coordinates: lat=-44.939639455, lon=168.832551861
+
+Fire Station: Ranfurly (3779)
+Type: Volunteer
+Address: 29 John Street, Ranfurly
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 444 9192
+Coordinates: lat=-45.128914513, lon=170.103144906
+
+Fire Station: Naseby (3781)
+Type: Volunteer
+Address: 4 Ness Street, Naseby
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 444 9987
+Coordinates: lat=-45.0230990229999, lon=170.145836341
+
+Fire Station: Lake Hawea (3782)
+Type: Volunteer
+Address: 61 Noema Terrace, Lake Hawea
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 443 1632
+Coordinates: lat=-44.612937237, lon=169.256997872
+
+Fire Station: Luggate (3783)
+Type: Volunteer
+Address: 113 Main Road, Luggate
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 443 8555
+Coordinates: lat=-44.7468382879999, lon=169.268865937
+
+Fire Station: Duntroon (3784)
+Type: Volunteer
+Address: 4 Rees Street, Duntroon
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 431 2802
+Coordinates: lat=-44.854389716, lon=170.681166333
+
+Fire Station: Wanaka (3785)
+Type: Volunteer
+Address: 7 Ballantyne Road, Wanaka
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 443 7602
+Coordinates: lat=-44.695847635, lon=169.143143635
+
+Fire Station: Tarras (3786)
+Type: Rural
+Address: 2968 Lindis Pass-Tarras Road, Tarras
+Territorial Authority: Central Otago District
+FENZ District: Otago, Region: Te Kei
+Phone: +61 405 495 247
+Coordinates: lat=-44.8318102439999, lon=169.427522119
+
+Fire Station: Wakatipu (3787)
+Type: Rural
+Address: 2A Hertford Street, Arrowtown
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-44.9397075809999, lon=168.832624238
+
+Fire Station: Wanaka Airport (3789)
+Type: Industry
+Address: 16 Lloyd Dunn Avenue, Wanaka
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: null
+Coordinates: lat=-44.722880701, lon=169.243598678
+
+Fire Station: Kakanui (3791)
+Type: Rural
+Address: 9 Kakanui Road, Kakanui
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: (03) 439 5790
+Coordinates: lat=-45.18147792, lon=170.898924303
+
+Fire Station: Hampden (3792)
+Type: Rural
+Address: 39 Lincoln Street, Hampden
+Territorial Authority: Waitaki District
+FENZ District: Otago, Region: Te Kei
+Phone: (03) 439 4878
+Coordinates: lat=-45.324269629, lon=170.816033838
+
+Fire Station: Glenorchy (3795)
+Type: Rural
+Address: 110 Mull Street, Glenorchy
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-44.8489862929999, lon=168.389172529
+
+Fire Station: Wakari (3796)
+Type: Rural
+Address: 2 Wharf Street, Dunedin Central
+Territorial Authority: Dunedin City
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-45.883475489, lon=170.505373845
+
+Fire Station: Papatowai (3797)
+Type: Rural
+Address: 3 Alexandra Street, Papatowai
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: (03) 415 8760
+Coordinates: lat=-46.560475577, lon=169.469100038
+
+Fire Station: Makarora (3799)
+Type: Rural
+Address: 5939 Makarora-Lake Hawea Road, Makarora
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-44.231973274, lon=169.230087476
+
+Fire Station: Invercargill (3821)
+Type: Composite
+Address: 46 Jed Street, Invercargill
+Territorial Authority: Invercargill City
+FENZ District: Southland, Region: Te Kei
+Phone: 03 218 4114
+Coordinates: lat=-46.410438659, lon=168.356445843
+
+Fire Station: Kingswell (3822)
+Type: Paid
+Address: 151 Stirrat Street, Kingswell
+Territorial Authority: Invercargill City
+FENZ District: Southland, Region: Te Kei
+Phone: 03 216 3100
+Coordinates: lat=-46.4465729419999, lon=168.371600388
+
+Fire Station: Bluff (3823)
+Type: Volunteer
+Address: 171 Barrow Street, Bluff
+Territorial Authority: Invercargill City
+FENZ District: Southland, Region: Te Kei
+Phone: 03 212 8050
+Coordinates: lat=-46.5990543949999, lon=168.336491235
+
+Fire Station: Wallacetown (3824)
+Type: Volunteer
+Address: 37 Dalry Street, Wallacetown
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 235 8018
+Coordinates: lat=-46.329391297, lon=168.289911185
+
+Fire Station: Tokanui (3831)
+Type: Volunteer
+Address: 11 Mcewan Street, Tokanui
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 246 8748
+Coordinates: lat=-46.564187321, lon=168.943558963
+
+Fire Station: Waimahaka (3832)
+Type: Volunteer
+Address: 6 Waimahaka Fortification Road, Waimahaka
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 246 9870
+Coordinates: lat=-46.515951081, lon=168.814424147
+
+Fire Station: Riverton (3833)
+Type: Volunteer
+Address: 6 Jetty Street, Riverton
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 234 8018
+Coordinates: lat=-46.353126048, lon=168.01311372
+
+Fire Station: Orepuki (3835)
+Type: Volunteer
+Address: 41 Oldham Street, Orepuki
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 234 5018
+Coordinates: lat=-46.281763339, lon=167.736998178
+
+Fire Station: Thornbury (3836)
+Type: Volunteer
+Address: 87 Foster Road, Thornbury
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 224 6018
+Coordinates: lat=-46.286939423, lon=168.099474932
+
+Fire Station: Winton (3837)
+Type: Volunteer
+Address: 16 Wemyss Street, Winton
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 236 7118
+Coordinates: lat=-46.142162555, lon=168.323778738
+
+Fire Station: Browns (3838)
+Type: Volunteer
+Address: 58 McCaughan Street, Browns
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 236 4018
+Coordinates: lat=-46.1497260209999, lon=168.418946136
+
+Fire Station: Dipton (3839)
+Type: Volunteer
+Address: 26 Level Street, Dipton
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 248 5118
+Coordinates: lat=-45.8989154239999, lon=168.369857357
+
+Fire Station: Edendale (3841)
+Type: Volunteer
+Address: 42 Seaward Road, Edendale
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 206 6947
+Coordinates: lat=-46.313854846, lon=168.783773986
+
+Fire Station: Wyndham (3842)
+Type: Volunteer
+Address: 15 Ferry Street, Wyndham
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 206 4650
+Coordinates: lat=-46.3260814939999, lon=168.850778144
+
+Fire Station: Gore (3843)
+Type: Volunteer
+Address: 51 Hokonui Drive, Gore
+Territorial Authority: Gore District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 208 7799
+Coordinates: lat=-46.0943543299999, lon=168.943975951
+
+Fire Station: Pukerau (3844)
+Type: Volunteer
+Address: 51 Middle Street, Pukerau
+Territorial Authority: Gore District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 205 3816
+Coordinates: lat=-46.096867597, lon=169.097422459
+
+Fire Station: Mataura (3845)
+Type: Volunteer
+Address: 121 Main Street, Mataura
+Territorial Authority: Gore District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 203 8308
+Coordinates: lat=-46.193079468, lon=168.86584431
+
+Fire Station: Waikaia (3846)
+Type: Volunteer
+Address: 21 Newburn Street, Waikaia
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 202 7850
+Coordinates: lat=-45.7243299419999, lon=168.847686175
+
+Fire Station: Waikaka (3847)
+Type: Volunteer
+Address: 16 Foyle Street, Waikaka
+Territorial Authority: Gore District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 207 2736
+Coordinates: lat=-45.922166337, lon=169.016136541
+
+Fire Station: Tapanui (3851)
+Type: Volunteer
+Address: 46 Northumberland Street, Tapanui
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 204 8018
+Coordinates: lat=-45.943129883, lon=169.262030619
+
+Fire Station: Heriot (3852)
+Type: Volunteer
+Address: 117 Roxburgh Street, Heriot
+Territorial Authority: Clutha District
+FENZ District: Otago, Region: Te Kei
+Phone: 03 204 2018
+Coordinates: lat=-45.844335069, lon=169.269470805
+
+Fire Station: Riversdale (3853)
+Type: Volunteer
+Address: 49 Rutland Street, Riversdale
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 202 5854
+Coordinates: lat=-45.899501132, lon=168.74031504
+
+Fire Station: Lumsden (3854)
+Type: Volunteer
+Address: 28 Hero Street, Lumsden
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 248 7629
+Coordinates: lat=-45.740695085, lon=168.442605656
+
+Fire Station: Balfour (3955)
+Type: Volunteer
+Address: 96 Queen Street, Balfour
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 201 6017
+Coordinates: lat=-45.839636738, lon=168.586954144
+
+Fire Station: Mossburn (3956)
+Type: Volunteer
+Address: 45 Devon Street, Mossburn
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 248 6362
+Coordinates: lat=-45.6695635789999, lon=168.237997277
+
+Fire Station: Nightcaps (3957)
+Type: Volunteer
+Address: 24 High Street East, Nightcaps
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 225 7867
+Coordinates: lat=-45.972331523, lon=168.030990472
+
+Fire Station: Otautau (3958)
+Type: Volunteer
+Address: 4 Alderly Street, Otautau
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 225 8599
+Coordinates: lat=-46.1431561009999, lon=167.996025369
+
+Fire Station: Ohai (3959)
+Type: Volunteer
+Address: 61 Birchwood Road, Ohai
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 225 4867
+Coordinates: lat=-45.9320558869999, lon=167.960507114
+
+Fire Station: Tuatapere (3972)
+Type: Volunteer
+Address: 4 Gillies Street, Tuatapere
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 226 6018
+Coordinates: lat=-46.1348451269999, lon=167.690555447
+
+Fire Station: Te Anau (3973)
+Type: Volunteer
+Address: 30 Luxmore Drive, Te Anau
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 249 7500
+Coordinates: lat=-45.41653343, lon=167.71924673
+
+Fire Station: Manapouri (3974)
+Type: Volunteer
+Address: 45 Hillside Manapouri Road, Manapouri
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 249 6830
+Coordinates: lat=-45.5634182859999, lon=167.61740557
+
+Fire Station: Oban (3975)
+Type: Volunteer
+Address: 10 Argyle Street, Halfmoon Bay
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 219 1017
+Coordinates: lat=-46.8984431709999, lon=168.126741819
+
+Fire Station: Athol (3991)
+Type: Rural
+Address: 16 Paddys Alley Road, Athol
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 0274196502
+Coordinates: lat=-45.511406069, lon=168.57364151
+
+Fire Station: Garston (3992)
+Type: Rural
+Address: 9 Garston Athol Highway, Garston
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: Mathew Tayler - 027 478 7131
+Coordinates: lat=-45.4668502819999, lon=168.68383365
+
+Fire Station: Kingston (3993)
+Type: Rural
+Address: 48 Kent Street, Kingston
+Territorial Authority: Queenstown-Lakes District
+FENZ District: Otago, Region: Te Kei
+Phone: 
+Coordinates: lat=-45.337832706, lon=168.722596128
+
+Fire Station: Waikawa (3994)
+Type: Rural
+Address: 605 Niagara Waikawa Road, Waikawa
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 246 8580
+Coordinates: lat=-46.6234008559999, lon=169.133933455
+
+Fire Station: Hedgehope (3995)
+Type: Rural
+Address: 1417 Rakahouka Hedgehope Road, Hedgehope
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 
+Coordinates: lat=-46.2074359599999, lon=168.547007836
+
+Fire Station: Milford Sound (3996)
+Type: Rural
+Address: 8 Gravelpit Lane, Fiordland National Park
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 03 249 8104
+Coordinates: lat=-44.6760037299999, lon=167.92373759
+
+Fire Station: Blackmount (3997)
+Type: Rural
+Address: 4128 Blackmount Redcliff Road, Blackmount
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 
+Coordinates: lat=-45.791783239, lon=167.673098792
+
+Fire Station: Drummond (3998)
+Type: Rural
+Address: 11 Hamilton Street, Drummond
+Territorial Authority: Southland District
+FENZ District: Southland, Region: Te Kei
+Phone: 
+Coordinates: lat=-46.148021468, lon=168.149669948
+
+Fire Station: Tiwai (3999)
+Type: Industry
+Address: 1530B Tiwai Road, Tiwai Point
+Territorial Authority: Invercargill City
+FENZ District: Southland, Region: Te Kei
+Phone: 03 218 5999
+Coordinates: lat=-46.591529297, lon=168.38029539

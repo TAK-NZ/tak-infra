@@ -389,7 +389,8 @@ MARKER_FUNCTION_SCHEMA = {
             "type": {"type": "string", "description": "CoT type, e.g. a-f-G", "required": True},
             "callsign": {"type": "string", "description": "Callsign/label for the marker", "required": True},
             "lat": {"type": "string", "description": "Latitude", "required": True},
-            "lon": {"type": "string", "description": "Longitude", "required": True}
+            "lon": {"type": "string", "description": "Longitude", "required": True},
+            "iconsetpath": {"type": "string", "description": "Optional custom icon in format '<uuid>:<iconset/icon-name>'. Omit for default MIL-STD-2525B icon.", "required": False}
         }
     }]
 }

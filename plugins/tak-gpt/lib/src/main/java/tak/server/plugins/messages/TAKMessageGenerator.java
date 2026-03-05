@@ -44,7 +44,7 @@ public class TAKMessageGenerator {
                         version=\"4.10.3\"/>
                     <archive/>
                     <usericon
-                        iconsetpath=\"COT_MAPPING_2525B/\"/>
+                        iconsetpath=\"|||ICONSETPATH|||\"/>
                 </detail>
         </event>""";
             
@@ -74,6 +74,10 @@ public class TAKMessageGenerator {
     }
     
     public Message generateMarker(String type, String name, Float lat, Float lon, Set<String> groups) throws DocumentException {
+        return generateMarker(type, name, lat, lon, groups, null);
+    }
+
+    public Message generateMarker(String type, String name, Float lat, Float lon, Set<String> groups, String iconsetpath) throws DocumentException {
         SimpleDateFormat dateFormater = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ss'Z'");
 		Date now = new Date();
 		String nowStr = dateFormater.format(now);
@@ -90,7 +94,8 @@ public class TAKMessageGenerator {
         .replace("|||STALE|||", staleStr)
         .replace("|||LAT|||", lat.toString())
         .replace("|||LON|||", lon.toString())
-        .replace("|||MARKER_NAME|||", name);
+        .replace("|||MARKER_NAME|||", name)
+        .replace("|||ICONSETPATH|||", iconsetpath != null ? iconsetpath : "COT_MAPPING_2525B/");
         return converter.cotStringToDataMessage(messageTemplate, groups, Integer.toString(System.identityHashCode(this)));
         
     }
