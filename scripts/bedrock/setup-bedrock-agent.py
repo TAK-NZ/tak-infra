@@ -226,6 +226,7 @@ def ensure_aoss_index(session, collection_endpoint, index_name):
     if status not in (200, 201):
         raise RuntimeError(f"Failed to create AOSS index {index_name}: {status} {body}")
     print(f"  Created AOSS index: {index_name}")
+    time.sleep(20)  # Wait for index to be visible to Bedrock
 
 
 def ensure_aoss_collection(aoss_client, collection_name, kb_role_arn, account_id, caller_arn):
@@ -312,7 +313,7 @@ def ensure_aoss_collection(aoss_client, collection_name, kb_role_arn, account_id
             raise
         aoss_client.create_access_policy(name=access_policy_name, type="data", policy=access_policy_doc)
         print(f"  Created AOSS data access policy: {access_policy_name}")
-        time.sleep(20)
+        time.sleep(45)
 
     # Wait for ACTIVE and get endpoint (collection may still be CREATING)
     for _ in range(120):
