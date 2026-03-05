@@ -143,29 +143,39 @@ def ensure_agent_iam_role(iam_client, role_name, region, account_id):
             },
             {
                 "Effect": "Allow",
+                "Action": "bedrock:GetInferenceProfile",
+                "Resource": [
+                    f"arn:aws:bedrock:{region}::foundation-model/*",
+                    f"arn:aws:bedrock:{region}:{account_id}:inference-profile/*"
+                ]
+            },
+            {
+                "Effect": "Allow",
                 "Action": ["bedrock:Retrieve", "bedrock:RetrieveAndGenerate"],
                 "Resource": f"arn:aws:bedrock:{region}:{account_id}:knowledge-base/*"
             }
         ]
     }
+    existing = True
     try:
         role = iam_client.get_role(RoleName=role_name)["Role"]
         print(f"  IAM role already exists: {role_name}")
     except ClientError as e:
         if e.response["Error"]["Code"] != "NoSuchEntity":
             raise
+        existing = False
         role = iam_client.create_role(
             RoleName=role_name,
             AssumeRolePolicyDocument=json.dumps(trust),
             Description="Bedrock Agent execution role"
         )["Role"]
-        iam_client.put_role_policy(
-            RoleName=role_name,
-            PolicyName="BedrockAgentPolicy",
-            PolicyDocument=json.dumps(policy)
-        )
         print(f"  Created IAM role: {role_name}")
-        time.sleep(10)
+    iam_client.put_role_policy(
+        RoleName=role_name,
+        PolicyName="BedrockAgentPolicy",
+        PolicyDocument=json.dumps(policy)
+    )
+    time.sleep(15)  # IAM propagation
     return role["Arn"]
 
 
@@ -273,31 +283,48 @@ def ensure_aoss_collection(aoss_client, collection_name, kb_role_arn, account_id
 
     # Data access policy — grants KB role index/document permissions
     access_policy_name = f"{collection_name}-access"
+    access_policy_doc = json.dumps([{
+        "Rules": [
+            {"ResourceType": "index", "Resource": [f"index/{collection_name}/*"],
+             "Permission": ["aoss:CreateIndex", "aoss:DeleteIndex", "aoss:UpdateIndex", "aoss:DescribeIndex", "aoss:ReadDocument", "aoss:WriteDocument"]},
+            {"ResourceType": "collection", "Resource": [f"collection/{collection_name}"],
+             "Permission": ["aoss:CreateCollectionItems", "aoss:DeleteCollectionItems", "aoss:UpdateCollectionItems", "aoss:DescribeCollectionItems"]}
+        ],
+        "Principal": [kb_role_arn, caller_arn]
+    }])
     try:
-        aoss_client.get_access_policy(name=access_policy_name, type="data")
-        print(f"  AOSS data access policy already exists: {access_policy_name}")
+        existing_policy = aoss_client.get_access_policy(name=access_policy_name, type="data")["accessPolicyDetail"]
+        try:
+            aoss_client.update_access_policy(
+                name=access_policy_name, type="data",
+                policy=access_policy_doc,
+                policyVersion=existing_policy["policyVersion"]
+            )
+            print(f"  Updated AOSS data access policy: {access_policy_name}")
+            time.sleep(20)
+        except ClientError as ue:
+            if ue.response["Error"]["Code"] == "ValidationException" and "No changes" in str(ue):
+                print(f"  AOSS data access policy unchanged: {access_policy_name}")
+            else:
+                raise
     except ClientError as e:
         if e.response["Error"]["Code"] != "ResourceNotFoundException":
             raise
-        aoss_client.create_access_policy(
-            name=access_policy_name,
-            type="data",
-            policy=json.dumps([{
-                "Rules": [
-                    {"ResourceType": "index", "Resource": [f"index/{collection_name}/*"],
-                     "Permission": ["aoss:CreateIndex", "aoss:DeleteIndex", "aoss:UpdateIndex", "aoss:DescribeIndex", "aoss:ReadDocument", "aoss:WriteDocument"]},
-                    {"ResourceType": "collection", "Resource": [f"collection/{collection_name}"],
-                     "Permission": ["aoss:CreateCollectionItems", "aoss:DeleteCollectionItems", "aoss:UpdateCollectionItems", "aoss:DescribeCollectionItems"]}
-                ],
-                "Principal": [kb_role_arn, caller_arn]
-            }])
-        )
+        aoss_client.create_access_policy(name=access_policy_name, type="data", policy=access_policy_doc)
         print(f"  Created AOSS data access policy: {access_policy_name}")
-        print(f"  Waiting for data access policy to propagate...")
         time.sleep(20)
 
-    # Get collection endpoint (needed for index creation)
-    detail = aoss_client.batch_get_collection(ids=[collection_id])["collectionDetails"][0]
+    # Wait for ACTIVE and get endpoint (collection may still be CREATING)
+    for _ in range(120):
+        detail = aoss_client.batch_get_collection(ids=[collection_id])["collectionDetails"][0]
+        if detail["status"] == "ACTIVE":
+            break
+        if detail["status"] == "FAILED":
+            raise RuntimeError(f"AOSS collection {collection_name} is in FAILED state")
+        print(f"  Waiting for collection to become ACTIVE (status: {detail['status']})...")
+        time.sleep(5)
+    else:
+        raise TimeoutError(f"AOSS collection {collection_name} did not become ACTIVE")
     collection_endpoint = detail["collectionEndpoint"]
     return collection_arn, collection_endpoint
 
@@ -593,6 +620,10 @@ def main():
 
     account_id = get_account_id(sts)
     caller_arn = sts.get_caller_identity()["Arn"]
+    # Normalize assumed-role session ARN to role ARN for AOSS data access policy
+    if ":assumed-role/" in caller_arn:
+        parts = caller_arn.split("/")
+        caller_arn = f"arn:aws:iam::{account_id}:role/{parts[1]}"
     stack_name = f"TAK-{args.environment}-BaseInfra"
     ssm_prefix = args.ssm_prefix or f"/tak/{args.environment.lower()}"
     model_id = "us.anthropic.claude-sonnet-4-6" if region.startswith("us-") else "au.anthropic.claude-sonnet-4-6"
