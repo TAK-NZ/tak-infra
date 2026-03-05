@@ -72,6 +72,10 @@ backup/
 todo/
 reference/
 
+# Python cache
+__pycache__/
+*.pyc
+
 # Plugins - track source but ignore build artifacts
 plugins/**/build/
 plugins/**/.gradle/
