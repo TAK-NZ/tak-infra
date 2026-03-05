@@ -76,4 +76,6 @@ reference/
 plugins/**/build/
 plugins/**/.gradle/
 plugins/**/gradle/
+!plugins/**/gradle/wrapper/
+!plugins/**/gradle/wrapper/**
 plugins/**/gradlew.bat
