@@ -19,6 +19,7 @@ import { Route53 } from './constructs/route53';
 import { TakServer } from './constructs/tak-server';
 import { WebTakOidcSetup } from './constructs/webtak-oidc-setup';
 import { BedrockGeoJsonLambda } from './constructs/bedrock-geojson-lambda';
+import { BedrockArcGisLambda } from './constructs/bedrock-arcgis-lambda';
 
 // Utility imports
 import { createBaseImportValue, BASE_EXPORT_NAMES, createAuthImportValue, AUTH_EXPORT_NAMES } from './cloudformation-imports';
@@ -372,6 +373,19 @@ export class TakInfraStack extends cdk.Stack {
       value: bedrockGeoJsonLambda.fn.functionArn,
       description: 'Bedrock Agent GeoJSON query Lambda ARN',
       exportName: `${resolvedStackName}-BedrockGeoJsonLambdaArn`
+    });
+
+    // Bedrock ArcGIS geocode Lambda
+    const bedrockArcGisLambda = new BedrockArcGisLambda(this, 'BedrockArcGisLambda', { kmsKey });
+    new CfnOutput(this, 'BedrockArcGisLambdaArn', {
+      value: bedrockArcGisLambda.fn.functionArn,
+      description: 'Bedrock Agent ArcGIS geocode Lambda ARN',
+      exportName: `${resolvedStackName}-BedrockArcGisLambdaArn`
+    });
+    new CfnOutput(this, 'BedrockArcGisSecretArn', {
+      value: bedrockArcGisLambda.secret.secretArn,
+      description: 'ArcGIS credentials secret ARN',
+      exportName: `${resolvedStackName}-BedrockArcGisSecretArn`
     });
 
     // WebTAK OIDC outputs (if enabled)

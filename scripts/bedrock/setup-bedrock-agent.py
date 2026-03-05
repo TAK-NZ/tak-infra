@@ -45,12 +45,12 @@ def get_artifacts_bucket(outputs):
     return bucket_name, kms_key_arn
 
 
-def get_geojson_lambda_arn(cf_client, tak_infra_stack_name):
-    """Read the GeoJSON Lambda ARN from the TakInfra stack outputs, if deployed."""
+def get_lambda_arn(cf_client, tak_infra_stack_name, key_fragment):
+    """Read a Lambda ARN from the TakInfra stack outputs by key fragment."""
     try:
         outputs = get_stack_outputs(cf_client, tak_infra_stack_name)
         for key, value in outputs.items():
-            if "GeoJson" in key or "GeoJSON" in key:
+            if key_fragment in key:
                 return value
     except ClientError:
         pass
@@ -409,6 +409,29 @@ GEOJSON_FUNCTION_SCHEMA = {
 }
 
 
+GEOCODE_FUNCTION_SCHEMA = {
+    "functions": [
+        {
+            "name": "find_place",
+            "description": "Forward geocode a place name to coordinates. Use when the user mentions a location not found in the knowledge base. Pass the user's lat/lon when available for location-biased results.",
+            "parameters": {
+                "query": {"type": "string", "description": "Place name to search for", "required": True},
+                "lat": {"type": "string", "description": "User latitude for location bias", "required": False},
+                "lon": {"type": "string", "description": "User longitude for location bias", "required": False}
+            }
+        },
+        {
+            "name": "reverse_geocode",
+            "description": "Reverse geocode coordinates to a street address. Use when the user asks 'Where am I?' or similar and has a location in their message prefix.",
+            "parameters": {
+                "lat": {"type": "string", "description": "Latitude", "required": True},
+                "lon": {"type": "string", "description": "Longitude", "required": True}
+            }
+        }
+    ]
+}
+
+
 MARKER_FUNCTION_SCHEMA = {
     "functions": [{
         "name": "create_tak_map_marker",
@@ -451,34 +474,31 @@ def _ensure_marker_action_group(bedrock_agent_client, agent_id):
         print(f"  Created tak-tools action group")
 
 
-def _ensure_geojson_action_group(bedrock_agent_client, agent_id, lambda_arn):
-    action_group_name = "live-data"
+def _ensure_lambda_action_group(bedrock_agent_client, agent_id, action_group_name, lambda_arn, function_schema):
     existing = bedrock_agent_client.list_agent_action_groups(
         agentId=agent_id, agentVersion="DRAFT")["actionGroupSummaries"]
     existing_ag = next((ag for ag in existing if ag["actionGroupName"] == action_group_name), None)
 
     if existing_ag:
         bedrock_agent_client.update_agent_action_group(
-            agentId=agent_id,
-            agentVersion="DRAFT",
+            agentId=agent_id, agentVersion="DRAFT",
             actionGroupId=existing_ag["actionGroupId"],
             actionGroupName=action_group_name,
             actionGroupExecutor={"lambda": lambda_arn},
-            functionSchema=GEOJSON_FUNCTION_SCHEMA
+            functionSchema=function_schema
         )
-        print(f"  Updated live-data action group")
+        print(f"  Updated {action_group_name} action group")
     else:
         bedrock_agent_client.create_agent_action_group(
-            agentId=agent_id,
-            agentVersion="DRAFT",
+            agentId=agent_id, agentVersion="DRAFT",
             actionGroupName=action_group_name,
             actionGroupExecutor={"lambda": lambda_arn},
-            functionSchema=GEOJSON_FUNCTION_SCHEMA
+            functionSchema=function_schema
         )
-        print(f"  Created live-data action group (Lambda: {lambda_arn})")
+        print(f"  Created {action_group_name} action group (Lambda: {lambda_arn})")
 
 
-def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_id, region, model_id, geojson_lambda_arn=None):
+def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_id, region, model_id, geojson_lambda_arn=None, arcgis_lambda_arn=None):
     # Check if agent already exists by name
     sanitized_name = agent_name.replace(" ", "-")
     paginator = bedrock_agent_client.get_paginator("list_agents")
@@ -510,7 +530,9 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
                     _wait_for_agent(bedrock_agent_client, agent_id, "PREPARED")
                 _ensure_marker_action_group(bedrock_agent_client, agent_id)
                 if geojson_lambda_arn:
-                    _ensure_geojson_action_group(bedrock_agent_client, agent_id, geojson_lambda_arn)
+                    _ensure_lambda_action_group(bedrock_agent_client, agent_id, "live-data", geojson_lambda_arn, GEOJSON_FUNCTION_SCHEMA)
+                if arcgis_lambda_arn:
+                    _ensure_lambda_action_group(bedrock_agent_client, agent_id, "geocode", arcgis_lambda_arn, GEOCODE_FUNCTION_SCHEMA)
                 bedrock_agent_client.prepare_agent(agentId=agent_id)
                 print(f"  Re-preparing agent...")
                 _wait_for_agent(bedrock_agent_client, agent_id, "PREPARED")
@@ -538,11 +560,14 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
     print(f"  Attached knowledge base {kb_id} to agent")
 
     _ensure_marker_action_group(bedrock_agent_client, agent_id)
-
     if geojson_lambda_arn:
-        _ensure_geojson_action_group(bedrock_agent_client, agent_id, geojson_lambda_arn)
+        _ensure_lambda_action_group(bedrock_agent_client, agent_id, "live-data", geojson_lambda_arn, GEOJSON_FUNCTION_SCHEMA)
     else:
         print(f"  Skipping live-data action group (no Lambda ARN available)")
+    if arcgis_lambda_arn:
+        _ensure_lambda_action_group(bedrock_agent_client, agent_id, "geocode", arcgis_lambda_arn, GEOCODE_FUNCTION_SCHEMA)
+    else:
+        print(f"  Skipping geocode action group (no Lambda ARN available)")
 
     # Prepare agent (required before creating alias)
     bedrock_agent_client.prepare_agent(agentId=agent_id)
@@ -639,11 +664,17 @@ def main():
     if kms_key_arn:
         print(f"  KMS key: {kms_key_arn}")
 
-    geojson_lambda_arn = get_geojson_lambda_arn(cf, tak_infra_stack_name)
+    geojson_lambda_arn = get_lambda_arn(cf, tak_infra_stack_name, "GeoJson")
     if geojson_lambda_arn:
         print(f"  GeoJSON Lambda ARN: {geojson_lambda_arn}")
     else:
         print(f"  GeoJSON Lambda not found in {tak_infra_stack_name} (will skip live-data action group)")
+
+    arcgis_lambda_arn = get_lambda_arn(cf, tak_infra_stack_name, "ArcGis")
+    if arcgis_lambda_arn:
+        print(f"  ArcGIS Lambda ARN: {arcgis_lambda_arn}")
+    else:
+        print(f"  ArcGIS Lambda not found in {tak_infra_stack_name} (will skip geocode action group)")
 
     print(f"\n[2/6] Ensuring S3 prefix exists: bedrock-kb/{args.kb_name}/")
     s3 = session.client("s3")
@@ -678,7 +709,7 @@ def main():
     kb_id = ensure_knowledge_base(bedrock_agent, args.kb_name, kb_role_arn, bucket_name, args.kb_name, region, collection_arn)
 
     print(f"\n[5/6] Ensuring Agent: {args.agent_name}...")
-    agent_id = ensure_agent(bedrock_agent, args.agent_name, agent_role_arn, system_prompt, kb_id, region, model_id, geojson_lambda_arn)
+    agent_id = ensure_agent(bedrock_agent, args.agent_name, agent_role_arn, system_prompt, kb_id, region, model_id, geojson_lambda_arn, arcgis_lambda_arn)
 
     print(f"\n[5b] Ensuring Agent alias...")
     alias_id = ensure_agent_alias(bedrock_agent, agent_id, args.agent_name)
