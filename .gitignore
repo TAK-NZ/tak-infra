@@ -76,5 +76,4 @@ reference/
 plugins/**/build/
 plugins/**/.gradle/
 plugins/**/gradle/
-plugins/**/gradlew
-plugins/**/gradlew.bat__pycache__/
+plugins/**/gradlew.bat
