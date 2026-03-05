@@ -10,6 +10,11 @@ import java.util.stream.Collectors;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.dom4j.DocumentException;
 import org.slf4j.Logger;
@@ -73,6 +78,10 @@ public class BedrockChatManager implements LLMChatManager {
     private final ConcurrentHashMap<String, ConversationSession> conversationSessions = new ConcurrentHashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(BedrockChatManager.class);
     private static final TAKMessageGenerator MSG_GENERATOR = TAKMessageGenerator.getInstance();
+    private static final int TIMEOUT_CONVERSE_S = 30;
+    private static final int TIMEOUT_AGENT_S = 60;
+    private static final int TIMEOUT_KB_S = 45;
+    private static final ExecutorService TIMEOUT_EXECUTOR = Executors.newCachedThreadPool();
 
     public BedrockChatManager(Map<String, ? extends Object> config) {
         String region = "us-west-2";
@@ -270,7 +279,17 @@ public class BedrockChatManager implements LLMChatManager {
                                 .build())
                         .build();
 
-                ConverseResponse response = client.converse(request);
+                final ConverseRequest finalRequest = request;
+                ConverseResponse response;
+                try {
+                    response = CompletableFuture.supplyAsync(() -> client.converse(finalRequest), TIMEOUT_EXECUTOR)
+                            .get(TIMEOUT_CONVERSE_S, TimeUnit.SECONDS);
+                } catch (TimeoutException e) {
+                    LOGGER.warn("Bedrock converse timed out after {}s", TIMEOUT_CONVERSE_S);
+                    return "Unable to connect to AI model (timeout). Please try again.";
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 
                 LOGGER.debug("Stop reason: {}", response.stopReason());
                 
@@ -379,14 +398,21 @@ public class BedrockChatManager implements LLMChatManager {
                 StringBuilder result = new StringBuilder();
                 final ReturnControlPayload[] returnControl = {null};
 
-                agentAsyncClient.invokeAgent(requestBuilder.build(),
-                        software.amazon.awssdk.services.bedrockagentruntime.model.InvokeAgentResponseHandler.builder()
-                                .subscriber(software.amazon.awssdk.services.bedrockagentruntime.model.InvokeAgentResponseHandler.Visitor.builder()
-                                        .onChunk(chunk -> result.append(chunk.bytes().asUtf8String()))
-                                        .onReturnControl(rc -> returnControl[0] = rc)
-                                        .build())
-                                .build())
-                        .join();
+                try {
+                    agentAsyncClient.invokeAgent(requestBuilder.build(),
+                            software.amazon.awssdk.services.bedrockagentruntime.model.InvokeAgentResponseHandler.builder()
+                                    .subscriber(software.amazon.awssdk.services.bedrockagentruntime.model.InvokeAgentResponseHandler.Visitor.builder()
+                                            .onChunk(chunk -> result.append(chunk.bytes().asUtf8String()))
+                                            .onReturnControl(rc -> returnControl[0] = rc)
+                                            .build())
+                                    .build())
+                            .get(TIMEOUT_AGENT_S, TimeUnit.SECONDS);
+                } catch (TimeoutException e) {
+                    LOGGER.warn("Bedrock agent timed out after {}s", TIMEOUT_AGENT_S);
+                    return "Unable to connect to AI model (timeout). Please try again.";
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
 
                 if (returnControl[0] == null) {
                     return result.toString();
@@ -459,7 +485,16 @@ public class BedrockChatManager implements LLMChatManager {
                             .build())
                     .build();
 
-            RetrieveAndGenerateResponse response = agentClient.retrieveAndGenerate(request);
+            RetrieveAndGenerateResponse response;
+            try {
+                response = CompletableFuture.supplyAsync(() -> agentClient.retrieveAndGenerate(request), TIMEOUT_EXECUTOR)
+                        .get(TIMEOUT_KB_S, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                LOGGER.warn("Bedrock KB timed out after {}s", TIMEOUT_KB_S);
+                return "Unable to connect to AI model (timeout). Please try again.";
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             return response.output().text();
 
         } catch (Exception e) {
