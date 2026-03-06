@@ -37,14 +37,8 @@ public class TAKMessageGenerator {
                 <detail>
                     <contact
                         callsign=\"|||MARKER_NAME|||\"/>
-                    <takv
-                        device=\"Chrome - 143\"
-                        platform=\"WebTAK\"
-                        os=\"Windows - 10\"
-                        version=\"4.10.3\"/>
                     <archive/>
-                    <usericon
-                        iconsetpath=\"|||ICONSETPATH|||\"/>
+                    |||USERICON|||
                 </detail>
         </event>""";
             
@@ -95,7 +89,7 @@ public class TAKMessageGenerator {
         .replace("|||LAT|||", lat.toString())
         .replace("|||LON|||", lon.toString())
         .replace("|||MARKER_NAME|||", name)
-        .replace("|||ICONSETPATH|||", iconsetpath != null ? iconsetpath : "COT_MAPPING_2525B/");
+        .replace("|||USERICON|||", iconsetpath != null ? "<usericon iconsetpath=\"" + iconsetpath + "\"/>" : "");
         return converter.cotStringToDataMessage(messageTemplate, groups, Integer.toString(System.identityHashCode(this)));
         
     }
