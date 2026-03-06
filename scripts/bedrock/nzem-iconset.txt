@@ -2,482 +2,950 @@ NZEM Iconset Reference - TAK Map Marker Icons
 This document contains the complete NZEM (New Zealand Emergency Management) iconset for TAK (Team Awareness Kit) map markers.
 Use this reference to find the correct iconsetpath value when placing TAK map markers.
 Iconset UUID: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e
-Format: iconsetpath = bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/<ICON_NAME>.png
+Format: iconsetpath = bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/<FOLDER>/<ICON_NAME>
 
 Each entry below shows: TAK marker icon description, use case keywords, and the exact iconsetpath value to use.
 
-Icon: Generic incident yellow
-Use for: incident generic urgent
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.01.IndicentGeneric.Yellow.png
-
-Icon: Generic incident white
-Use for: incident generic
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.02.IndicentGeneric.White.png
-
-Icon: Unknown incident
-Use for: incident unknown
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.03.IncidentUnknown.png
-
-Icon: Power outage
-Use for: power outage electricity
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.04.PowerOutage.png
-
-Icon: Vehicle incident
-Use for: vehicle crash accident
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.05.Vehicle.png
-
-Icon: Air incident
-Use for: aircraft aviation crash
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.06.Air.png
-
-Icon: Rail incident
-Use for: train rail crash
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.07.Rail.png
-
-Icon: Displacement
-Use for: displacement evacuation refugees
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.08.Displacement.png
-
-Icon: Protest
-Use for: protest demonstration
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.09.Protest.png
-
-Icon: Riot
-Use for: riot civil unrest
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.10.Riot.png
-
-Icon: Shooting
-Use for: shooting firearms
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.11.Shooting.png
-
-Icon: Medical incident
-Use for: medical emergency
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.12.Medical.png
-
-Icon: Pandemic
-Use for: pandemic disease outbreak
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.13.Pandemic.png
-
-Icon: Quarantine
-Use for: quarantine isolation
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.14.Quarantine.png
-
-Icon: Poisoning
-Use for: poisoning toxic
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.15.Poisoning.png
-
-Icon: Bomb threat
-Use for: bomb threat explosive
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.16.BombThreat.png
-
-Icon: Bomb explosion
-Use for: explosion blast
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.17.BombExplosion.png
-
-Icon: Hazardous material
-Use for: hazmat chemical spill
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.18.HazardousMaterial.png
-
-Icon: Toxic gas or substance
-Use for: toxic gas chemical
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.19.ToxicGasOrSubstance.png
-
-Icon: Ground contamination
-Use for: contamination soil
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.21.GroundContamination.png
-
-Icon: Radioactive material
-Use for: radioactive nuclear
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.22.RadioactiveMaterial.png
-
-Icon: Marine oil spill
-Use for: oil spill marine pollution
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.23.Marine.OilSpill.png
-
-Icon: Marine incident
-Use for: marine sea boat
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.24.Marine.png
-
-Icon: Missing person
-Use for: missing person search
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.25.MissingPerson.png
-
-Icon: Fire
-Use for: fire generic
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.35.Fire.png
-
-Icon: Structure fire
-Use for: building fire structure
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.36.Fire.Structure.png
-
-Icon: Vegetation fire
-Use for: bush fire scrub wildfire
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.37.Fire.Vegetation.png
-
-Icon: Natural disaster urgent
-Use for: disaster urgent red
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.38.NaturalDisaster1.Urgent.png
-
-Icon: Natural disaster non-urgent
-Use for: disaster yellow
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.39.NaturalDisaster2.NonUrgent.png
-
-Icon: Natural disaster information only
-Use for: disaster information
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INC.40.NaturalDisaster3.InformationOnly.png
-
-Icon: Fire station
-Use for: fire station FENZ
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.01.FireStation.png
-
-Icon: Police station
-Use for: police station NZ Police
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.02.PoliceStation.png
-
-Icon: Ambulance station
-Use for: ambulance station St John WFA
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.03.AmbulanceStation.png
-
-Icon: Hospital
-Use for: hospital emergency
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.04.Hospital.png
-
-Icon: Medical centre
-Use for: medical centre GP clinic
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.05.MedicalCentre.png
-
-Icon: Pharmacy
-Use for: pharmacy chemist
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.06.Pharmacy.png
-
-Icon: Tsunami siren
-Use for: tsunami siren warning
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.08.TsunamiSiren.png
-
-Icon: Fire hydrant
-Use for: fire hydrant water
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.10.FireHydrant.png
-
-Icon: Dam
-Use for: dam reservoir
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.11.Dam.png
-
-Icon: Communications infrastructure
-Use for: communications tower cell
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.12.CommunicationsInfrastructure.png
-
-Icon: Building
-Use for: building generic
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.16.Building.png
-
-Icon: Fuel facility
-Use for: fuel petrol diesel
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.17.FuelFacility.png
-
-Icon: Energy facility
-Use for: power energy electricity
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.18.EnergyFacilitiesInfrastructure.png
-
-Icon: Generation station
-Use for: power station generator
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.19.GenerationStation.png
-
-Icon: CCTV camera
-Use for: camera CCTV surveillance
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.21.CameraCCTV.png
-
-Icon: Weather station
-Use for: weather station meteorology
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.23.WeatherStation.png
-
-Icon: Water supply
-Use for: water supply infrastructure
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.26.WaterSupplyInfrastructure.png
-
-Icon: Bus station
-Use for: bus station transport
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.27.BusStation.png
-
-Icon: Boat ramp
-Use for: boat ramp launch
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.28.BoatRamp.png
-
-Icon: Port
-Use for: port harbour wharf
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.29.Port.png
-
-Icon: Rail station
-Use for: train station rail
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.30.RailStation.png
-
-Icon: Airport
-Use for: airport airfield
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.31.Airport.png
-
-Icon: Airstrip
-Use for: airstrip landing strip
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.32.Airstrip.png
-
-Icon: Helicopter landing site
-Use for: helicopter pad helipad
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.33.HelicopterLandingSite.png
-
-Icon: Tunnel
-Use for: tunnel road
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.34.Tunnel.png
-
-Icon: Bridge
-Use for: bridge road
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.35.Bridge.png
-
-Icon: Food retail
-Use for: supermarket food store
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.36.FoodRetail.png
-
-Icon: Toilet
-Use for: toilet amenities
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.37.Toilet.png
-
-Icon: Bank
-Use for: bank ATM finance
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.38.Bank.png
-
-Icon: Post office
-Use for: post office mail
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.40.PostOffice.png
-
-Icon: Marae
-Use for: marae iwi community
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.41.Marae.png
-
-Icon: Library
-Use for: library community
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.42.Library.png
-
-Icon: Education facility
-Use for: school education
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.43.EducationFacility.png
-
-Icon: Aged care facility
-Use for: rest home aged care elderly
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.45.AgedCareFacility.png
-
-Icon: Prison
-Use for: prison corrections
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.48.Prison.png
-
-Icon: Recreation area
-Use for: park recreation
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.51.RecreationArea.png
-
-Icon: Campground
-Use for: campground camping
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/INF.52.Campground.png
-
-Icon: Flood
-Use for: flood inundation
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.01.Flood.png
-
-Icon: Storm surge
-Use for: storm surge coastal
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.02.StormSurge.png
-
-Icon: Tsunami
-Use for: tsunami wave
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.03.Tsunami.png
-
-Icon: Strong wind
-Use for: wind storm gale
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.04.StrongWind.png
-
-Icon: Heavy rain
-Use for: rain flooding
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.05.HeavyRain.png
-
-Icon: Electrical storm
-Use for: lightning thunder
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.06.ElectricalStorm.png
-
-Icon: Snow
-Use for: snow ice winter
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.07.Snow.png
-
-Icon: Tornado
-Use for: tornado cyclone
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.16.Tornado.png
-
-Icon: Landslide
-Use for: landslide slip
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.18.Landslide.png
-
-Icon: Landslide dam
-Use for: landslide dam lake
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.19.LandslideDam.png
-
-Icon: Coastal erosion
-Use for: erosion coastal
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.20.CoastalErosion.png
-
-Icon: Tree down
-Use for: tree fallen
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.21.TreeDown.png
-
-Icon: Earthquake
-Use for: earthquake seismic
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.24.Earthquake.png
-
-Icon: Volcanic unrest level 0
-Use for: volcano unrest level 0
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.30A.VolcanicUnrest.Level0.png
-
-Icon: Volcanic unrest level 1
-Use for: volcano unrest level 1
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.31A.VolcanicUnrest.Level1.png
-
-Icon: Volcanic unrest level 2
-Use for: volcano unrest level 2
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.32A.VolcanicUnrest.Level2.png
-
-Icon: Volcanic unrest level 3
-Use for: volcano unrest level 3
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.33A.VolcanicUnrest.Level3.png
-
-Icon: Volcanic unrest level 4
-Use for: volcano unrest level 4
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.34A.VolcanicUnrest.Level4.png
-
-Icon: Volcanic unrest level 5
-Use for: volcano eruption level 5
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NH.35A.VolcanicUnrest.Level5.png
-
-Icon: NZTA road closure
-Use for: road closed closure
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTA.road-closures.png
-
-Icon: NZTA road hazard
-Use for: road hazard warning
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTA.road-hazards.png
-
-Icon: NZTA road works
-Use for: road works construction
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTA.road-works.png
-
-Icon: Incident control point
-Use for: ICP incident control
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.01.IncidentControlPoint.png
-
-Icon: Emergency operations centre
-Use for: EOC emergency operations
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.02.EmergencyOperationsCentre.png
-
-Icon: Civil defence centre open
-Use for: CDC civil defence open
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.04.CivilDefenceCentre.Open.png
-
-Icon: Civil defence centre activating
-Use for: CDC civil defence activating
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.05.CivilDefenceCentre.Activating.png
-
-Icon: Civil defence centre closed
-Use for: CDC civil defence closed
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.06.CivilDefenceCentre.Closed.png
-
-Icon: Assembly area
-Use for: assembly muster point
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.09.AssemblyArea.png
-
-Icon: Staging area
-Use for: staging logistics
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.10.StagingArea.png
-
-Icon: Logistics
-Use for: logistics supply
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.11.Logistics.png
-
-Icon: Safe zone
-Use for: safe zone exclusion
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.15.SafeZone.png
-
-Icon: Medical triage
-Use for: triage medical
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.17.MedicalTriage.png
-
-Icon: Casualty clearing point
-Use for: casualty clearing CCP
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.18.CasualtyClearingPoint.png
-
-Icon: Ambulance
-Use for: ambulance St John WFA
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.19.Ambulance.png
-
-Icon: Medical evacuation helicopter
-Use for: MEDEVAC helicopter
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.20.MedicalEvacuationHelicopterStation.png
-
-Icon: Water distribution point
-Use for: water distribution emergency
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.23.EmergencyWaterDistributionPoint.png
-
-Icon: Food distribution point
-Use for: food distribution emergency
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.26.EmergencyFoodDistributionPoint.png
-
-Icon: Community led centre
-Use for: community centre welfare
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.27.CommunityLedCentre.png
-
-Icon: Generator location
-Use for: generator power
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.28.GeneratorLocation.png
-
-Icon: Fuel point
-Use for: fuel point operations
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.29.FuelPoint.png
-
-Icon: Checkpoint
-Use for: checkpoint access control
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.32.CheckPoint.png
-
-Icon: Detour
-Use for: detour road diversion
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.33.Detour.png
-
-Icon: Road block
-Use for: roadblock cordon
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.34.RoadBlock.png
-
-Icon: Helicopter pad operations
-Use for: helicopter pad ops
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.37.HelicopterPad.png
-
-Icon: USAR
-Use for: urban search rescue USAR
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/OP.65.USAR.png
-
 Icon: USAR triage green
 Use for: USAR triage assessed green
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/ASM.01.Buildings.USAR.TriageAssessment.Green.png
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.01.Buildings.USAR.TriageAssessment.Green.png
 
 Icon: USAR triage yellow
 Use for: USAR triage assessed yellow
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/ASM.02.Buildings.USAR.TriageAssessment.Yellow.png
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.02.Buildings.USAR.TriageAssessment.Yellow.png
 
 Icon: USAR triage red
 Use for: USAR triage assessed red
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/ASM.03.Buildings.USAR.TriageAssessment.Red.png
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.03.Buildings.USAR.TriageAssessment.Red.png
 
 Icon: Building assessment white placard
 Use for: MBIE rapid assessment white
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/ASM.04.Buildings.MBIE.RapidBuildingAssessment.PlacardOutcome.W.png
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.04.Buildings.MBIE.RapidBuildingAssessment.PlacardOutcome.W.png
 
 Icon: Building assessment yellow placard
 Use for: MBIE rapid assessment yellow
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/ASM.05.Buildings.MBIE.RapidBuildingAssessment.PlacardOutcome.Y1Y2.png
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.05.Buildings.MBIE.RapidBuildingAssessment.PlacardOutcome.Y1Y2.png
 
 Icon: Building assessment red placard
 Use for: MBIE rapid assessment red
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/ASM.06.Buildings.MBIE.RapidBuildingAssessment.PlacardOutcome.R1R2.png
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.06.Buildings.MBIE.RapidBuildingAssessment.PlacardOutcome.R1R2.png
 
 Icon: Building not yet assessed
 Use for: MBIE not assessed
-iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/ASM.07.Buildings.MBIE.RapidBuildingAssessment.NotYetAssessed.png
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.07.Buildings.MBIE.RapidBuildingAssessment.NotYetAssessed.png
+
+Icon: Geotechnical building assessment
+Use for: MBIE geotechnical assessment
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.08.Buildings.MBIE.GeotechnicalRapidBuildingAssessment.png
+
+Icon: Geotechnical assessment white placard
+Use for: MBIE geotechnical white
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.09.Buildings.MBIE.GeotechnicalRapidBuildingAssessment.PlacardOutcome.W.png
+
+Icon: Geotechnical assessment yellow placard
+Use for: MBIE geotechnical yellow
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.10.Buildings.MBIE.GeotechnicalRapidBuildingAssessment.PlacardOutcome.Y1Y2.png
+
+Icon: Geotechnical assessment red placard
+Use for: MBIE geotechnical red
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.11.Buildings.MBIE.GeotechnicalRapidBuildingAssessment.PlacardOutcome.R1R2.png
+
+Icon: Building no issue found not assessed
+Use for: MBIE no issue not assessed
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Assessments/ASM.12.Buildings.MBIE.RapidBuildingAssessment.NoIssueFoundNotAssessed.png
+
+
+Icon: Generic incident yellow
+Use for: incident generic urgent
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.01.IndicentGeneric.Yellow.png
+
+Icon: Generic incident white
+Use for: incident generic
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.02.IndicentGeneric.White.png
+
+Icon: Unknown incident
+Use for: incident unknown
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.03.IncidentUnknown.png
+
+Icon: Power outage
+Use for: power outage electricity
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.04.PowerOutage.png
+
+Icon: Vehicle incident
+Use for: vehicle crash accident
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.05.Vehicle.png
+
+Icon: Air incident
+Use for: aircraft aviation crash
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.06.Air.png
+
+Icon: Rail incident
+Use for: train rail crash
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.07.Rail.png
+
+Icon: Displacement
+Use for: displacement evacuation refugees
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.08.Displacement.png
+
+Icon: Protest
+Use for: protest demonstration
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.09.Protest.png
+
+Icon: Riot
+Use for: riot civil unrest
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.10.Riot.png
+
+Icon: Shooting
+Use for: shooting firearms
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.11.Shooting.png
+
+Icon: Medical incident
+Use for: medical emergency
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.12.Medical.png
+
+Icon: Pandemic
+Use for: pandemic disease outbreak
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.13.Pandemic.png
+
+Icon: Quarantine
+Use for: quarantine isolation
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.14.Quarantine.png
+
+Icon: Poisoning
+Use for: poisoning toxic
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.15.Poisoning.png
+
+Icon: Bomb threat
+Use for: bomb threat explosive
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.16.BombThreat.png
+
+Icon: Bomb explosion
+Use for: explosion blast
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.17.BombExplosion.png
+
+Icon: Hazardous material
+Use for: hazmat chemical spill
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.18.HazardousMaterial.png
+
+Icon: Toxic gas or substance
+Use for: toxic gas chemical
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.19.ToxicGasOrSubstance.png
+
+Icon: Ground contamination
+Use for: contamination soil
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.21.GroundContamination.png
+
+Icon: Radioactive material
+Use for: radioactive nuclear
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.22.RadioactiveMaterial.png
+
+Icon: Marine oil spill
+Use for: oil spill marine pollution
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.23.Marine.OilSpill.png
+
+Icon: Marine incident
+Use for: marine sea boat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.24.Marine.png
+
+Icon: Missing person
+Use for: missing person search
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.25.MissingPerson.png
+
+Icon: Fire
+Use for: fire generic
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.35.Fire.png
+
+Icon: Structure fire
+Use for: building fire structure
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.36.Fire.Structure.png
+
+Icon: Vegetation fire
+Use for: bush fire scrub wildfire
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.37.Fire.Vegetation.png
+
+Icon: Natural disaster urgent
+Use for: disaster urgent red
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.38.NaturalDisaster1.Urgent.png
+
+Icon: Natural disaster non-urgent
+Use for: disaster yellow
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.39.NaturalDisaster2.NonUrgent.png
+
+Icon: Natural disaster information only
+Use for: disaster information
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.40.NaturalDisaster3.InformationOnly.png
+
+Icon: HSNO dangerous when wet
+Use for: HSNO dangerous wet hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.44.HSNO.DangerousWhenWet.png
+
+Icon: HSNO explosives
+Use for: HSNO explosives hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.45.HSNO.Explosives.png
+
+Icon: HSNO flammable gas
+Use for: HSNO flammable gas hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.46.HSNO.FlammableGas.png
+
+Icon: HSNO flammable liquid
+Use for: HSNO flammable liquid hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.47.HSNO.FlammableLiquid.png
+
+Icon: HSNO flammable solid
+Use for: HSNO flammable solid hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.48.HSNO.FlammableSolid.png
+
+Icon: HSNO non-flammable gas
+Use for: HSNO non-flammable gas hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.49.HSNO.NonFlammableGas.png
+
+Icon: HSNO organic peroxide
+Use for: HSNO organic peroxide hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.50.HSNO.OrganicPeroxide.png
+
+Icon: HSNO oxidizer
+Use for: HSNO oxidizer hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.51.HSNO.Oxidizer.png
+
+Icon: HSNO infectious
+Use for: HSNO infectious biological hazmat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.52.HSNO.Infectious.png
+
+Icon: GHS exploding bomb
+Use for: GHS explosive hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.53.GHS01.ExplodingBomb.png
+
+Icon: GHS flame
+Use for: GHS flammable hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.54.GHS02.Flame.png
+
+Icon: GHS flame over circle
+Use for: GHS oxidizing hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.55.GHS03.FlameOverCircle.png
+
+Icon: GHS gas cylinder
+Use for: GHS compressed gas hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.56.GHS04.GasCylinder.png
+
+Icon: GHS corrosion
+Use for: GHS corrosive hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.57.GHS05.Corrosion.png
+
+Icon: GHS skull and crossbones
+Use for: GHS toxic hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.58.GHS06.SkullAndCrossbones.png
+
+Icon: GHS exclamation mark
+Use for: GHS irritant hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.59.GHS07.ExclamationMark.png
+
+Icon: GHS health hazard
+Use for: GHS health hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.60.GHS08.HealthHazard.png
+
+Icon: GHS environment
+Use for: GHS environmental hazard
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Incidents/INC.61.GHS09.Environment.png
+
+
+Icon: Fire station
+Use for: fire station FENZ
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.01.FireStation.png
+
+Icon: Police station
+Use for: police station NZ Police
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.02.PoliceStation.png
+
+Icon: Ambulance station
+Use for: ambulance station St John WFA
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.03.AmbulanceStation.png
+
+Icon: Hospital
+Use for: hospital emergency
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.04.Hospital.png
+
+Icon: Medical centre
+Use for: medical centre GP clinic
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.05.MedicalCentre.png
+
+Icon: Pharmacy
+Use for: pharmacy chemist
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.06.Pharmacy.png
+
+Icon: Pharmaceutical manufacturer
+Use for: pharmaceutical manufacturer drug production
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.07.PharmaceuticalManufacturer.png
+
+Icon: Tsunami siren
+Use for: tsunami siren warning
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.08.TsunamiSiren.png
+
+Icon: Hazardous material production
+Use for: hazmat production facility
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.09.HazardousMaterialProduction.png
+
+Icon: Fire hydrant
+Use for: fire hydrant water
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.10.FireHydrant.png
+
+Icon: Dam
+Use for: dam reservoir
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.11.Dam.png
+
+Icon: Communications infrastructure
+Use for: communications tower cell
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.12.CommunicationsInfrastructure.png
+
+Icon: Commercial infrastructure
+Use for: commercial building business
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.13.CommercialInfrastructure.png
+
+Icon: Industrial infrastructure
+Use for: industrial factory
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.14.IndustrialInfrastructure.png
+
+Icon: Maintenance facility
+Use for: maintenance depot workshop
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.15.MaintenanceFacility.png
+
+Icon: Building
+Use for: building generic
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.16.Building.png
+
+Icon: Fuel facility
+Use for: fuel petrol diesel
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.17.FuelFacility.png
+
+Icon: Energy facility
+Use for: power energy electricity
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.18.EnergyFacilitiesInfrastructure.png
+
+Icon: Generation station
+Use for: power station generator
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.19.GenerationStation.png
+
+Icon: Natural gas facility
+Use for: natural gas pipeline
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.20.NaturalGasFacility.png
+
+Icon: CCTV camera
+Use for: camera CCTV surveillance
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.21.CameraCCTV.png
+
+Icon: Environmental monitoring station
+Use for: environmental monitoring sensor
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.22.EnvironmentalMonitoringStation.png
+
+Icon: Weather station
+Use for: weather station meteorology
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.23.WeatherStation.png
+
+Icon: Farm
+Use for: farm agriculture
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.24.Farm.png
+
+Icon: Grain store
+Use for: grain store silo
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.25.GrainStore.png
+
+Icon: Water supply
+Use for: water supply infrastructure
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.26.WaterSupplyInfrastructure.png
+
+Icon: Bus station
+Use for: bus station transport
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.27.BusStation.png
+
+Icon: Boat ramp
+Use for: boat ramp launch
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.28.BoatRamp.png
+
+Icon: Port
+Use for: port harbour wharf
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.29.Port.png
+
+Icon: Rail station
+Use for: train station rail
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.30.RailStation.png
+
+Icon: Airport
+Use for: airport airfield
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.31.Airport.png
+
+Icon: Airstrip
+Use for: airstrip landing strip
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.32.Airstrip.png
+
+Icon: Helicopter landing site
+Use for: helicopter pad helipad
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.33.HelicopterLandingSite.png
+
+Icon: Tunnel
+Use for: tunnel road
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.34.Tunnel.png
+
+Icon: Bridge
+Use for: bridge road
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.35.Bridge.png
+
+Icon: Food retail
+Use for: supermarket food store
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.36.FoodRetail.png
+
+Icon: Toilet
+Use for: toilet amenities
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.37.Toilet.png
+
+Icon: Bank
+Use for: bank finance
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.38.Bank.png
+
+Icon: ATM
+Use for: ATM cash machine
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.39.ATM.png
+
+Icon: Post office
+Use for: post office mail
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.40.PostOffice.png
+
+Icon: Marae
+Use for: marae iwi community
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.41.Marae.png
+
+Icon: Library
+Use for: library community
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.42.Library.png
+
+Icon: Education facility
+Use for: school education
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.43.EducationFacility.png
+
+Icon: Tertiary facility
+Use for: university polytechnic tertiary
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.44.TertiaryFacility.png
+
+Icon: Aged care facility
+Use for: rest home aged care elderly
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.45.AgedCareFacility.png
+
+Icon: Special needs infrastructure
+Use for: special needs disability facility
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.46.SpecialNeedsInfrastructure.png
+
+Icon: Embassy
+Use for: embassy consulate diplomatic
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.47.Embassy.png
+
+Icon: Prison
+Use for: prison corrections
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.48.Prison.png
+
+Icon: Landfill
+Use for: landfill waste disposal
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.49.Landfill.png
+
+Icon: Recycling centre
+Use for: recycling centre waste
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.50.RecyclingCentre.png
+
+Icon: Recreation area
+Use for: park recreation
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.51.RecreationArea.png
+
+Icon: Campground
+Use for: campground camping
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.52.Campground.png
+
+Icon: Protected site
+Use for: protected site heritage
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.53.ProtectedSite.png
+
+Icon: Protected structure
+Use for: protected structure heritage building
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.54.ProtectedStructure.png
+
+Icon: Fire sprinkler
+Use for: fire sprinkler system
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.55.Fire.Sprinkler.png
+
+Icon: Fire alarm
+Use for: fire alarm system
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Infrastructure/INF.56.Fire.FireAlarm.png
+
+
+Icon: Flood
+Use for: flood inundation
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.01.Flood.png
+
+Icon: Storm surge
+Use for: storm surge coastal
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.02.StormSurge.png
+
+Icon: Tsunami
+Use for: tsunami wave
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.03.Tsunami.png
+
+Icon: Strong wind
+Use for: wind storm gale
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.04.StrongWind.png
+
+Icon: Heavy rain
+Use for: rain flooding
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.05.HeavyRain.png
+
+Icon: Electrical storm
+Use for: lightning thunder
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.06.ElectricalStorm.png
+
+Icon: Snow
+Use for: snow ice winter
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.07.Snow.png
+
+Icon: Ice
+Use for: ice black ice road
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.08.Ice.png
+
+Icon: Tropical cyclone
+Use for: cyclone tropical storm
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.09.TropicalCyclone.png
+
+Icon: Tropical cyclone category 1
+Use for: cyclone category 1
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.10.TropicalCyclone.Category1.png
+
+Icon: Tropical cyclone category 2
+Use for: cyclone category 2
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.11.TropicalCyclone.Category2.png
+
+Icon: Tropical cyclone category 3
+Use for: cyclone category 3
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.12.TropicalCyclone.Category3.png
+
+Icon: Tropical cyclone category 4
+Use for: cyclone category 4
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.13.TropicalCyclone.Category4.png
+
+Icon: Tropical cyclone category 5
+Use for: cyclone category 5
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.14.TropicalCyclone.Category5.png
+
+Icon: Ex-tropical cyclone
+Use for: ex-tropical cyclone remnant
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.15.ExTropicalCyclone.png
+
+Icon: Tornado
+Use for: tornado cyclone
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.16.Tornado.png
+
+Icon: Subsidence
+Use for: subsidence ground sinking
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.17.Subsidence.png
+
+Icon: Landslide
+Use for: landslide slip
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.18.Landslide.png
+
+Icon: Landslide dam
+Use for: landslide dam lake
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.19.LandslideDam.png
+
+Icon: Coastal erosion
+Use for: erosion coastal
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.20.CoastalErosion.png
+
+Icon: Tree down
+Use for: tree fallen
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.21.TreeDown.png
+
+Icon: Drought
+Use for: drought water shortage
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.22.Drought.png
+
+Icon: Biosecurity
+Use for: biosecurity pest disease
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.23.Biosecurity.png
+
+Icon: Earthquake
+Use for: earthquake seismic
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.24.Earthquake.png
+
+Icon: Earthquake weak
+Use for: earthquake weak minor
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.25A.EarthquakeWeak.png
+
+Icon: Earthquake light
+Use for: earthquake light
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.26A.EarthquakeLight.png
+
+Icon: Earthquake moderate
+Use for: earthquake moderate
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.27A.EarthquakeModerate.png
+
+Icon: Earthquake strong
+Use for: earthquake strong
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.28A.EarthquakeStrong.png
+
+Icon: Earthquake severe
+Use for: earthquake severe major
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.29A.EarthquakeSevere.png
+
+Icon: Volcanic unrest level 0
+Use for: volcano unrest level 0
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.30A.VolcanicUnrest.Level0.png
+
+Icon: Volcanic unrest level 1
+Use for: volcano unrest level 1
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.31A.VolcanicUnrest.Level1.png
+
+Icon: Volcanic unrest level 2
+Use for: volcano unrest level 2
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.32A.VolcanicUnrest.Level2.png
+
+Icon: Volcanic unrest level 3
+Use for: volcano unrest level 3
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.33A.VolcanicUnrest.Level3.png
+
+Icon: Volcanic unrest level 4
+Use for: volcano unrest level 4
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.34A.VolcanicUnrest.Level4.png
+
+Icon: Volcanic unrest level 5
+Use for: volcano eruption level 5
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.35A.VolcanicUnrest.Level5.png
+
+Icon: Volcanic ICAO green
+Use for: volcano aviation ICAO green
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.36.VolcanicICAO.Green.png
+
+Icon: Volcanic ICAO yellow
+Use for: volcano aviation ICAO yellow
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.37.VolcanicICAO.Yellow.png
+
+Icon: Volcanic ICAO orange
+Use for: volcano aviation ICAO orange
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.38.VolcanicICAO.Orange.png
+
+Icon: Volcanic ICAO red
+Use for: volcano aviation ICAO red eruption
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.39.VolcanicICAO.Red.png
+
+Icon: Avalanche danger unknown
+Use for: avalanche danger unknown
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.40A.Avalanche.DangerLevelUnknown.png
+
+Icon: Avalanche danger level 0
+Use for: avalanche danger level 0 no rating
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.41A.Avalanche.DangerLevel0.png
+
+Icon: Avalanche danger level 1 low
+Use for: avalanche danger level 1 low
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.42A.Avalanche.DangerLevel1.png
+
+Icon: Avalanche danger level 2 moderate
+Use for: avalanche danger level 2 moderate
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.43A.Avalanche.DangerLevel2.png
+
+Icon: Avalanche danger level 3 considerable
+Use for: avalanche danger level 3 considerable
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.44A.Avalanche.DangerLevel3.png
+
+Icon: Avalanche danger level 4 and 5 high extreme
+Use for: avalanche danger level 4 5 high extreme
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NaturalHazards/NH.45A.Avalanche.DangerLevel4and5.png
+
+
+Icon: NZTA area warnings
+Use for: road area warning NZTA
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTransportAgency/NZTA.area-warnings.png
+
+Icon: NZTA message signs
+Use for: road message sign NZTA
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTransportAgency/NZTA.message-signs.png
+
+Icon: NZTA road closure
+Use for: road closed closure
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTransportAgency/NZTA.road-closures.png
+
+Icon: NZTA road hazard
+Use for: road hazard warning
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTransportAgency/NZTA.road-hazards.png
+
+Icon: NZTA road works
+Use for: road works construction
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTransportAgency/NZTA.road-works.png
+
+Icon: NZTA traffic cameras
+Use for: traffic camera NZTA
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTransportAgency/NZTA.traffic-cameras.png
+
+Icon: NZTA traffic time signs
+Use for: traffic time sign NZTA
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/NZTransportAgency/NZTA.traffic-time-signs.png
+
+Icon: Building unknown impact observation
+Use for: building observation unknown impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.01.BLD.UnknownImpact.png
+
+Icon: Building no impact observation
+Use for: building observation no impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.02.BLD.NoImpact.png
+
+Icon: Building moderate impact observation
+Use for: building observation moderate impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.03.BLD.ModerateImpact.png
+
+Icon: Building severe impact observation
+Use for: building observation severe impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.04.BLD.SevereImpact.png
+
+Icon: Building totally destroyed observation
+Use for: building observation destroyed
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.05.BLD.TotallyDestroyed.png
+
+Icon: Environment unknown impact observation
+Use for: environment observation unknown impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.06.ENV.UnknownImpact.png
+
+Icon: Environment no impact observation
+Use for: environment observation no impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.07.ENV.NoImpact.png
+
+Icon: Environment moderate impact observation
+Use for: environment observation moderate impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.08.ENV.ModerateImpact.png
+
+Icon: Environment severe impact observation
+Use for: environment observation severe impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.09.ENV.SevereImpact.png
+
+Icon: Environment totally destroyed observation
+Use for: environment observation destroyed
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.10.ENV.TotallyDestroyed.png
+
+Icon: People unknown impact observation
+Use for: people observation unknown impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.11.PA.UnknownImpact.png
+
+Icon: People no impact observation
+Use for: people observation no impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.12.PA.NoImpact.png
+
+Icon: People moderate injury missing observation
+Use for: people observation moderate injury missing
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.13.PA.ModerateInjury.Missing.png
+
+Icon: People serious injury mass casualty observation
+Use for: people observation serious injury mass casualty
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.14.PA.SeriousInjury.MassCasualty.png
+
+Icon: People death observation
+Use for: people observation death fatality
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.15.PA.Death.png
+
+Icon: Transport unknown impact observation
+Use for: transport observation unknown impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.16.TSP.UnknownImpact.png
+
+Icon: Transport no impact observation
+Use for: transport observation no impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.17.TSP.NoImpact.png
+
+Icon: Transport moderate impact observation
+Use for: transport observation moderate impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.18.TSP.ModerateImpact.png
+
+Icon: Transport severe impact observation
+Use for: transport observation severe impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.19.TSP.SevereImpact.png
+
+Icon: Transport totally destroyed observation
+Use for: transport observation destroyed
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.20.TSP.TotallyDestroyed.png
+
+Icon: Utilities unknown impact observation
+Use for: utilities observation unknown impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.21.UTL.UnknownImpact.png
+
+Icon: Utilities no impact observation
+Use for: utilities observation no impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.22.UTL.NoImpact.png
+
+Icon: Utilities moderate impact observation
+Use for: utilities observation moderate impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.23.UTL.ModerateImpact.png
+
+Icon: Utilities severe impact observation
+Use for: utilities observation severe impact
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.24.UTL.SevereImpact.png
+
+Icon: Utilities totally destroyed observation
+Use for: utilities observation destroyed
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Observations/OBS.25.UTL.TotallyDestroyed.png
+
+Icon: Incident control point
+Use for: ICP incident control
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.01.IncidentControlPoint.png
+
+Icon: Emergency operations centre
+Use for: EOC emergency operations
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.02.EmergencyOperationsCentre.png
+
+Icon: Civil defence centre BAU
+Use for: CDC civil defence business as usual
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.03.CivilDefenceCentre.BAU.png
+
+Icon: Civil defence centre open
+Use for: CDC civil defence open
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.04.CivilDefenceCentre.Open.png
+
+Icon: Civil defence centre activating
+Use for: CDC civil defence activating
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.05.CivilDefenceCentre.Activating.png
+
+Icon: Civil defence centre closed
+Use for: CDC civil defence closed
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.06.CivilDefenceCentre.Closed.png
+
+Icon: Civil defence centre unknown
+Use for: CDC civil defence unknown status
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.07.CivilDefenceCentre.Unknown.png
+
+Icon: Civil defence centre unsuitable
+Use for: CDC civil defence unsuitable
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.08.CivilDefenceCentre.Unsuitable.png
+
+Icon: Assembly area
+Use for: assembly muster point
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.09.AssemblyArea.png
+
+Icon: Staging area
+Use for: staging logistics
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.10.StagingArea.png
+
+Icon: Logistics
+Use for: logistics supply
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.11.Logistics.png
+
+Icon: Ground support unit
+Use for: ground support unit
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.12.GroundSupportUnit.png
+
+Icon: Safe forward point
+Use for: safe forward point
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.13.SafeForwardPoint.png
+
+Icon: Situation unit
+Use for: situation unit SITREP
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.14.SituationUnit.png
+
+Icon: Safe zone
+Use for: safe zone exclusion
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.15.SafeZone.png
+
+Icon: Communications operations
+Use for: communications operations radio
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.16.Communications.png
+
+Icon: Medical triage
+Use for: triage medical
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.17.MedicalTriage.png
+
+Icon: Casualty clearing point
+Use for: casualty clearing CCP
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.18.CasualtyClearingPoint.png
+
+Icon: Ambulance
+Use for: ambulance St John WFA
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.19.Ambulance.png
+
+Icon: Medical evacuation helicopter
+Use for: MEDEVAC helicopter
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.20.MedicalEvacuationHelicopterStation.png
+
+Icon: Temporary morgue
+Use for: temporary morgue fatality
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.21.TemporaryMorgue.png
+
+Icon: Water distribution point
+Use for: water distribution emergency
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.23.EmergencyWaterDistributionPoint.png
+
+Icon: Water point
+Use for: water point supply
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.24.WaterPoint.png
+
+Icon: Water tanker
+Use for: water tanker truck
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.25.WaterTanker.png
+
+Icon: Food distribution point
+Use for: food distribution emergency
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.26.EmergencyFoodDistributionPoint.png
+
+Icon: Community led centre
+Use for: community centre welfare
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.27.CommunityLedCentre.png
+
+Icon: Generator location
+Use for: generator power
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.28.GeneratorLocation.png
+
+Icon: Fuel point
+Use for: fuel point operations
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.29.FuelPoint.png
+
+Icon: Communications infrastructure operations
+Use for: communications infrastructure operations
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.30.CommunicationsInfrastructure.png
+
+Icon: Customs service
+Use for: customs border service
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.31.CustomsService.png
+
+Icon: Checkpoint
+Use for: checkpoint access control
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.32.CheckPoint.png
+
+Icon: Detour
+Use for: detour road diversion
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.33.Detour.png
+
+Icon: Road block
+Use for: roadblock cordon
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.34.RoadBlock.png
+
+Icon: Machinery
+Use for: machinery heavy equipment
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.35.Machinery.png
+
+Icon: Weather station operations
+Use for: weather station operations
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.36.WeatherStation.png
+
+Icon: Helicopter pad operations
+Use for: helicopter pad ops
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.37.HelicopterPad.png
+
+Icon: Airstrip operations
+Use for: airstrip operations
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.38.Airstrip.png
+
+Icon: Boat ramp operations
+Use for: boat ramp operations
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.39.BoatRamp.png
+
+Icon: Marine operations
+Use for: marine operations boat
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.40.Marine.png
+
+Icon: Emergency coordination centre
+Use for: ECC emergency coordination
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.63.EmergencyCoordinationCentre.png
+
+Icon: National coordination centre
+Use for: NCC national coordination
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.64.NationalCoordinationCentre.png
+
+Icon: USAR
+Use for: urban search rescue USAR
+iconsetpath: bb4df0a6-ca8d-4ba8-bb9e-3deb97ff015e/Operations/OP.65.USAR.png
