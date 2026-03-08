@@ -82,7 +82,6 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 			
 			String modelType = (String)bot.get("modelType");
 			String botName = (String)bot.get("botName");
-			String botUid = botName.replace(" ", "-");
 
 			List<String> groups = (List<String>)bot.get("groups");
 			LOGGER.info("Bot with name " + botName + " should use groups: " + groups);
@@ -106,23 +105,18 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 			switch(modelType) {
 				case "ollama":
 					llmManagers.put(botName, new OllamaChatManager(bot));
-					llmManagers.put(botUid, new OllamaChatManager(bot));
 					break;
 				case "anthropic":
 					llmManagers.put(botName, new AnthropicChatManager(bot));
-					llmManagers.put(botUid, new AnthropicChatManager(bot));
 					break;
 				case "openai":
 					llmManagers.put(botName, new OpenAIAPIChatManager(bot));
-					llmManagers.put(botUid, new OpenAIAPIChatManager(bot));
 					break;
 				case "bedrock":
 					llmManagers.put(botName, new BedrockChatManager(bot));
-					llmManagers.put(botUid, new BedrockChatManager(bot));
 					break;
 				case "google-agent":
 					llmManagers.put(botName, new GoogleAgentChatManager(bot));
-					llmManagers.put(botUid, new GoogleAgentChatManager(bot));
 					break;
 				default:
 					LOGGER.warn("Unhandled model type: " + modelType + ". Ignoring.");
