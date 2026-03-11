@@ -18,12 +18,12 @@ import tak.server.plugins.messaging.MessageConverter;
 
 public class TAKChatGenerator {
 	//private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"GeoChat.|||UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"999999.0\" ce=\"999999.0\" le=\"999999.0\"/><detail><__chat parent="RootContactGroup" senderCallsign=\"TAKBot\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||ID|||\"><chatgrp id=\"|||ID|||\" uid1=\"|||UID1|||\" uid0=\"|||UID0|||\"/></__chat><remarks time=\"2024-02-07T05:02:41Z\" source=\"daf0e27b-1ba2-08db-992e-153a2c73ea4b\" to=\"1a677971-bfba-a731-f86b-64c2317f7097\">|||CHAT_TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"TAKBot\"/><marti><dest callsign=\"|||DST_CALLSIGN|||\"/></marti></detail></event>";
-	private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"|||SRC_UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><__chat parent=\"RootContactGroup\" messageId=\"|||MSG_UID|||\" senderCallsign=\"|||SRC_CALLSIGN|||\" chatroom=\"|||SRC_CALLSIGN|||\" id=\"|||SRC_UID|||\"><chatgrp id=\"|||DST_UID|||\" uid1=\"|||DST_UID|||\" uid0=\"|||SRC_UID|||\"/></__chat><remarks time=\"|||TIME|||\" to=\"|||DST_CALLSIGN|||\">|||TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"|||SRC_UID|||\"/><marti><dest callsign=\"|||DST_CALLSIGN|||\" uid=\"|||DST_UID|||\"/></marti></detail></event>";
+	private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"GeoChat.|||SRC_UID|||.|||DST_UID|||.|||MSG_UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><__chat parent=\"RootContactGroup\" messageId=\"|||MSG_UID|||\" senderCallsign=\"|||SRC_CALLSIGN|||\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||DST_UID|||\"><chatgrp id=\"|||DST_UID|||\" uid1=\"|||DST_UID|||\" uid0=\"|||SRC_UID|||\"/></__chat><remarks time=\"|||TIME|||\" to=\"|||DST_UID|||\">|||TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"|||SRC_UID|||\"/><marti><dest callsign=\"|||DST_CALLSIGN|||\" uid=\"|||DST_UID|||\"/></marti></detail></event>";
 	private static final Logger LOGGER = LoggerFactory.getLogger(TAKChatGenerator.class);
 	
 	public static Message generateChat(Message messageToReverse, String chatText, String botCallsign) throws Exception {
 		Pattern senderCallsignPattern = Pattern.compile("senderCallsign=\"(.*?)\"");
-		Pattern senderUIDPattern = Pattern.compile("uid0=\"(.*?)\"");
+		Pattern senderUIDPattern = Pattern.compile("uid1=\"(.*?)\"");
 		
 		String destCallsign;
 		String dstUID;
@@ -32,14 +32,23 @@ public class TAKChatGenerator {
 			destCallsign = "All Chat Rooms";
 			dstUID = "All Chat Rooms";
 		} else {
-			destCallsign = getSingleMatch(messageToReverse, senderCallsignPattern);//"BRAVO-123";;
-			dstUID =  getSingleMatch(messageToReverse, senderUIDPattern);//"1a677971-bfba-a731-f86b-64c2317f7097";
+			destCallsign = getSingleMatch(messageToReverse, senderCallsignPattern);
+			dstUID = getSingleMatch(messageToReverse, senderUIDPattern);
+			// WinTAK embeds the sender UID in the CoT event UID as GeoChat.<sender-uid>.<bot-uid>.<msg-uuid>
+			// xmlDetail chatgrp does not contain the SID, so fall back to parsing the event UID
+			if (dstUID == null || dstUID.equals(botCallsign.replace(" ", "-"))) {
+				String cotUid = messageToReverse.getPayload().getCotEvent().getUid();
+				if (cotUid != null && cotUid.startsWith("GeoChat.")) {
+					String[] parts = cotUid.split("\\.", 4);
+					if (parts.length >= 3) dstUID = parts[1];
+				}
+			}
 		}
 
 		String srcCallsign = botCallsign;
 		String srcUID = botCallsign.replace(" ", "-");
 		
-		SimpleDateFormat dateFormater = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ss'Z'");
+		SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		Date now = new Date();
 		
 		Calendar calendar = Calendar.getInstance();
@@ -58,6 +67,8 @@ public class TAKChatGenerator {
 	    
 	    String staleStr = dateFormater.format(calendar.getTime());
 		
+		// Strip 4-byte emoji and other non-BMP characters that WinTAK cannot handle
+		chatText = chatText.replaceAll("[\\x{10000}-\\x{10FFFF}]", "").trim();
 		String newCoT = CHAT_TEMPLATE.replaceAll("\\|\\|\\|TEXT\\|\\|\\|", chatText.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"));
 		newCoT = newCoT.replaceAll("\\|\\|\\|STALE\\|\\|\\|", staleStr);
 		newCoT = newCoT.replaceAll("\\|\\|\\|TIME\\|\\|\\|", nowStr);
