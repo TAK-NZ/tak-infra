@@ -32,8 +32,17 @@ public class TAKChatGenerator {
 			destCallsign = "All Chat Rooms";
 			dstUID = "All Chat Rooms";
 		} else {
-			destCallsign = getSingleMatch(messageToReverse, senderCallsignPattern);//"BRAVO-123";;
-			dstUID =  getSingleMatch(messageToReverse, senderUIDPattern);//"1a677971-bfba-a731-f86b-64c2317f7097";
+			destCallsign = getSingleMatch(messageToReverse, senderCallsignPattern);
+			dstUID = getSingleMatch(messageToReverse, senderUIDPattern);
+			// WinTAK embeds the sender UID in the CoT event UID as GeoChat.<sender-uid>.<bot-uid>.<msg-uuid>
+			// xmlDetail chatgrp does not contain the SID, so fall back to parsing the event UID
+			if (dstUID == null || dstUID.equals(botCallsign.replace(" ", "-"))) {
+				String cotUid = messageToReverse.getPayload().getCotEvent().getUid();
+				if (cotUid != null && cotUid.startsWith("GeoChat.")) {
+					String[] parts = cotUid.split("\\.", 4);
+					if (parts.length >= 3) dstUID = parts[1];
+				}
+			}
 		}
 
 		String srcCallsign = botCallsign;
