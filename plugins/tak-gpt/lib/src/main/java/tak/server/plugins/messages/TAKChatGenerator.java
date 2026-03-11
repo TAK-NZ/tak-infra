@@ -23,7 +23,7 @@ public class TAKChatGenerator {
 	
 	public static Message generateChat(Message messageToReverse, String chatText, String botCallsign) throws Exception {
 		Pattern senderCallsignPattern = Pattern.compile("senderCallsign=\"(.*?)\"");
-		Pattern senderUIDPattern = Pattern.compile("uid0=\"(.*?)\"");
+		Pattern senderUIDPattern = Pattern.compile("uid1=\"(.*?)\"");
 		
 		String destCallsign;
 		String dstUID;
@@ -39,7 +39,7 @@ public class TAKChatGenerator {
 		String srcCallsign = botCallsign;
 		String srcUID = botCallsign.replace(" ", "-");
 		
-		SimpleDateFormat dateFormater = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ss'Z'");
+		SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		Date now = new Date();
 		
 		Calendar calendar = Calendar.getInstance();
