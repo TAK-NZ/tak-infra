@@ -73,15 +73,18 @@ public class TAKChatGenerator {
 		
 		// Strip 4-byte emoji and other non-BMP characters that WinTAK cannot handle
 		chatText = chatText.replaceAll("[\\x{10000}-\\x{10FFFF}]", "").trim();
-		String newCoT = CHAT_TEMPLATE.replaceAll("\\|\\|\\|TEXT\\|\\|\\|", chatText.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"));
-		newCoT = newCoT.replaceAll("\\|\\|\\|STALE\\|\\|\\|", staleStr);
-		newCoT = newCoT.replaceAll("\\|\\|\\|TIME\\|\\|\\|", nowStr);
-		newCoT = newCoT.replaceAll("\\|\\|\\|UID\\|\\|\\|", destCallsign);
-		newCoT = newCoT.replaceAll("\\|\\|\\|SRC_UID\\|\\|\\|", srcUID);
-		newCoT = newCoT.replaceAll("\\|\\|\\|DST_UID\\|\\|\\|", dstUID);
-		newCoT = newCoT.replaceAll("\\|\\|\\|SRC_CALLSIGN\\|\\|\\|", srcCallsign);
-		newCoT = newCoT.replaceAll("\\|\\|\\|DST_CALLSIGN\\|\\|\\|", destCallsign);
-		newCoT = newCoT.replaceAll("\\|\\|\\|MSG_UID\\|\\|\\|", msgUID);
+		// Use .replace() throughout to avoid regex interpretation of values (e.g. callsigns with parentheses)
+		String escapedText = chatText.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+		String newCoT = CHAT_TEMPLATE
+			.replace("|||TEXT|||", escapedText)
+			.replace("|||STALE|||", staleStr)
+			.replace("|||TIME|||", nowStr)
+			.replace("|||UID|||", destCallsign)
+			.replace("|||SRC_UID|||", srcUID)
+			.replace("|||DST_UID|||", dstUID)
+			.replace("|||SRC_CALLSIGN|||", srcCallsign)
+			.replace("|||DST_CALLSIGN|||", destCallsign)
+			.replace("|||MSG_UID|||", msgUID);
 		// ** TODO fill the rest of this in - look for easier examples (most chat isn't this complex)
 		
 		LOGGER.info("\n\nChat Message Generated:\n" + newCoT + "\n\n");
@@ -106,7 +109,9 @@ public class TAKChatGenerator {
 				if (parts.length >= 2) dstUID = parts[1];
 			}
 		}
+		if (dstUID == null) dstUID = "";
 		String dstCallsign = getSingleMatch(originalMessage, SENDER_CALLSIGN_PATTERN);
+		if (dstCallsign == null) dstCallsign = dstUID != null ? dstUID : "";
 		String msgId = getSingleMatch(originalMessage, MESSAGE_ID_PATTERN);
 		if (msgId == null) msgId = originalMessage.getPayload().getCotEvent().getUid();
 
