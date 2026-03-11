@@ -18,12 +18,11 @@ import tak.server.plugins.messaging.MessageConverter;
 
 public class TAKChatGenerator {
 	//private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"GeoChat.|||UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"999999.0\" ce=\"999999.0\" le=\"999999.0\"/><detail><__chat parent="RootContactGroup" senderCallsign=\"TAKBot\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||ID|||\"><chatgrp id=\"|||ID|||\" uid1=\"|||UID1|||\" uid0=\"|||UID0|||\"/></__chat><remarks time=\"2024-02-07T05:02:41Z\" source=\"daf0e27b-1ba2-08db-992e-153a2c73ea4b\" to=\"1a677971-bfba-a731-f86b-64c2317f7097\">|||CHAT_TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"TAKBot\"/><marti><dest callsign=\"|||DST_CALLSIGN|||\"/></marti></detail></event>";
-	private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"GeoChat.|||SRC_UID|||.|||DST_UID|||.|||MSG_UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><__chat parent=\"RootContactGroup\" messageId=\"|||MSG_UID|||\" senderCallsign=\"|||SRC_CALLSIGN|||\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||DST_UID|||\"><chatgrp id=\"|||DST_UID|||\" uid1=\"|||DST_UID|||\" uid0=\"|||SRC_UID|||\"/></__chat><remarks time=\"|||TIME|||\" to=\"|||DST_UID|||\">|||TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"|||SRC_UID|||\"/><marti><dest callsign=\"|||DST_CALLSIGN|||\" uid=\"|||DST_UID|||\"/></marti></detail></event>";
+	private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"GeoChat.|||SRC_UID|||.|||DST_UID|||.|||MSG_UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><__chat parent=\"RootContactGroup\" messageId=\"|||MSG_UID|||\" senderCallsign=\"|||SRC_CALLSIGN|||\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||DST_UID|||\"><chatgrp id=\"|||DST_UID|||\" uid1=\"|||DST_UID|||\" uid0=\"|||SRC_UID|||\"/></__chat><remarks time=\"|||TIME|||\" to=\"|||DST_UID|||\">|||TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"|||SRC_UID|||\"/></detail></event>";
 	private static final Logger LOGGER = LoggerFactory.getLogger(TAKChatGenerator.class);
 	
 	public static Message generateChat(Message messageToReverse, String chatText, String botCallsign) throws Exception {
 		Pattern senderCallsignPattern = Pattern.compile("senderCallsign=\"(.*?)\"");
-		Pattern senderUIDPattern = Pattern.compile("uid1=\"(.*?)\"");
 		
 		String destCallsign;
 		String dstUID;
@@ -33,14 +32,19 @@ public class TAKChatGenerator {
 			dstUID = "All Chat Rooms";
 		} else {
 			destCallsign = getSingleMatch(messageToReverse, senderCallsignPattern);
-			dstUID = getSingleMatch(messageToReverse, senderUIDPattern);
-			// WinTAK embeds the sender UID in the CoT event UID as GeoChat.<sender-uid>.<bot-uid>.<msg-uuid>
-			// xmlDetail chatgrp does not contain the SID, so fall back to parsing the event UID
+			dstUID = getSingleMatch(messageToReverse, Pattern.compile("uid0=\"(.*?)\""));
+			// WinTAK sets uid0 to the sender's SID in xmlDetail - use that directly.
+			// For ATAK/CloudTAK uid0 is also the sender. Only fall back to GeoChat parsing
+			// if uid0 is missing or equals the bot's own UID.
 			if (dstUID == null || dstUID.equals(botCallsign.replace(" ", "-"))) {
 				String cotUid = messageToReverse.getPayload().getCotEvent().getUid();
 				if (cotUid != null && cotUid.startsWith("GeoChat.")) {
-					String[] parts = cotUid.split("\\.", 4);
-					if (parts.length >= 3) dstUID = parts[1];
+					// Find second segment: everything between first and second dot-separated token
+					// Use lastIndexOf of the bot UID to safely extract sender UID
+					String botUid = botCallsign.replace(" ", "-");
+					int start = "GeoChat.".length();
+					int end = cotUid.lastIndexOf("." + botUid + ".");
+					if (end > start) dstUID = cotUid.substring(start, end);
 				}
 			}
 		}
@@ -87,6 +91,47 @@ public class TAKChatGenerator {
 		return newMsg;
 	}
 	
+	private static final Pattern MESSAGE_ID_PATTERN = Pattern.compile("messageId=\"(.*?)\"");
+	private static final Pattern SENDER_CALLSIGN_PATTERN = Pattern.compile("senderCallsign=\"(.*?)\"");
+	private static final String RECEIPT_TEMPLATE = "<event version=\"2.0\" uid=\"|||RECEIPT_UID|||\" type=\"|||TYPE|||\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><__chatreceipt parent=\"RootContactGroup\" groupOwner=\"false\" messageId=\"|||MSG_ID|||\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||DST_UID|||\" senderCallsign=\"|||SRC_CALLSIGN|||\"><chatgrp uid0=\"|||SRC_UID|||\" uid1=\"|||DST_UID|||\" id=\"|||DST_UID|||\"/></__chatreceipt><link uid=\"|||SRC_UID|||\" type=\"a-f-G-U-C-I\" relation=\"p-p\"/></detail></event>";
+
+	public static Message generateReceipt(Message originalMessage, String botCallsign, String receiptType) throws Exception {
+		String srcUID = botCallsign.replace(" ", "-");
+		String srcCallsign = botCallsign;
+		String dstUID = getSingleMatch(originalMessage, Pattern.compile("uid0=\"(.*?)\""));
+		if (dstUID == null) {
+			String cotUid = originalMessage.getPayload().getCotEvent().getUid();
+			if (cotUid != null && cotUid.startsWith("GeoChat.")) {
+				String[] parts = cotUid.split("\\.", 4);
+				if (parts.length >= 2) dstUID = parts[1];
+			}
+		}
+		String dstCallsign = getSingleMatch(originalMessage, SENDER_CALLSIGN_PATTERN);
+		String msgId = getSingleMatch(originalMessage, MESSAGE_ID_PATTERN);
+		if (msgId == null) msgId = originalMessage.getPayload().getCotEvent().getUid();
+
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		dateFormatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		String nowStr = dateFormatter.format(calendar.getTime());
+		calendar.add(Calendar.HOUR_OF_DAY, 12);
+		String staleStr = dateFormatter.format(calendar.getTime());
+
+		String receipt = RECEIPT_TEMPLATE
+			.replace("|||TYPE|||", receiptType)
+			.replace("|||RECEIPT_UID|||", msgId)
+			.replace("|||MSG_ID|||", msgId)
+			.replace("|||TIME|||", nowStr)
+			.replace("|||STALE|||", staleStr)
+			.replace("|||SRC_UID|||", srcUID)
+			.replace("|||SRC_CALLSIGN|||", srcCallsign)
+			.replace("|||DST_UID|||", dstUID)
+			.replace("|||DST_CALLSIGN|||", dstCallsign);
+
+		MessageConverter converter = new MessageConverter();
+		return converter.cotStringToDataMessage(receipt, new HashSet(Arrays.asList(originalMessage.getGroupsList().toArray())), "TAKBot");
+	}
+
 	private static String getSingleMatch(Message message, Pattern p) {
 		Matcher m = p.matcher(message.getPayload().getCotEvent().getDetail().getXmlDetail());
 		if(m.find()) {

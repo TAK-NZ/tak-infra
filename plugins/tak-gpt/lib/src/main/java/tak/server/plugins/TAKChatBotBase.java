@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +49,7 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TAKChatBotBase.class);
 	private static final String CALLSIGN_MSG_MARKER = "dest callsign=\"";
 	private final ScheduledExecutorService scheduler;
+	private final ExecutorService llmExecutor;
 	private List<TAKBOTPresenceBroadcaster> broadcasters = new ArrayList();
 	
 	private Runnable broadcastTask = new Thread() {
@@ -67,6 +70,7 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 	
 	public TAKChatBotBase() {
 		scheduler = newScheduledThreadPool(1);
+		llmExecutor = Executors.newFixedThreadPool(4);
 	}
 	
 	private Map<String, LLMChatManager> llmManagers = new HashMap<>();
@@ -135,8 +139,7 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
-		
+		llmExecutor.shutdown();
 	}
 
 	@Override
@@ -176,25 +179,40 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 		         if(!nodes.isEmpty()) {
 		        	 String text = nodes.get(0).getText();
 		        	 LOGGER.info("Sending message to LLM: " + text);
-		        	 String response = null;
-		        	 int counter = 0;
-		        	 
-		        	 while(counter++ < 2 && response == null) {
-			        	 try {
-			 				response = llmChatMgr.sendChatRequest(text, context);
-			 			} catch (Exception e) {
-			 				LOGGER.error("Error sending chat request to LLM (request attempt " + counter + " of 2", e);
-			 			}
+
+		        	 // Send delivered and read receipts immediately so the user knows the bot received their message
+		        	 try {
+		        		 send(TAKChatGenerator.generateReceipt(msg, botName, "b-t-f-d"));
+		        		 send(TAKChatGenerator.generateReceipt(msg, botName, "b-t-f-r"));
+		        	 } catch (Exception e) {
+		        		 LOGGER.warn("Failed to send chat receipt", e);
 		        	 }
-		        	 
-		        	 if(response == null) {
-		        		 response = "Error sending chat request to LLM";
-		        	 }
-		        	 
-		        	Message newMessage = TAKChatGenerator.generateChat(msg, response, botName);
-		        	LOGGER.info("Sending response chat message: " + newMessage.toString());
-		 			send(newMessage);
-		 			LOGGER.info("Sent response chat message");
+
+		        	 // Dispatch LLM call to separate thread so pub thread is freed immediately
+		        	 final Message msgRef = msg;
+		        	 final String botNameRef = botName;
+		        	 final LLMChatManager llmRef = llmChatMgr;
+		        	 final TAKContext contextRef = context;
+		        	 llmExecutor.submit(() -> {
+		        		 String response = null;
+		        		 int counter = 0;
+		        		 while(counter++ < 2 && response == null) {
+		        			 try {
+		        				 response = llmRef.sendChatRequest(text, contextRef);
+		        			 } catch (Exception e) {
+		        				 LOGGER.error("Error sending chat request to LLM (request attempt " + counter + " of 2)", e);
+		        			 }
+		        		 }
+		        		 if(response == null) response = "Error sending chat request to LLM";
+		        		 try {
+		        			 Message newMessage = TAKChatGenerator.generateChat(msgRef, response, botNameRef);
+		        			 LOGGER.info("Sending response chat message: " + newMessage.toString());
+		        			 send(newMessage);
+		        			 LOGGER.info("Sent response chat message");
+		        		 } catch (Exception e) {
+		        			 LOGGER.error("Error generating or sending LLM response", e);
+		        		 }
+		        	 });
 		         }
 			} catch (DocumentException e) {
 				LOGGER.error("Unable to parse CoT remarks element", e);
