@@ -32,8 +32,8 @@
         "enableCloudWatchLogs": false
       },
       "ecs": {
-        "taskCpu": 4096,
-        "taskMemory": 8192,
+        "taskCpu": 8192,
+        "taskMemory": 16384,
         "desiredCount": 1,
         "enableDetailedLogging": true,
         "enableEcsExec": true
@@ -93,8 +93,8 @@
         "enableCloudWatchLogs": false
       },
       "ecs": {
-        "taskCpu": 4096,
-        "taskMemory": 8192,
+        "taskCpu": 8192,
+        "taskMemory": 16384,
         "desiredCount": 1,
         "enableDetailedLogging": false,
         "enableEcsExec": false
