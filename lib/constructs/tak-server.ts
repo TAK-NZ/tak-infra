@@ -468,9 +468,9 @@ export class TakServer extends Construct {
           'CMD-SHELL',
           'curl -ks --cert /opt/tak/certs/files/admin.pem --key /opt/tak/certs/files/admin.key --pass atakatak https://localhost:8443/actuator/health/readiness || exit 1'
         ],
-        interval: Duration.seconds(5),      // Match target group settings
-        timeout: Duration.seconds(2),       // Match target group settings
-        retries: 2,                        // Match target group threshold
+        interval: Duration.seconds(30),
+        timeout: Duration.seconds(30),
+        retries: 3,
         startPeriod: Duration.seconds(240)  // Extended for TAK startup
       },
       essential: true

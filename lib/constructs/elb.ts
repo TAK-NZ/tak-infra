@@ -167,10 +167,10 @@ export class Elb extends Construct {
       healthCheck: {
         protocol: elbv2.Protocol.TCP,
         port: healthCheckPort.toString(),
-        interval: Duration.seconds(5),
-        timeout: Duration.seconds(2),
+        interval: Duration.seconds(30),
+        timeout: Duration.seconds(10),
         healthyThresholdCount: 2,
-        unhealthyThresholdCount: 2
+        unhealthyThresholdCount: 3
       }
     });
   }
