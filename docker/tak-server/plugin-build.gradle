@@ -48,6 +48,13 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+    sourceSets {
+        main {
+            resources {
+                srcDirs = ['src/main/resources']
+            }
+        }
+    }
 }
 
 shadowJar {
