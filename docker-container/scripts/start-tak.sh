@@ -349,13 +349,16 @@ echo $ADMIN_ELEVATION_PID > /tmp/admin_elevation.pid
 
 echo "TAK Server - New ECS Task successfully started"
 
-# Tail TAK Server log files to stdout/stderr so they appear in CloudWatch
+# Tail TAK Server log files to stdout/stderr so they appear in CloudWatch.
+# Note: takserver-plugins.log and takserver-retention.log are NOT tailed here
+# because those processes (takserver-pm.jar, takserver-retention.jar) have an
+# unconditional ConsoleAppender in their logback config that already writes to
+# stdout, which the ECS log driver captures directly. Tailing those files would
+# produce duplicate log lines.
 mkdir -p /opt/tak/logs
 tail -F /opt/tak/logs/takserver-api.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-api-access.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-messaging.log 2>/dev/null &
-tail -F /opt/tak/logs/takserver-plugins.log 2>/dev/null &
-tail -F /opt/tak/logs/takserver-retention.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-config.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-db-audit.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-esapi.log 2>/dev/null &

@@ -78,7 +78,7 @@ public class TAKBOTPresenceBroadcaster {
 		
 		Calendar calendar = Calendar.getInstance();
 	    calendar.setTime(now);
-	    calendar.add(Calendar.HOUR_OF_DAY, 12);
+	    calendar.add(Calendar.SECOND, 30);
 	    
 	    String staleStr = dateFormater.format(calendar.getTime());
 		
