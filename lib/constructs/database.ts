@@ -147,12 +147,22 @@ export class Database extends Construct {
         credentials: rds.Credentials.fromSecret(this.masterSecret),
         defaultDatabaseName: DATABASE_CONSTANTS.DEFAULT_DATABASE_NAME,
         port: DATABASE_CONSTANTS.PORT,
-        serverlessV2MinCapacity: 0.5,
-        serverlessV2MaxCapacity: 4,
-        writer: rds.ClusterInstance.serverlessV2('writer'),
+        serverlessV2MinCapacity: dbConfig.serverlessV2MinCapacity ?? 0.5,
+        serverlessV2MaxCapacity: dbConfig.serverlessV2MaxCapacity ?? 8,
+        writer: rds.ClusterInstance.serverlessV2('writer', {
+          enablePerformanceInsights: dbConfig.enablePerformanceInsights,
+          performanceInsightRetention: dbConfig.enablePerformanceInsights ?
+            rds.PerformanceInsightRetention.MONTHS_6 :
+            undefined
+        }),
         readers: dbConfig.instanceCount > 1 ? 
           Array.from({ length: dbConfig.instanceCount - 1 }, (_, i) => 
-            rds.ClusterInstance.serverlessV2(`reader${i + 1}`)
+            rds.ClusterInstance.serverlessV2(`reader${i + 1}`, {
+              enablePerformanceInsights: dbConfig.enablePerformanceInsights,
+              performanceInsightRetention: dbConfig.enablePerformanceInsights ?
+                rds.PerformanceInsightRetention.MONTHS_6 :
+                undefined
+            })
           ) : [],
         parameterGroup,
         subnetGroup,

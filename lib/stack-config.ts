@@ -15,6 +15,8 @@ export interface ContextEnvironmentConfig {
     engineVersion?: string;
     allocatedStorage: number;
     maxAllocatedStorage: number;
+    serverlessV2MinCapacity?: number;
+    serverlessV2MaxCapacity?: number;
     enablePerformanceInsights: boolean;
     monitoringInterval: number;
     backupRetentionDays: number;
