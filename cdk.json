@@ -25,7 +25,7 @@
         "engineVersion": "17.4",
         "allocatedStorage": 20,
         "maxAllocatedStorage": 100,
-        "serverlessV2MinCapacity": 0.5,
+        "serverlessV2MinCapacity": 2.0,
         "serverlessV2MaxCapacity": 8,
         "enablePerformanceInsights": true,
         "monitoringInterval": 0,
