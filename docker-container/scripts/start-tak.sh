@@ -301,8 +301,8 @@ cat > /etc/cron.d/tak-cert-cleanup << 'EOF'
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-# Clean up duplicate certificates every hour
-0 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
+# Clean up duplicate certificates every hour (staggered to avoid collision with retention job at :00)
+15 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
 EOF
 
 # Setup retention config backup cron job
@@ -363,6 +363,7 @@ tail -F /opt/tak/logs/takserver-config.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-db-audit.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-esapi.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver.log 2>/dev/null &
+tail -F /var/log/tak-cert-cleanup.log 2>/dev/null &
 
 # Run TAK server as main process (not in background)
 echo "TAK Server - Starting main TAK server process..."

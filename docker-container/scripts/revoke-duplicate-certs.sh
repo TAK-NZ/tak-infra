@@ -7,7 +7,7 @@
 #
 # Uses efficient O(N) algorithms and parallel processing
 
-set -euo pipefail
+set -eo pipefail
 
 # Configuration
 ADMIN_CERT="/opt/tak/certs/files/admin.pem"
@@ -74,8 +74,13 @@ echo "Found ${#user_device_newest_id[@]} unique user+device combinations"
 # Identify duplicates
 declare -a duplicates_to_revoke
 for cert_info in "${all_active_certs[@]}"; do
-    IFS='|' read -r id user_device_key issuance_date <<< "$cert_info"
-    [ "$id" != "${user_device_newest_id[$user_device_key]}" ] && duplicates_to_revoke+=("$id")
+    # cert_info format: "id|user_dn|client_uid|issuance_date"
+    # user_device_key is "user_dn|client_uid" so reconstruct by stripping first and last fields
+    id="${cert_info%%|*}"
+    issuance_date="${cert_info##*|}"
+    user_device_key="${cert_info#*|}"       # strip leading id|
+    user_device_key="${user_device_key%|*}" # strip trailing |issuance_date
+    [ "$id" != "${user_device_newest_id[$user_device_key]:-}" ] && duplicates_to_revoke+=("$id")
 done
 
 if [ ${#duplicates_to_revoke[@]} -eq 0 ]; then

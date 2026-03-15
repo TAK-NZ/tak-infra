@@ -33,6 +33,17 @@ RUN chmod +x /opt/tak/scripts/start-tak.sh \
         && zip -u ../takserver.war Marti/login/partials/login.html; \
     fi
 
+# Patch JVM flags into configureInDocker.sh:
+#   -XX:G1HeapRegionSize=16m  raises the humongous allocation threshold from ~1MB to 16MB,
+#                             preventing G1GC from treating normal Ignite cache objects as
+#                             humongous and triggering the GC storm seen in the OOM incident
+#   -XX:+HeapDumpOnOutOfMemoryError  write heap dump to EFS on OOM for post-mortem analysis
+#   -XX:HeapDumpPath             persistent-config is EFS-mounted, survives container replacement
+#   -Xlog:gc*                    GC log to EFS for diagnosing future GC pressure events
+RUN GC_FLAGS="-XX:G1HeapRegionSize=16m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/tak/persistent-config/ -Xlog:gc*:file=/opt/tak/persistent-config/gc-%p.log:time,uptime:filecount=3,filesize=10m" \
+    && sed -i "s|java -jar -Xmx\${MESSAGING_MAX_HEAP}m|java -jar ${GC_FLAGS} -Xmx\${MESSAGING_MAX_HEAP}m|" /opt/tak/configureInDocker.sh \
+    && sed -i "s|java -jar -Xmx\${API_MAX_HEAP}m|java -jar ${GC_FLAGS} -Xmx\${API_MAX_HEAP}m|" /opt/tak/configureInDocker.sh
+
 # Build tak-gpt plugin
 COPY ./docker/tak-server/extract-tak-deps.sh /tmp/
 COPY ./docker/tak-server/plugin-build.gradle /tmp/
