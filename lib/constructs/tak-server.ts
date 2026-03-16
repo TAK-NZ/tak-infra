@@ -426,6 +426,9 @@ export class TakServer extends Construct {
         TAKSERVER_CoreConfig_Network_CloudwatchEnable: props.contextConfig.takserver.enableCloudWatchMetrics?.toString() || 'false',
         // S3 bucket for plugin configs
         S3_TAK_CONFIG_BUCKET: props.storage.s3.configBucket.bucketName,
+        // Pass actual Fargate task memory so start-tak.sh can calculate correct JVM heap sizes
+        // (setenv.sh reads /proc/meminfo which reflects host RAM, not the container limit)
+        ECS_TASK_MEMORY_MB: props.contextConfig.ecs.taskMemory.toString(),
         // LDAP Group Prefix Configuration
         ...(props.contextConfig.takserver.ldapGroupPrefix && {
           TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix: `cn=${props.contextConfig.takserver.ldapGroupPrefix}`,
