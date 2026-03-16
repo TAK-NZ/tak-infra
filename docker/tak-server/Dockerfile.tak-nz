@@ -24,6 +24,14 @@ RUN unzip "./${TAK_VERSION}.zip" \
 
 COPY ./docker-container/ $HOME/
 
+# Patch JVM flags into configureInDocker.sh (merged into same RUN as chmod so that
+# Docker layer caching cannot skip the patch when docker-container/ is unchanged):
+#   -XX:G1HeapRegionSize=16m  raises the humongous allocation threshold from ~1MB to 16MB,
+#                             preventing G1GC from treating normal Ignite cache objects as
+#                             humongous and triggering the GC storm seen in the OOM incident
+#   -XX:+HeapDumpOnOutOfMemoryError  write heap dump to EFS on OOM for post-mortem analysis
+#   -XX:HeapDumpPath             persistent-config is EFS-mounted, survives container replacement
+#   -Xlog:gc*                    GC log to EFS for diagnosing future GC pressure events
 RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/download-plugin-config.sh \
     && if [ -d "branding" ]; then \
@@ -31,16 +39,8 @@ RUN chmod +x /opt/tak/scripts/start-tak.sh \
         && zip -u ../takserver.war index.html \
         && zip -u ../takserver.war Marti/login/index.html \
         && zip -u ../takserver.war Marti/login/partials/login.html; \
-    fi
-
-# Patch JVM flags into configureInDocker.sh:
-#   -XX:G1HeapRegionSize=16m  raises the humongous allocation threshold from ~1MB to 16MB,
-#                             preventing G1GC from treating normal Ignite cache objects as
-#                             humongous and triggering the GC storm seen in the OOM incident
-#   -XX:+HeapDumpOnOutOfMemoryError  write heap dump to EFS on OOM for post-mortem analysis
-#   -XX:HeapDumpPath             persistent-config is EFS-mounted, survives container replacement
-#   -Xlog:gc*                    GC log to EFS for diagnosing future GC pressure events
-RUN python3 -c "
+    fi \
+    && python3 -c "
 gc = '-XX:G1HeapRegionSize=16m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/tak/persistent-config/ -Xlog:gc*:file=/opt/tak/persistent-config/gc-%p.log:time,uptime:filecount=3,filesize=10m'
 with open('/opt/tak/configureInDocker.sh', 'r') as f:
     content = f.read()
