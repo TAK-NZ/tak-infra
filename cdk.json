@@ -35,7 +35,7 @@
       },
       "ecs": {
         "taskCpu": 4096,
-        "taskMemory": 16384,
+        "taskMemory": 8192,
         "desiredCount": 1,
         "enableDetailedLogging": true,
         "enableEcsExec": true
