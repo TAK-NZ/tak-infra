@@ -24,8 +24,20 @@ RUN unzip "./${TAK_VERSION}.zip" \
 
 COPY ./docker-container/ $HOME/
 
+# Patch JVM flags into configureInDocker.sh (merged into same RUN as chmod so that
+# Docker layer caching cannot skip the patch when docker-container/ is unchanged):
+#   -XX:G1HeapRegionSize=16m  raises the humongous allocation threshold from ~1MB to 16MB,
+#                             preventing G1GC from treating normal Ignite cache objects as
+#                             humongous and triggering the GC storm seen in the OOM incident
+#   -XX:+HeapDumpOnOutOfMemoryError  write heap dump to EFS on OOM for post-mortem analysis
+#   -XX:HeapDumpPath             persistent-config is EFS-mounted, survives container replacement
+#   -Xlog:gc*                    GC log to EFS for diagnosing future GC pressure events
+COPY ./docker/tak-server/patch-jvm-flags.py /tmp/
 RUN chmod +x /opt/tak/scripts/start-tak.sh \
-    && chmod +x /opt/tak/scripts/download-plugin-config.sh
+    && chmod +x /opt/tak/scripts/download-plugin-config.sh \
+    && python3 /tmp/patch-jvm-flags.py \
+    && grep 'G1HeapRegionSize' /opt/tak/configureInDocker.sh \
+    && rm /tmp/patch-jvm-flags.py
 
 # Build tak-gpt plugin
 COPY ./docker/tak-server/extract-tak-deps.sh /tmp/
