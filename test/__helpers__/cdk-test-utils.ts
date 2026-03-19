@@ -15,7 +15,7 @@ export class CDKTestHelper {
    */
   static createTestStack(stackName = 'TestStack'): { app: App; stack: Stack } {
     const app = new App();
-    const stack = new Stack(app, stackName);
+    const stack = new Stack(app, stackName, { env: { account: '123456789012', region: 'ap-southeast-2' } });
     return { app, stack };
   }
 

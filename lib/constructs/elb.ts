@@ -129,10 +129,8 @@ export class Elb extends Construct {
       Fn.importValue(createBaseImportValue(props.contextConfig.stackName, BASE_EXPORT_NAMES.S3_ELB_LOGS))
     );
 
-    // Enable NLB access logging
-    this.loadBalancer.setAttribute('access_logs.s3.enabled', 'true');
-    this.loadBalancer.setAttribute('access_logs.s3.bucket', logsBucket.bucketName);
-    this.loadBalancer.setAttribute('access_logs.s3.prefix', `TAK-${props.contextConfig.stackName}-TakInfra`);
+    // Enable NLB access logging via CDK native method (handles bucket policy grants correctly)
+    this.loadBalancer.logAccessLogs(logsBucket, `TAK-${props.contextConfig.stackName}-TakInfra`);
 
     // Enable cross-zone load balancing
     this.loadBalancer.setAttribute('load_balancing.cross_zone.enabled', 'true');

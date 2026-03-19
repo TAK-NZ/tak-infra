@@ -4,12 +4,12 @@
   "description": "WebTAK OIDC setup Lambda function",
   "main": "index.js",
   "dependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.848.0",
+    "@aws-sdk/client-secrets-manager": "^3.1013.0",
     "axios": "^1.13.5",
     "dotenv": "^16.4.5",
     "form-data": "^4.0.1"
   },
   "overrides": {
-    "fast-xml-parser": ">=5.3.4"
+    "fast-xml-parser": ">=5.5.7"
   }
 }
