@@ -160,6 +160,7 @@
           <xs:documentation>Set the async executor pool queue size (used by REST APIs.)</xs:documentation>
         </xs:annotation>
       </xs:attribute>
+      <xs:attribute name="prometheusEnable" type="xs:boolean" default="false"/>
       <xs:attribute name="cloudwatchNamespace" type="xs:string" default="takserver"/>
       <xs:attribute name="cloudwatchMetricsBatchSize" type="xs:int" default="20"/>
       <xs:attribute name="cloudwatchEnable" type="xs:boolean" default="false"/>
@@ -218,6 +219,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:attribute>
+      <xs:attribute name="geoidResource" type="xs:string" default="WW15MGH.DAC"/>
     </xs:complexType>
   </xs:element>
 
@@ -784,6 +786,7 @@
       <xs:attribute name="allowAccessTokenRetrieval" type="xs:boolean" default="false"/>
       <xs:attribute name="adminTokenClaimName" type="xs:string"/>
       <xs:attribute name="adminTokenClaimValue" type="xs:string"/>
+      <xs:attribute name="callsignClaimAttribute" type="xs:string" default=""/>
       
     </xs:complexType>
   </xs:element>
@@ -927,6 +930,7 @@
       </xs:sequence>
       <xs:attribute name="minAltitude" type="xs:double"/>
       <xs:attribute name="maxAltitude" type="xs:double"/>
+      <xs:attribute name="filterTAKClients" type="xs:boolean" default="false"/>
     </xs:complexType>
   </xs:element>
 
