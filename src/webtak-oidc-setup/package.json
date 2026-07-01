@@ -7,7 +7,7 @@
     "@aws-sdk/client-secrets-manager": "^3.1013.0",
     "axios": "^1.16.0",
     "dotenv": "^16.4.5",
-    "form-data": "^4.0.1"
+    "form-data": "^4.0.6"
   },
   "overrides": {
     "fast-xml-parser": ">=5.7.0",
