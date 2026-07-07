@@ -63,7 +63,7 @@
         "enableContainerInsights": false
       },
       "webtak": {
-        "enabled": false,
+        "enabled": true,
         "enableOidc": true,
         "providerName": "TAK-WebTAK",
         "applicationName": "WebTAK",
@@ -124,7 +124,7 @@
         "enableContainerInsights": true
       },
       "webtak": {
-        "enabled": false,
+        "enabled": true,
         "enableOidc": true,
         "providerName": "TAK-WebTAK",
         "applicationName": "WebTAK",
