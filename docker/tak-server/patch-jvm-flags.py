@@ -6,6 +6,15 @@ gc = (
     ' -Xlog:gc*:file=/opt/tak/persistent-config/gc-%p.log:time,uptime:filecount=3,filesize=10m'
 )
 
+# Fix for Micrometer CloudWatch SSL failure (API process only).
+# Netty's native BoringSSL enforces Extended Key Usage and rejects the TLS
+# handshake with CloudWatch because the TAK Server certificate does not have
+# clientAuth EKU. Disabling native OpenSSL for the API JVM forces Netty to use
+# the JDK JSSE provider, which does not enforce EKU on outbound connections.
+# This flag must NOT be added to the messaging process — Ignite runs its cluster
+# server there and must keep native OpenSSL for inter-process communication.
+api_ssl_fix = '-Dio.netty.handler.ssl.noOpenSsl=true'
+
 # Patch configureInDocker.sh - add GC flags to messaging and API JVM invocations
 with open('/opt/tak/configureInDocker.sh', 'r') as f:
     content = f.read()
@@ -15,7 +24,7 @@ content = content.replace(
 )
 content = content.replace(
     'java -jar -Xmx${API_MAX_HEAP}m',
-    'java -jar ' + gc + ' -Xmx${API_MAX_HEAP}m'
+    'java -jar ' + gc + ' ' + api_ssl_fix + ' -Xmx${API_MAX_HEAP}m'
 )
 with open('/opt/tak/configureInDocker.sh', 'w') as f:
     f.write(content)

@@ -63,6 +63,13 @@ coverage/
 tak-data/
 takserver-docker-*.zip
 
+# Environment-specific TAK Server S3 config files (contain real deployment
+# values pulled from S3) -- only takserver-config.env.example is tracked
+takserver-config.env
+takserver-config.env.test
+takserver-config.env.demo
+takserver-config.env.prod
+
 # Device Profile packages
 TAK-NZ-ATAK-Standard-Settings-*.zip
 TAK-NZ-Standard-Plugins-*.zip
