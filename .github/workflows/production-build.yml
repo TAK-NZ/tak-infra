@@ -64,13 +64,20 @@ jobs:
           
           VERSION=$(jq -r '.context."prod".takserver.version' cdk.json)
           BRANDING=$(jq -r '.context."prod".takserver.branding' cdk.json)
-          REVISION=$(jq -r '.context."prod".takserver.buildRevision' cdk.json)
+          
+          # Derive the tag from the content that actually feeds the image build
+          # (everything the Dockerfile COPYs) instead of a manually-maintained
+          # revision counter. This makes rebuild-on-change automatic and
+          # correct by construction -- it cannot drift out of sync with the
+          # files it is built from, unlike buildRevision.
+          CONTENT_HASH=$(git ls-files docker/tak-server docker-container plugins/tak-gpt \
+            | sort | xargs sha256sum | sha256sum | cut -c1-12)
           
           if [[ "${{ github.event.inputs.force_rebuild }}" == "true" ]]; then
             TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-            TAK_TAG="tak-${VERSION}-${BRANDING}-r${REVISION}-${TIMESTAMP}"
+            TAK_TAG="tak-${VERSION}-${BRANDING}-c${CONTENT_HASH}-${TIMESTAMP}"
           else
-            TAK_TAG="tak-${VERSION}-${BRANDING}-r${REVISION}"
+            TAK_TAG="tak-${VERSION}-${BRANDING}-c${CONTENT_HASH}"
           fi
           
           echo "ecr-repo-uri=$ECR_REPO_URI" >> $GITHUB_OUTPUT

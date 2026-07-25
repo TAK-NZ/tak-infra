@@ -35,7 +35,6 @@ export interface ContextEnvironmentConfig {
     servicename: string;
     branding: string;
     version: string;
-    buildRevision?: number;
     useS3TAKServerConfigFile: boolean;
     letsEncryptMode?: string;
     letsEncryptEmail?: string;
