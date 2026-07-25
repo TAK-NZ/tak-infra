@@ -3,7 +3,7 @@
 # Check if version parameter is provided
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <version>"
-    echo "Available versions: 5.4, 5.5, 5.6"
+    echo "Available versions: 5.4, 5.5, 5.6, 5.7, 5.8"
     exit 1
 fi
 
@@ -12,8 +12,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE_DIR="${SCRIPT_DIR}/template"
 
 # Validate version
-if [[ ! "$VERSION" =~ ^(5\.4|5\.5|5\.6)$ ]]; then
-    echo "Error: Invalid version '$VERSION'. Available versions: 5.4, 5.5, 5.6"
+if [[ ! "$VERSION" =~ ^(5\.4|5\.5|5\.6|5\.7|5\.8)$ ]]; then
+    echo "Error: Invalid version '$VERSION'. Available versions: 5.4, 5.5, 5.6, 5.7, 5.8"
     exit 1
 fi
 
@@ -40,7 +40,13 @@ case "$VERSION" in
         cp "${TEMPLATE_DIR}/plugins/ATAK-Plugin-datasync-3.5.32-7878c349-5.5.0-civ-release.apk" "${TEMP_DIR}/plugins/"
         ;;
     "5.6")
-        cp "${TEMPLATE_DIR}/plugins/ATAK-Plugin-datasync-3.6.5-59da6dd5-5.6.0-civ-release.apk" "${TEMP_DIR}/plugins/"
+        cp "${TEMPLATE_DIR}/plugins/ATAK-Plugin-datasync-3.7.4-58746181-5.6.0-civ-release.apk" "${TEMP_DIR}/plugins/"
+        ;;
+    "5.7")
+        cp "${TEMPLATE_DIR}/plugins/ATAK-Plugin-datasync-4.0.4-a858109b-5.7.0-civ-release.apk" "${TEMP_DIR}/plugins/"
+        ;;
+    "5.8")
+        cp "${TEMPLATE_DIR}/plugins/ATAK-Plugin-datasync-5.0.1-c66617b7-5.8.0-civ-release.apk" "${TEMP_DIR}/plugins/"
         ;;
 esac
 
