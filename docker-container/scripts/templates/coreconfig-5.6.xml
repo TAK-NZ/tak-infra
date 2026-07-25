@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Configuration xmlns="http://bbn.com/marti/xml/config">
     <network multicastTTL="5" serverId="{{SERVER_ID}}" version="{{TAK_VERSION}}" cloudwatchEnable="{{CLOUDWATCH_ENABLE}}" cloudwatchName="{{STACK_NAME}}">
-        <input auth="{{INPUT_AUTH}}" _name="stdssl" protocol="tls" port="8089" coreVersion="2"/>
+        <input auth="{{INPUT_AUTH}}" _name="stdssl" protocol="tls" port="8089" coreVersion="2" archive="{{INPUT_ARCHIVE}}"/>
         <connector port="8443" _name="https" keystore="JKS" keystoreFile="/opt/tak/certs/files/{{LETSENCRYPT_DOMAIN}}/letsencrypt.jks" keystorePass="atakatak" enableAdminUI="true" enableWebtak="true" enableNonAdminUI="true"/>
         <connector port="8446" clientAuth="false" _name="cert_https" keystore="JKS" keystoreFile="/opt/tak/certs/files/{{LETSENCRYPT_DOMAIN}}/letsencrypt.jks" keystorePass="atakatak" enableAdminUI="true" enableWebtak="true" enableNonAdminUI="true"/>
         <announce/>
     </network>
-    <auth default="{{AUTH_DEFAULT}}" x509groups="true" x509addAnonymous="false" x509useGroupCache="true" x509useGroupCacheDefaultActive="true" x509checkRevocation="true">
+    <auth default="{{AUTH_DEFAULT}}" x509groups="true" x509addAnonymous="false" x509useGroupCache="{{X509_USE_GROUP_CACHE}}" x509useGroupCacheDefaultActive="{{X509_USE_GROUP_CACHE_DEFAULT_ACTIVE}}">
         <ldap url="{{LDAP_URL}}" userstring="{{LDAP_USERSTRING}}" updateinterval="60" groupprefix="{{LDAP_GROUP_PREFIX}}" groupNameExtractorRegex="{{LDAP_GROUP_REGEX}}" serviceAccountDN="{{LDAP_SERVICE_DN}}" serviceAccountCredential="{{LDAP_PASSWORD}}" groupBaseRDN="{{LDAP_GROUP_BASE}}" userBaseRDN="{{LDAP_USER_BASE}}" ldapsTruststore="JKS" ldapsTruststoreFile="/opt/tak/certs/files/aws-acm-root.jks" ldapsTruststorePass="INTENTIONALLY_NOT_SENSITIVE" callsignAttribute="takCallsign" colorAttribute="takColor" roleAttribute="takRole" dnAttributeName="DN" nameAttr="CN"/>
         {{OAUTH_SECTION}}
     </auth>
@@ -23,10 +23,10 @@
     </repeater>
     <filter>
         <thumbnail/>
-        <urladd host="http://10.0.2.95:8080"/>
-        <flowtag/>
-        <streamingbroker/>
+        <flowtag enable="false" text=""/>
+        <streamingbroker enable="true"/>
         <injectionfilter enable="true"/>
+        <scrubber enable="false" action="overwrite"/>
         <qos>
             <deliveryRateLimiter enabled="true">
                 <rateLimitRule clientThresholdCount="500" reportingRateLimitSeconds="200"/>

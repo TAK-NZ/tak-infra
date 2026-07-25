@@ -430,9 +430,12 @@ export class TakServer extends Construct {
         // (setenv.sh reads /proc/meminfo which reflects host RAM, not the container limit)
         ECS_TASK_MEMORY_MB: props.contextConfig.ecs.taskMemory.toString(),
         // LDAP Group Prefix Configuration
+        // Regex is case-insensitive on the "cn=" attribute name and treats the prefix as
+        // optional, so non-prefixed groups still resolve (matches known-working reference
+        // server config; TAK Server's own default is case-sensitive and prefix-mandatory).
         ...(props.contextConfig.takserver.ldapGroupPrefix && {
           TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix: `cn=${props.contextConfig.takserver.ldapGroupPrefix}`,
-          TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex: `cn=${props.contextConfig.takserver.ldapGroupPrefix}(.*?)(?:,|$)`
+          TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex: `(?:cn|CN)=(?:${props.contextConfig.takserver.ldapGroupPrefix})?(.+?),`
         }),
         // WebTAK Configuration
         TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak: (props.contextConfig.webtak?.enabled ?? false).toString(),

@@ -312,6 +312,108 @@ run_test "Submission/Subscription Attributes" \
     "TAKSERVER_CoreConfig_Submission_ValidateXml=true" \
     "TAKSERVER_CoreConfig_Subscription_ReloadPersistent=true"
 
+# Test 14: Federation configuration is preserved across regeneration
+#
+# CoreConfig.xml is otherwise fully regenerated from the template + S3/CDK
+# environment variables on every container start. <federation> is the one
+# exception: TAK Server itself writes admin-configured federation state
+# (e.g. outgoing connections added via the Marti admin UI) back into
+# CoreConfig.xml at runtime, so it must survive a regeneration or that
+# state would be silently lost on the next container restart.
+#
+# This test simulates that runtime write by injecting a fake
+# <federation-outgoing> element (the actual element TAK Server writes when
+# an admin adds an outgoing federation connection) into a first-generated
+# CoreConfig.xml, then re-running the generator against the same output
+# path and asserting the injected element survived unchanged.
+test_federation_preservation() {
+    local test_name="Federation Configuration Preserved Across Regeneration"
+    TEST_COUNT=$((TEST_COUNT + 1))
+
+    echo "=== Test $TEST_COUNT: $test_name ==="
+
+    export PostgresUsername="testuser"
+    export PostgresPassword="testpass"
+    export PostgresURL="postgresql://localhost:5432/testdb"
+    local tak_version=$(grep -o '"version": "[^"]*"' "$SCRIPT_DIR/../../cdk.json" | head -1 | cut -d'"' -f4)
+    export TAK_VERSION="takserver-docker-${tak_version:-5.4-RELEASE-19}"
+    export LDAP_DN="dc=example,dc=com"
+    export LDAP_SECURE_URL="ldaps://ldap.example.com:636"
+    export LDAP_Password="ldappass"
+    export StackName="TestStack"
+    export TAKSERVER_CoreConfig_Federation_EnableFederation="true"
+
+    TEST_DIR=$(mktemp -d)
+    cd "$TEST_DIR"
+    mkdir -p tmp/test-tak/certs/files
+
+    # First run: generate a baseline CoreConfig.xml
+    if ! bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > first_run.log 2>&1; then
+        echo "❌ FAIL: $test_name - first script run failed"
+        cat first_run.log
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+        rm -rf "$TEST_DIR"
+        unset TAKSERVER_CoreConfig_Federation_EnableFederation
+        echo ""
+        return
+    fi
+
+    # Simulate TAK Server's runtime writeback: inject a fake outgoing
+    # federation connection as a sibling of federation-server (this is where
+    # TAK Server actually writes it, per the XSD and observed live behavior),
+    # exactly as setAndSaveFederation() does when an admin adds one via the
+    # admin UI.
+    if ! xmlstarlet ed --inplace \
+            -a "/*[local-name()='Configuration']/*[local-name()='federation']/*[local-name()='federation-server']" \
+            -t elem -n "federation-outgoing" \
+            -i "//*[local-name()='federation-outgoing'][last()]" -t attr -n "displayName" -v "TestFederate" \
+            -i "//*[local-name()='federation-outgoing'][last()]" -t attr -n "address" -v "198.51.100.1" \
+            -i "//*[local-name()='federation-outgoing'][last()]" -t attr -n "port" -v "9000" \
+            -i "//*[local-name()='federation-outgoing'][last()]" -t attr -n "enabled" -v "true" \
+            "$TEST_DIR/CoreConfig.xml" 2>inject.log; then
+        echo "❌ FAIL: $test_name - could not inject test federation-outgoing element"
+        cat inject.log
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+        rm -rf "$TEST_DIR"
+        unset TAKSERVER_CoreConfig_Federation_EnableFederation
+        echo ""
+        return
+    fi
+
+    # Second run: regenerate against the same output path
+    if ! bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > second_run.log 2>&1; then
+        echo "❌ FAIL: $test_name - second script run failed"
+        cat second_run.log
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+        rm -rf "$TEST_DIR"
+        unset TAKSERVER_CoreConfig_Federation_EnableFederation
+        echo ""
+        return
+    fi
+
+    # Assert the injected federation-outgoing element survived the regeneration
+    if grep -q 'federation-outgoing.*displayName="TestFederate"' "$TEST_DIR/CoreConfig.xml"; then
+        # Also make sure the regenerated file is still XSD-valid
+        if cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1; then
+            echo "✅ PASS: $test_name"
+            PASS_COUNT=$((PASS_COUNT + 1))
+        else
+            echo "❌ FAIL: $test_name - regenerated file with preserved federation failed XML validation"
+            cat "$TEST_DIR/validation.log"
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+        fi
+    else
+        echo "❌ FAIL: $test_name - injected federation-outgoing element was lost on regeneration"
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+    fi
+
+    rm -rf "$TEST_DIR"
+    unset TAKSERVER_CoreConfig_Federation_EnableFederation
+    echo ""
+}
+
+test_federation_preservation
+
 echo "========================================"
 echo "Test Results:"
 echo "Total Tests: $TEST_COUNT"

@@ -4,6 +4,7 @@
         <exportTagName>TAK_NZ_Standard_Settings</exportTagName>
         <uid>{{UUID}}</uid>
         <name>TAK.NZ ATAK Standard Settings</name>
+        <onReceiveDelete>true</onReceiveDelete>
     </configuration>
     <contents>
         <content>
