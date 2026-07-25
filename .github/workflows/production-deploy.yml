@@ -44,17 +44,6 @@ jobs:
             npx cdk bootstrap aws://${{ secrets.PROD_AWS_ACCOUNT_ID }}/${{ secrets.PROD_AWS_REGION }} --context envType=prod
           fi
 
-      - name: Extract Image Tags
-        id: images
-        run: |
-          VERSION=$(jq -r '.context."prod".takserver.version' cdk.json)
-          BRANDING=$(jq -r '.context."prod".takserver.branding' cdk.json)
-          REVISION=$(jq -r '.context."prod".takserver.buildRevision' cdk.json)
-          
-          TAK_TAG="tak-${VERSION}-${BRANDING}-r${REVISION}"
-          
-          echo "tak-tag=$TAK_TAG" >> $GITHUB_OUTPUT
-
       - name: Validate Production Change Set
         run: |
           # Check if override is requested
@@ -66,4 +55,4 @@ jobs:
           fi
 
       - name: Deploy Production
-        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.PROD_STACK_NAME }} --context usePreBuiltImages=true --context takImageTag=${{ steps.images.outputs.tak-tag }} --require-approval never
+        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.PROD_STACK_NAME }} --context usePreBuiltImages=true --context takImageTag=${{ needs.build-images.outputs.tak-tag }} --require-approval never

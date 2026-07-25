@@ -44,7 +44,6 @@ export function applyContextOverrides(
       servicename: app.node.tryGetContext('servicename') ?? baseConfig.takserver.servicename,
       branding: app.node.tryGetContext('branding') ?? baseConfig.takserver.branding,
       version: app.node.tryGetContext('version') ?? baseConfig.takserver.version,
-      buildRevision: parseContextNumber(app.node.tryGetContext('buildRevision')) ?? baseConfig.takserver.buildRevision,
       useS3TAKServerConfigFile: parseContextBoolean(app.node.tryGetContext('useS3TAKServerConfigFile')) ?? baseConfig.takserver.useS3TAKServerConfigFile,
       letsEncryptMode: app.node.tryGetContext('letsEncryptMode') ?? baseConfig.takserver.letsEncryptMode,
       letsEncryptEmail: app.node.tryGetContext('letsEncryptEmail') ?? baseConfig.takserver.letsEncryptEmail,
