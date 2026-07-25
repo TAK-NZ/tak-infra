@@ -23,7 +23,6 @@
     </repeater>
     <filter>
         <thumbnail/>
-        <urladd host="http://10.0.2.95:8080"/>
         <flowtag enable="false" text=""/>
         <streamingbroker enable="true"/>
         <injectionfilter enable="true"/>
