@@ -16,10 +16,15 @@ def test_bedrock_model(model_id, region="us-west-2"):
     # Create Bedrock Runtime client (same as Java SDK)
     client = boto3.client('bedrock-runtime', region_name=region)
     
-    # Prepare request body (matches BedrockChatManager.java format)
+    # Prepare request body (matches BedrockChatManager.java format).
+    # max_tokens=1000: models with extended/adaptive thinking enabled by
+    # default (e.g. Claude Opus 5) can consume the entire token budget on
+    # internal "thinking" content with no "text" block returned at low
+    # max_tokens (confirmed: 100 reliably produces a thinking-only response
+    # with stop_reason=max_tokens). 1000 leaves enough room for both.
     request_body = {
         "anthropic_version": "bedrock-2023-05-31",
-        "max_tokens": 100,
+        "max_tokens": 1000,
         "messages": [
             {
                 "role": "user",
@@ -35,11 +40,22 @@ def test_bedrock_model(model_id, region="us-west-2"):
             body=json.dumps(request_body)
         )
         
-        # Parse response
+        # Parse response. Search all content blocks for text rather than
+        # assuming content[0] is text -- models with thinking enabled may
+        # return a "thinking" block before the "text" block.
         response_body = json.loads(response['body'].read())
-        
+        text_blocks = [b.get("text") for b in response_body.get("content", []) if b.get("type") == "text"]
+
+        if not text_blocks:
+            print("✗ FAILED!")
+            print(f"No text block in response (stop_reason={response_body.get('stop_reason')}). "
+                  f"Content block types: {[b.get('type') for b in response_body.get('content', [])]}")
+            print("If stop_reason is 'max_tokens' with only a 'thinking' block, increase max_tokens.")
+            print("-" * 60)
+            return False
+
         print("✓ SUCCESS!")
-        print(f"Response: {response_body['content'][0]['text']}")
+        print(f"Response: {text_blocks[0]}")
         print("-" * 60)
         return True
         
@@ -55,8 +71,8 @@ if __name__ == "__main__":
     print()
     
     # Test inference profile
-    print("Test 1: Claude Sonnet 4 via inference profile")
-    success1 = test_bedrock_model("us.anthropic.claude-sonnet-4-6")
+    print("Test 1: Claude Sonnet 5 via inference profile")
+    success1 = test_bedrock_model("us.anthropic.claude-sonnet-5")
     print()
     
     # Test direct model (for comparison)
@@ -67,7 +83,7 @@ if __name__ == "__main__":
     # Summary
     print("=" * 60)
     print("SUMMARY:")
-    print(f"  Inference profile (Claude Sonnet 4): {'✓ WORKS' if success1 else '✗ FAILED'}")
+    print(f"  Inference profile (Claude Sonnet 5): {'✓ WORKS' if success1 else '✗ FAILED'}")
     print(f"  Direct model (Claude 3.5 Haiku):     {'✓ WORKS' if success2 else '✗ FAILED'}")
     print("=" * 60)
     

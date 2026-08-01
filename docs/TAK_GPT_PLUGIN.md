@@ -44,7 +44,7 @@ Uses IAM credentials from the ECS task role. No API keys required. Supports tool
 bots:
   - modelType: "bedrock"
     region: "ap-southeast-2"  # Sydney region for New Zealand deployments
-    modelName: "au.anthropic.claude-sonnet-4-6"  # Inference profile for Claude Sonnet 4.6
+    modelName: "au.anthropic.claude-sonnet-5"  # Inference profile for Claude Sonnet 5
     systemPromptFilePath: /opt/tak/conf/plugins/nz_rag_responder.txt
     botName: "TAK-GPT"
     latitude: -41.2865
@@ -63,7 +63,7 @@ To use Bedrock Knowledge Bases for retrieval-augmented generation (RAG) from PDF
 bots:
   - modelType: "bedrock"
     region: "ap-southeast-2"
-    modelName: "au.anthropic.claude-sonnet-4-6"
+    modelName: "au.anthropic.claude-sonnet-5"
     knowledgeBaseId: "ABCD1234"  # Your Bedrock Knowledge Base ID
     systemPromptFilePath: /opt/tak/conf/plugins/nz_rag_responder.txt
     botName: "NZ First Responder Chatbot"
@@ -148,16 +148,17 @@ The bot can create map markers when asked. Example queries:
 
 **Regional Considerations:**
 - **New Zealand Deployments**: Use Sydney region (`ap-southeast-2`) as Auckland (`ap-southeast-6`) does not support Bedrock
-- **Australia-Specific Inference Profile**: `au.anthropic.claude-sonnet-4-6` provides lowest latency for ANZ region
-- **US Deployments**: Use `us-west-2` with inference profile `us.anthropic.claude-sonnet-4-6`
+- **Australia-Specific Inference Profile**: `au.anthropic.claude-sonnet-5` provides lowest latency for ANZ region
+- **US Deployments**: Use `us-west-2` with inference profile `us.anthropic.claude-sonnet-5`
 
 **Supported Bedrock Models:**
 
 *Inference Profiles (recommended):*
-- `au.anthropic.claude-sonnet-4-6` - Claude Sonnet 4.6 (Australia/NZ)
-- `us.anthropic.claude-sonnet-4-6` - Claude Sonnet 4.6 (US)
-- `eu.anthropic.claude-sonnet-4-6` - Claude Sonnet 4.6 (Europe)
-- `us.anthropic.claude-3-5-sonnet-20241022-v2:0` - Claude 3.5 Sonnet v2
+- `au.anthropic.claude-sonnet-5` - Claude Sonnet 5 (Australia/NZ)
+- `us.anthropic.claude-sonnet-5` - Claude Sonnet 5 (US)
+- `global.anthropic.claude-sonnet-5` - Claude Sonnet 5 (Global, no residency constraint)
+- `us.anthropic.claude-sonnet-4-6` - Claude Sonnet 4.6 (US, previous generation)
+- `us.anthropic.claude-opus-5` - Claude Opus 5 (US, higher capability, notably higher latency -- see note below)
 - `us.anthropic.claude-3-5-haiku-20241022-v1:0` - Claude 3.5 Haiku
 
 *Legacy Direct Model IDs (older models, use inference profiles instead):*
@@ -166,7 +167,11 @@ The bot can create map markers when asked. Example queries:
 - `anthropic.claude-3-sonnet-20240229-v1:0` - Claude 3 Sonnet
 - `anthropic.claude-3-haiku-20240307-v1:0` - Claude 3 Haiku
 
-**Note:** Newer Claude models (Sonnet 4.x) require inference profiles. Use the test script to verify availability in your region.
+**Note:** Newer Claude models (Sonnet 4.x/5, Opus 5) require inference profiles — the bare model ID (e.g. `anthropic.claude-sonnet-5`) is rejected by `InvokeModel`/`Converse` with "on-demand throughput isn't supported." Use the test script to verify availability in your region.
+
+**Model choice and latency:** Response latency varies significantly by model. CloudWatch `AWS/Bedrock` `InvocationLatency` (ModelId dimension) measured on this deployment showed Claude Opus 5 averaging ~16.7s per invocation (up to ~35s), versus ~3.8-5.4s average for Sonnet 4.6 and ~7.0s average for Sonnet 5. If interactive chat responses feel slow, check this metric by model before assuming it's a code-level issue — Opus 5's higher capability comes with meaningfully higher latency and is not recommended for latency-sensitive interactive chat.
+
+**Claude Opus 5 reasoning tokens (if used):** Opus 5 has adaptive extended thinking enabled by default. At low `max_tokens` values, a response can be entirely consumed by internal `thinking` content with no `text` block returned — confirmed by testing with `max_tokens=100`, which reliably produced a thinking-only response with `stop_reason=max_tokens`. Sonnet 4.6 and Sonnet 5 do not enable thinking by default (confirmed via `output_tokens_details.thinking_tokens=0` in testing) and are not affected. Any code that assumes `content[0]` is a text block (rather than searching all content blocks or setting `max_tokens` conservatively high, 1000+) should be reviewed before switching to a model with thinking enabled. The bundled `BedrockChatManager.java` (`maxTokens=2048`, iterates all content blocks for `text() != null`) is already safe against this either way.
 
 **IAM Permissions** (automatically added by CDK):
 ```json
@@ -197,7 +202,7 @@ Use the provided test script to verify model availability in your region:
 # Test inference profile in Sydney region
 ./scripts/takserver/test-bedrock-inference-profile.py \
   --region ap-southeast-2 \
-  --model au.anthropic.claude-sonnet-4-6
+  --model au.anthropic.claude-sonnet-5
 
 # Test direct model ID in US West 2
 ./scripts/takserver/test-bedrock-inference-profile.py \
@@ -207,6 +212,8 @@ Use the provided test script to verify model availability in your region:
 # List all available inference profiles
 aws bedrock list-inference-profiles --region ap-southeast-2
 ```
+
+**Note:** As documented above, the test script's `test_bedrock_model()` function does not currently accept `--region`/`--model` CLI flags — it only runs two hardcoded test invocations from `main()`. The command lines above illustrate the intended usage pattern; edit the hardcoded model IDs in the script directly to test a different model/region until CLI argument support is added.
 
 ### Other Providers
 
@@ -421,7 +428,7 @@ Before deploying with a new model, test its availability:
 # Test model in your deployment region
 ./scripts/takserver/test-bedrock-inference-profile.py \
   --region ap-southeast-2 \
-  --model au.anthropic.claude-sonnet-4-6
+  --model au.anthropic.claude-sonnet-5
 
 # List all available models and inference profiles
 aws bedrock list-foundation-models --region ap-southeast-2

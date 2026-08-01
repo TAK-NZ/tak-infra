@@ -6,6 +6,7 @@ public class TAKContext {
     private String lat;
     private String lon;
     private String callsign;
+    private String senderUid;
     private Set<String> groups;
     private String sessionId;
 
@@ -31,6 +32,20 @@ public class TAKContext {
 
     public void setCallsign(String callsign) {
         this.callsign = callsign;
+    }
+
+    /**
+     * The sender's stable device UID (e.g. Android device UID, WinTAK user SID),
+     * as opposed to callsign which is a mutable display name. This mirrors how
+     * ATAK/TAK Server treat UID as the canonical identity for addressing and
+     * session/contact tracking, with callsign used only for display purposes.
+     */
+    public String getSenderUid() {
+        return senderUid;
+    }
+
+    public void setSenderUid(String senderUid) {
+        this.senderUid = senderUid;
     }
 
     public Set<String> getGroups() {
