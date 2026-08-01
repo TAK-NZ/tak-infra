@@ -295,6 +295,21 @@ done
 
 echo "TAK Server - Starting server"
 
+# Pre-create TAKIgniteConfig.xml before any TAK Server JVM starts.
+# configureInDocker.sh launches 5 JVMs (config, messaging, api, plugins, retention)
+# concurrently, and each one independently checks for this file and copies it from
+# TAKIgniteConfig.example.xml if missing. That check-then-copy is not synchronized
+# across processes, so multiple JVMs can race to create the file at the same time.
+# The loser of that race hits FileAlreadyExistsException from Files.copy() and its
+# JVM exits immediately with an uncaught exception - this has been observed to kill
+# the plugin manager (takserver-pm.jar) on startup, disabling TAK-GPT until manually
+# restarted. Creating the file here, before any JVM is launched, means every JVM's
+# existence check finds the file already present and skips the copy entirely.
+if [ ! -f /opt/tak/TAKIgniteConfig.xml ]; then
+    echo "TAK Server - Pre-creating TAKIgniteConfig.xml to avoid startup race between TAK Server processes"
+    cp /opt/tak/TAKIgniteConfig.example.xml /opt/tak/TAKIgniteConfig.xml
+fi
+
 # Setup certificate cleanup cron job
 echo "TAK Server - Setting up certificate cleanup cron job"
 cat > /etc/cron.d/tak-cert-cleanup << 'EOF'

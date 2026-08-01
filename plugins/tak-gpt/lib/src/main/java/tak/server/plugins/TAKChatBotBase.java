@@ -160,18 +160,27 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 				TAKContext context = new TAKContext();
 				String lat = cec.getLat();
 				String lon = cec.getLon();
+				// senderUid is the sender's stable device UID (uid0 in <chatgrp>), which is
+				// how ATAK/WinTAK/TAK Server identify and route to a sender. Callsign is
+				// display-only and can change or collide across devices, so it must never
+				// be used for identity/session-key purposes - only for the text shown to
+				// the LLM/user. Fall back to the raw CoT event uid only if uid0 is missing
+				// (e.g. malformed or very old client), never to a per-message-unique value.
+				String senderUid = getSenderUid(msg);
 				String chatUid = msg.getPayload().getCotEvent().getUid();
 				String senderCallsign = getSenderCallsign(msg);
-				LOGGER.info("Chat message from uid='{}' callsign='{}' lat='{}' lon='{}'", chatUid, senderCallsign, lat, lon);
+				if (senderUid == null) senderUid = chatUid;
+				LOGGER.info("Chat message from uid='{}' callsign='{}' lat='{}' lon='{}'", senderUid, senderCallsign, lat, lon);
 				if (lat != null && !lat.equals("0.0") && lon != null && !lon.equals("0.0")) {
 					context.setLat(lat);
 					context.setLon(lon);
 				} else {
-					LOGGER.info("No location in chat message for '{}'", senderCallsign != null ? senderCallsign : chatUid);
+					LOGGER.info("No location in chat message for '{}'", senderCallsign != null ? senderCallsign : senderUid);
 				}
-				context.setCallsign(senderCallsign != null ? senderCallsign : chatUid);
+				context.setSenderUid(senderUid);
+				context.setCallsign(senderCallsign != null ? senderCallsign : senderUid);
 				context.setGroups(new java.util.HashSet<>(msg.getGroupsList()));
-				context.setSessionId(botName + ":" + context.getCallsign());
+				context.setSessionId(botName + ":" + senderUid);
 
 				
 				document = reader.read(new ByteArrayInputStream(("<event>" + msg.getPayload().getCotEvent().getDetail().getXmlDetail() + "</event>").getBytes()) );
@@ -225,6 +234,8 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 	}
 
 	private static final String SENDER_CALLSIGN_MARKER = "senderCallsign=\"";
+	private static final String SENDER_UID_MARKER = "uid0=\"";
+	private static final String SOURCE_ID_MARKER = "sourceID=\"";
 
 	private String getSenderCallsign(Message msg) {
 		try {
@@ -232,6 +243,35 @@ public class TAKChatBotBase extends MessageSenderReceiverBase {
 			int start = detail.indexOf(SENDER_CALLSIGN_MARKER) + SENDER_CALLSIGN_MARKER.length();
 			int end = detail.indexOf('"', start);
 			if (start > SENDER_CALLSIGN_MARKER.length() - 1 && end > start) return detail.substring(start, end);
+		} catch (Exception e) { /* ignore */ }
+		return null;
+	}
+
+	/**
+	 * Extract the sender's stable device UID from the <chatgrp uid0="..."/> element,
+	 * matching how ATAK/WinTAK/TAK Server populate this field (see ChatMessageParser's
+	 * CHAT3 handling in the ATAK source) and how TAKChatGenerator already parses it
+	 * when routing replies back to a sender. Falls back to WinTAK's <remarks sourceID="..."/>
+	 * refinement when present, since WinTAK sometimes puts a callsign rather than a UID
+	 * in the position ATAK uses for uid0.
+	 */
+	private String getSenderUid(Message msg) {
+		try {
+			String detail = msg.getPayload().getCotEvent().getDetail().getXmlDetail();
+
+			int sourceIdStart = detail.indexOf(SOURCE_ID_MARKER);
+			if (sourceIdStart >= 0) {
+				int start = sourceIdStart + SOURCE_ID_MARKER.length();
+				int end = detail.indexOf('"', start);
+				if (end > start) {
+					String sourceId = detail.substring(start, end);
+					if (!sourceId.isEmpty()) return sourceId;
+				}
+			}
+
+			int start = detail.indexOf(SENDER_UID_MARKER) + SENDER_UID_MARKER.length();
+			int end = detail.indexOf('"', start);
+			if (start > SENDER_UID_MARKER.length() - 1 && end > start) return detail.substring(start, end);
 		} catch (Exception e) { /* ignore */ }
 		return null;
 	}

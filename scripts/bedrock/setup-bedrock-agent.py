@@ -132,7 +132,7 @@ def ensure_agent_iam_role(iam_client, role_name, region, account_id):
             }
         }]
     }
-    model_id = "us.anthropic.claude-sonnet-4-6" if region.startswith("us-") else "au.anthropic.claude-sonnet-4-6"
+    model_id = "us.anthropic.claude-sonnet-5" if region.startswith("us-") else "au.anthropic.claude-sonnet-5"
     policy = {
         "Version": "2012-10-17",
         "Statement": [
@@ -579,23 +579,40 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
 
 def ensure_agent_alias(bedrock_agent_client, agent_id, agent_name):
     alias_name = "live"
-    # Ensure agent is prepared before creating alias
+    # Ensure agent is prepared before creating/updating alias
     status = bedrock_agent_client.get_agent(agentId=agent_id)["agent"]["agentStatus"]
     if status == "NOT_PREPARED":
         print(f"  Agent is NOT_PREPARED, preparing...")
         bedrock_agent_client.prepare_agent(agentId=agent_id)
         _wait_for_agent(bedrock_agent_client, agent_id, "PREPARED")
     aliases = bedrock_agent_client.list_agent_aliases(agentId=agent_id)["agentAliasSummaries"]
-    for alias in aliases:
-        if alias["agentAliasName"] == alias_name:
-            print(f"  Agent alias already exists: {alias_name} ({alias['agentAliasId']})")
-            return alias["agentAliasId"]
+    existing_alias = next((a for a in aliases if a["agentAliasName"] == alias_name), None)
+
+    if existing_alias:
+        alias_id = existing_alias["agentAliasId"]
+        old_version = existing_alias["routingConfiguration"][0]["agentVersion"] if existing_alias["routingConfiguration"] else None
+        print(f"  Agent alias already exists: {alias_name} ({alias_id}), currently -> version {old_version}")
+        # Deploy the latest DRAFT changes to production. Omitting routingConfiguration
+        # makes Bedrock create a new immutable version from DRAFT and repoint the alias
+        # to it -- without this, DRAFT changes (model, instructions, KBs, action groups)
+        # never reach live traffic on subsequent runs of this script.
+        bedrock_agent_client.update_agent_alias(
+            agentId=agent_id,
+            agentAliasId=alias_id,
+            agentAliasName=alias_name
+        )
+        _wait_for_alias(bedrock_agent_client, agent_id, alias_id, "PREPARED")
+        new_alias = bedrock_agent_client.get_agent_alias(agentId=agent_id, agentAliasId=alias_id)["agentAlias"]
+        new_version = new_alias["routingConfiguration"][0]["agentVersion"]
+        print(f"  Deployed latest DRAFT to production: alias {alias_name} now -> version {new_version}")
+        return alias_id
 
     resp = bedrock_agent_client.create_agent_alias(
         agentId=agent_id,
         agentAliasName=alias_name
     )
     alias_id = resp["agentAlias"]["agentAliasId"]
+    _wait_for_alias(bedrock_agent_client, agent_id, alias_id, "PREPARED")
     print(f"  Created agent alias: {alias_name} ({alias_id})")
     return alias_id
 
@@ -609,6 +626,17 @@ def _wait_for_agent(bedrock_agent_client, agent_id, target_status, timeout=120):
             raise RuntimeError(f"Agent entered failed state: {status}")
         time.sleep(5)
     raise TimeoutError(f"Agent did not reach {target_status} within {timeout}s")
+
+
+def _wait_for_alias(bedrock_agent_client, agent_id, alias_id, target_status, timeout=120):
+    for _ in range(timeout // 5):
+        status = bedrock_agent_client.get_agent_alias(agentId=agent_id, agentAliasId=alias_id)["agentAlias"]["agentAliasStatus"]
+        if status == target_status:
+            return
+        if "FAILED" in status:
+            raise RuntimeError(f"Agent alias entered failed state: {status}")
+        time.sleep(5)
+    raise TimeoutError(f"Agent alias did not reach {target_status} within {timeout}s")
 
 
 def write_ssm(ssm_client, ssm_prefix, kb_name, kb_id, agent_id, alias_id):
@@ -652,7 +680,7 @@ def main():
         caller_arn = f"arn:aws:iam::{account_id}:role/{parts[1]}"
     stack_name = f"TAK-{args.environment}-BaseInfra"
     ssm_prefix = args.ssm_prefix or f"/tak/{args.environment.lower()}"
-    model_id = "us.anthropic.claude-sonnet-4-6" if region.startswith("us-") else "au.anthropic.claude-sonnet-4-6"
+    model_id = "us.anthropic.claude-sonnet-5" if region.startswith("us-") else "au.anthropic.claude-sonnet-5"
     print(f"Account: {account_id}, Region: {region}")
 
     tak_infra_stack_name = f"TAK-{args.environment}-TakInfra"
