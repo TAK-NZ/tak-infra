@@ -18,7 +18,16 @@ import tak.server.plugins.messaging.MessageConverter;
 
 public class TAKChatGenerator {
 	//private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"GeoChat.|||UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"999999.0\" ce=\"999999.0\" le=\"999999.0\"/><detail><__chat parent="RootContactGroup" senderCallsign=\"TAKBot\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||ID|||\"><chatgrp id=\"|||ID|||\" uid1=\"|||UID1|||\" uid0=\"|||UID0|||\"/></__chat><remarks time=\"2024-02-07T05:02:41Z\" source=\"daf0e27b-1ba2-08db-992e-153a2c73ea4b\" to=\"1a677971-bfba-a731-f86b-64c2317f7097\">|||CHAT_TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"TAKBot\"/><marti><dest callsign=\"|||DST_CALLSIGN|||\"/></marti></detail></event>";
-	private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"GeoChat.|||SRC_UID|||.|||DST_UID|||.|||MSG_UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><__chat parent=\"RootContactGroup\" messageId=\"|||MSG_UID|||\" senderCallsign=\"|||SRC_CALLSIGN|||\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||DST_UID|||\"><chatgrp id=\"|||DST_UID|||\" uid1=\"|||DST_UID|||\" uid0=\"|||SRC_UID|||\"/></__chat><remarks time=\"|||TIME|||\" to=\"|||DST_UID|||\">|||TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"|||SRC_UID|||\"/></detail></event>";
+	// Includes <marti><dest uid="..."/></marti> so TAK Server routes this message via
+	// explicit UID-based brokering (DistributedSubscriptionManager.getExplicitUidMatches,
+	// which looks up SubscriptionStore.clientUidToSubMap) to exactly the one subscription
+	// for that device UID. Without it, the server falls back to implicit/group brokering
+	// (getImplicitMatches) and broadcasts the reply to every subscription reachable within
+	// the bot's CoT groups - e.g. delivering it to a CloudTAK session for the same user
+	// account even though the reply was addressed only to their ATAK device UID. Uses uid
+	// only (not callsign) since callsign is display-only and can collide/differ across a
+	// user's devices (see getSenderUid() comment above for the same rationale).
+	private static final String CHAT_TEMPLATE = "<event version=\"2.0\" uid=\"GeoChat.|||SRC_UID|||.|||DST_UID|||.|||MSG_UID|||\" type=\"b-t-f\" how=\"h-g-i-g-o\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"0.0\" lon=\"0.0\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><__chat parent=\"RootContactGroup\" messageId=\"|||MSG_UID|||\" senderCallsign=\"|||SRC_CALLSIGN|||\" chatroom=\"|||DST_CALLSIGN|||\" id=\"|||DST_UID|||\"><chatgrp id=\"|||DST_UID|||\" uid1=\"|||DST_UID|||\" uid0=\"|||SRC_UID|||\"/></__chat><remarks time=\"|||TIME|||\" to=\"|||DST_UID|||\">|||TEXT|||</remarks><link relation=\"p-p\" type=\"a-f-G-U-C-I\" uid=\"|||SRC_UID|||\"/><marti><dest uid=\"|||DST_UID|||\"/></marti></detail></event>";
 	private static final Logger LOGGER = LoggerFactory.getLogger(TAKChatGenerator.class);
 	
 	public static Message generateChat(Message messageToReverse, String chatText, String botCallsign) throws Exception {
