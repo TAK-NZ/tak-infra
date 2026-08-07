@@ -312,6 +312,90 @@ run_test "Submission/Subscription Attributes" \
     "TAKSERVER_CoreConfig_Submission_ValidateXml=true" \
     "TAKSERVER_CoreConfig_Subscription_ReloadPersistent=true"
 
+# Test 14: OIDC Discovery Trust only (e.g. CloudTAK trust with no WebTAK OAuth)
+run_test "OIDC Discovery Trust Only" \
+    "TAKSERVER_CoreConfig_OIDCDiscovery_Name=CloudTAK" \
+    "TAKSERVER_CoreConfig_OIDCDiscovery_ClientId=discovery-client" \
+    "TAKSERVER_CoreConfig_OIDCDiscovery_Secret=discovery-secret" \
+    "TAKSERVER_CoreConfig_OIDCDiscovery_RedirectUri=https://map.example.com/login/redirect" \
+    "TAKSERVER_CoreConfig_OIDCDiscovery_ConfigurationUri=https://account.example.com/application/o/cloudtak/.well-known/openid-configuration"
+
+# Test 15: OAuthServer + OIDC Discovery Trust combined (WebTAK OAuth plus a
+# second, discovery-based provider trust, e.g. CloudTAK). Verifies both
+# <authServer> and <openIdDiscoveryConfiguration> are present, in the
+# schema-required order (authServer first).
+test_oauth_and_oidc_discovery_combined() {
+    local test_name="OAuthServer and OIDC Discovery Trust Combined"
+    TEST_COUNT=$((TEST_COUNT + 1))
+
+    echo "=== Test $TEST_COUNT: $test_name ==="
+
+    export PostgresUsername="testuser"
+    export PostgresPassword="testpass"
+    export PostgresURL="postgresql://localhost:5432/testdb"
+    local tak_version=$(grep -o '"version": "[^"]*"' "$SCRIPT_DIR/../../cdk.json" | head -1 | cut -d'"' -f4)
+    export TAK_VERSION="takserver-docker-${tak_version:-5.4-RELEASE-19}"
+    export LDAP_DN="dc=example,dc=com"
+    export LDAP_SECURE_URL="ldaps://ldap.example.com:636"
+    export LDAP_Password="ldappass"
+    export StackName="TestStack"
+    export TAKSERVER_CoreConfig_OAuthServer_Name="WebTAK Account"
+    export TAKSERVER_CoreConfig_OAuthServer_Issuer="/opt/tak/certs/files/oauth-public-key.pem"
+    export TAKSERVER_CoreConfig_OAuthServer_ClientId="webtak-client"
+    export TAKSERVER_CoreConfig_OAuthServer_Secret="webtak-secret"
+    export TAKSERVER_CoreConfig_OAuthServer_RedirectUri="https://ops.example.com/login/redirect"
+    export TAKSERVER_CoreConfig_OAuthServer_Scope="openid profile"
+    export TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint="https://account.example.com/application/o/authorize/"
+    export TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint="https://account.example.com/application/o/token/"
+    export TAKSERVER_CoreConfig_OIDCDiscovery_Name="CloudTAK"
+    export TAKSERVER_CoreConfig_OIDCDiscovery_ClientId="cloudtak-client"
+    export TAKSERVER_CoreConfig_OIDCDiscovery_Secret="cloudtak-secret"
+    export TAKSERVER_CoreConfig_OIDCDiscovery_RedirectUri="https://map.example.com/login/redirect"
+    export TAKSERVER_CoreConfig_OIDCDiscovery_ConfigurationUri="https://account.example.com/application/o/cloudtak/.well-known/openid-configuration"
+
+    TEST_DIR=$(mktemp -d)
+    cd "$TEST_DIR"
+    mkdir -p tmp/test-tak/certs/files
+
+    if ! bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > test_output.log 2>&1; then
+        echo "❌ FAIL: $test_name - Script execution failed"
+        cat test_output.log
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+    else
+        # Both elements must be present, and authServer must appear before
+        # openIdDiscoveryConfiguration per CoreConfig.xsd's sequence order.
+        local auth_line=$(grep -n '<authServer ' "$TEST_DIR/CoreConfig.xml" | head -1 | cut -d: -f1)
+        local discovery_line=$(grep -n '<openIdDiscoveryConfiguration ' "$TEST_DIR/CoreConfig.xml" | head -1 | cut -d: -f1)
+
+        if [[ -z "$auth_line" || -z "$discovery_line" ]]; then
+            echo "❌ FAIL: $test_name - missing authServer or openIdDiscoveryConfiguration element"
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+        elif [[ "$auth_line" -ge "$discovery_line" ]]; then
+            echo "❌ FAIL: $test_name - authServer must precede openIdDiscoveryConfiguration per XSD sequence"
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+        elif cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1; then
+            echo "✅ PASS: $test_name"
+            PASS_COUNT=$((PASS_COUNT + 1))
+        else
+            echo "❌ FAIL: $test_name - XML validation failed"
+            cat "$TEST_DIR/validation.log"
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+        fi
+    fi
+
+    rm -rf "$TEST_DIR"
+    unset TAKSERVER_CoreConfig_OAuthServer_Name TAKSERVER_CoreConfig_OAuthServer_Issuer \
+          TAKSERVER_CoreConfig_OAuthServer_ClientId TAKSERVER_CoreConfig_OAuthServer_Secret \
+          TAKSERVER_CoreConfig_OAuthServer_RedirectUri TAKSERVER_CoreConfig_OAuthServer_Scope \
+          TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint \
+          TAKSERVER_CoreConfig_OIDCDiscovery_Name TAKSERVER_CoreConfig_OIDCDiscovery_ClientId \
+          TAKSERVER_CoreConfig_OIDCDiscovery_Secret TAKSERVER_CoreConfig_OIDCDiscovery_RedirectUri \
+          TAKSERVER_CoreConfig_OIDCDiscovery_ConfigurationUri
+    echo ""
+}
+
+test_oauth_and_oidc_discovery_combined
+
 # Test 14: Federation configuration is preserved across regeneration
 #
 # CoreConfig.xml is otherwise fully regenerated from the template + S3/CDK
