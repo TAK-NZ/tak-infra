@@ -362,20 +362,54 @@ substitute_template() {
 }
 
 # Generate OAuth section
+#
+# Emits the <oauth> wrapper around up to two trust entries:
+#   1. <authServer>                    -- classic OAuth2 (e.g. WebTAK's own
+#                                          Authentik application), keyed off
+#                                          TAKSERVER_CoreConfig_OAuthServer_*
+#   2. <openIdDiscoveryConfiguration>   -- a second OIDC provider trusted via
+#                                          discovery document (e.g. CloudTAK's
+#                                          separate Authentik application),
+#                                          keyed off
+#                                          TAKSERVER_CoreConfig_OIDCDiscovery_*
+#
+# Per CoreConfig.xsd's <oauth> xs:sequence, all <authServer> elements must
+# come before any <openIdDiscoveryConfiguration> elements -- order matters,
+# so authServer is always emitted first.
+#
+# The <oauth> wrapper (and usernameClaim, which is shared across both entries
+# per the schema) is only emitted if at least one of the two providers is
+# configured.
 generate_oauth_section() {
     local oauth_server_name=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Name" "")
+    local discovery_name=$(get_env_value "TAKSERVER_CoreConfig_OIDCDiscovery_Name" "")
+
+    # Nothing configured at all -> no <oauth> block
+    if [[ -z "$oauth_server_name" && -z "$discovery_name" ]]; then
+        return
+    fi
+
+    echo "        <oauth usernameClaim=\"$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "preferred_username")\">"
 
     if [[ -n "$oauth_server_name" ]]; then
         local trust_all_certs=$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts" "false" "boolean")
         local trust_attr=""
         [[ "$trust_all_certs" == "true" ]] && trust_attr=' trustAllCerts="true"'
-
         cat << EOF
-        <oauth usernameClaim="$(get_env_value "TAKSERVER_CoreConfig_OAuth_UsernameClaim" "preferred_username")">
             <authServer name="$oauth_server_name" issuer="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Issuer" "")" clientId="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_ClientId" "")" secret="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Secret" "")" redirectUri="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_RedirectUri" "")" scope="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_Scope" "")" authEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_AuthEndpoint" "")" tokenEndpoint="$(get_env_value "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint" "")"$trust_attr/>
-        </oauth>
 EOF
     fi
+
+    if [[ -n "$discovery_name" ]]; then
+        local disc_trust_all=$(get_env_value "TAKSERVER_CoreConfig_OIDCDiscovery_TrustAllCerts" "false" "boolean")
+        local disc_trust_attr=""
+        [[ "$disc_trust_all" == "true" ]] && disc_trust_attr=' trustAllCerts="true"'
+        cat << EOF
+            <openIdDiscoveryConfiguration name="$discovery_name" clientId="$(get_env_value "TAKSERVER_CoreConfig_OIDCDiscovery_ClientId" "")" secret="$(get_env_value "TAKSERVER_CoreConfig_OIDCDiscovery_Secret" "")" redirectUri="$(get_env_value "TAKSERVER_CoreConfig_OIDCDiscovery_RedirectUri" "")" configurationUri="$(get_env_value "TAKSERVER_CoreConfig_OIDCDiscovery_ConfigurationUri" "")"$disc_trust_attr/>
+EOF
+    fi
+
+    echo "        </oauth>"
 }
 
 # Set commonly used values

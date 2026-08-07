@@ -92,6 +92,14 @@ If `webtak.enableOidc` is not set (or the WebTAK OIDC secret doesn't exist),
 CDK does not set the OAuth variables above, and the S3 file's OAuth settings
 (if any) take effect normally.
 
+`TAKSERVER_CoreConfig_OIDCDiscovery_*` (see below) is **not** touched by CDK
+at all, in any configuration. It exists purely as an S3-config-file
+mechanism for trusting a second OIDC provider (e.g. CloudTAK's own Authentik
+application) alongside WebTAK's `<authServer>` entry, including its client
+secret -- there is no cross-stack CDK wiring for it, by design, since
+tak-infra has no way to resolve CloudTAK-owned values at deploy time and no
+requirement to.
+
 ## Configuration Reference
 
 Every variable below is actually read by `createCoreConfig.sh` via
@@ -167,6 +175,43 @@ WebTAK OIDC is enabled — see [precedence table](#precedence-s3-file-vs-cdk-con
 `TAKSERVER_CoreConfig_OAuthServer_JWKS` is used only by
 `getOIDCIssuerPubKey.sh` (to download and write the file referenced by
 `OAuthServer_Issuer`), not by `createCoreConfig.sh` directly.
+
+### OIDC Discovery Trust (`<auth><oauth><openIdDiscoveryConfiguration>`)
+
+A second, independent OIDC trust entry, resolved via a discovery document
+(`.well-known/openid-configuration`) rather than a manually-configured
+authorization/token endpoint pair. This is how TAK Server trusts bearer
+tokens signed by a *second* OIDC provider/application in addition to the
+`<authServer>` entry above -- e.g. CloudTAK has its own Authentik OIDC
+application (separate from WebTAK's), and needs TAK Server to trust its
+tokens for the `/Marti/api/tls/config` cert-enrollment M2M flow.
+
+This element is only generated if `TAKSERVER_CoreConfig_OIDCDiscovery_Name`
+is set. Unlike the WebTAK OAuth settings above, **none of these variables
+are ever set by CDK** -- this is purely an S3 `takserver-config.env`
+mechanism, including the client secret. Use it when running TAK Server with
+CloudTAK and you want TAK Server to trust CloudTAK's own Authentik OIDC
+application for its M2M cert-enrollment flow; leave it entirely unset when
+running without CloudTAK. If neither `OAuthServer_Name` nor
+`OIDCDiscovery_Name` is set, no `<oauth>` element is generated at all. If
+only one is set, the `<oauth>` element contains just that one entry. Per
+`CoreConfig.xsd`, `<authServer>` elements must precede
+`<openIdDiscoveryConfiguration>` elements within `<oauth>` --
+`createCoreConfig.sh` always emits them in that order regardless of which
+env vars are set.
+
+| Variable | Default | Effect |
+|---|---|---|
+| `TAKSERVER_CoreConfig_OIDCDiscovery_Name` | unset | Display name for this trust entry. Setting this triggers generation of the `<openIdDiscoveryConfiguration>` element |
+| `TAKSERVER_CoreConfig_OIDCDiscovery_ClientId` | empty | OIDC client ID |
+| `TAKSERVER_CoreConfig_OIDCDiscovery_Secret` | empty | OIDC client secret (required by the XSD even though it isn't exercised for bearer-token-only validation) |
+| `TAKSERVER_CoreConfig_OIDCDiscovery_RedirectUri` | empty | Redirect URI (required by the XSD; not exercised unless TAK Server's own authorization-code flow is used against this provider) |
+| `TAKSERVER_CoreConfig_OIDCDiscovery_ConfigurationUri` | empty | The provider's OIDC discovery document URI (`.../.well-known/openid-configuration`). TAK Server uses this to fetch the provider's live JWKS automatically |
+| `TAKSERVER_CoreConfig_OIDCDiscovery_TrustAllCerts` | `false` | Disable TLS certificate validation for this provider (development only) |
+
+`usernameClaim` (see the OAuth table above) is shared across both the
+`<authServer>` and `<openIdDiscoveryConfiguration>` entries -- it's an
+attribute of `<oauth>` itself, not per-provider.
 
 ### Federation
 
