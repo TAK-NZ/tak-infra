@@ -51,36 +51,38 @@ if [ -z "$ACTIVE_JSON" ]; then
 fi
 
 # Build user+device map to find duplicates
+# user_device_newest_date/id are only used to pick which cert to KEEP (the newest).
+# user_device_ids tracks every cert id seen for a key, independent of issuance_date,
+# so duplicate detection never depends on (or is broken by) the issuance date.
 declare -A user_device_newest_date
 declare -A user_device_newest_id
-declare -a all_active_certs
+declare -A user_device_ids
+total_active_certs=0
 
 while IFS='|' read -r id user_dn client_uid issuance_date; do
     [ -z "$id" ] || [ "$id" = "null" ] && continue
-    
+
     # Create unique key from user + device
     user_device_key="${user_dn}|${client_uid}"
-    all_active_certs+=("$id|$user_device_key|$issuance_date")
-    
+    total_active_certs=$((total_active_certs + 1))
+    user_device_ids[$user_device_key]+="$id "
+
     if [ -z "${user_device_newest_date[$user_device_key]:-}" ] || [[ "$issuance_date" > "${user_device_newest_date[$user_device_key]}" ]]; then
         user_device_newest_date[$user_device_key]="$issuance_date"
         user_device_newest_id[$user_device_key]="$id"
     fi
 done < <(echo "$ACTIVE_JSON" | jq -r '.data[] | select(.id != null and .userDn != null and .clientUid != null and .issuanceDate != null and .revocationDate == null) | "\(.id)|\(.userDn)|\(.clientUid)|\(.issuanceDate)"')
 
-echo "Found ${#all_active_certs[@]} active certificates"
+echo "Found $total_active_certs active certificates"
 echo "Found ${#user_device_newest_id[@]} unique user+device combinations"
 
-# Identify duplicates
+# Identify duplicates: every id for a key except the newest one is a duplicate.
 declare -a duplicates_to_revoke
-for cert_info in "${all_active_certs[@]}"; do
-    # cert_info format: "id|user_dn|client_uid|issuance_date"
-    # user_device_key is "user_dn|client_uid" so reconstruct by stripping first and last fields
-    id="${cert_info%%|*}"
-    issuance_date="${cert_info##*|}"
-    user_device_key="${cert_info#*|}"       # strip leading id|
-    user_device_key="${user_device_key%|*}" # strip trailing |issuance_date
-    [ "$id" != "${user_device_newest_id[$user_device_key]:-}" ] && duplicates_to_revoke+=("$id")
+for user_device_key in "${!user_device_ids[@]}"; do
+    newest_id="${user_device_newest_id[$user_device_key]}"
+    for id in ${user_device_ids[$user_device_key]}; do
+        [ "$id" != "$newest_id" ] && duplicates_to_revoke+=("$id")
+    done
 done
 
 if [ ${#duplicates_to_revoke[@]} -eq 0 ]; then
