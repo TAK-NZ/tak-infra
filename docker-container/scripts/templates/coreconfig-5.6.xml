@@ -6,7 +6,7 @@
         <connector port="8446" clientAuth="false" _name="cert_https" keystore="JKS" keystoreFile="/opt/tak/certs/files/{{LETSENCRYPT_DOMAIN}}/letsencrypt.jks" keystorePass="atakatak" enableAdminUI="true" enableWebtak="true" enableNonAdminUI="true"/>
         <announce/>
     </network>
-    <auth default="{{AUTH_DEFAULT}}" x509groups="true" x509addAnonymous="false" x509useGroupCache="{{X509_USE_GROUP_CACHE}}" x509useGroupCacheDefaultActive="{{X509_USE_GROUP_CACHE_DEFAULT_ACTIVE}}">
+    <auth default="{{AUTH_DEFAULT}}" x509groups="true" x509addAnonymous="false" x509useGroupCache="{{X509_USE_GROUP_CACHE}}" x509useGroupCacheDefaultActive="{{X509_USE_GROUP_CACHE_DEFAULT_ACTIVE}}" x509checkRevocation="{{X509_CHECK_REVOCATION}}">
         <ldap url="{{LDAP_URL}}" userstring="{{LDAP_USERSTRING}}" updateinterval="1000" groupprefix="{{LDAP_GROUP_PREFIX}}" groupNameExtractorRegex="{{LDAP_GROUP_REGEX}}" serviceAccountDN="{{LDAP_SERVICE_DN}}" serviceAccountCredential="{{LDAP_PASSWORD}}" groupBaseRDN="{{LDAP_GROUP_BASE}}" userBaseRDN="{{LDAP_USER_BASE}}" userObjectClass="{{LDAP_USER_OBJECT_CLASS}}" groupObjectClass="{{LDAP_GROUP_OBJECT_CLASS}}" enableConnectionPool="{{LDAP_ENABLE_CONNECTION_POOL}}" connectionPoolTimeout="{{LDAP_CONNECTION_POOL_TIMEOUT}}" ldapsTruststore="JKS" ldapsTruststoreFile="/opt/tak/certs/files/aws-acm-root.jks" ldapsTruststorePass="INTENTIONALLY_NOT_SENSITIVE" callsignAttribute="takCallsign" colorAttribute="takColor" roleAttribute="takRole" dnAttributeName="dn" nameAttr="cn"/>
         {{OAUTH_SECTION}}
     </auth>

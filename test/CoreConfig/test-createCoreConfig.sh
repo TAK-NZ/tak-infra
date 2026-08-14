@@ -484,6 +484,84 @@ test_input_8089_auth_required() {
 
 test_input_8089_auth_required
 
+# Test: X.509 certificate revocation checking defaults to true
+# (secure-by-default), and can be explicitly overridden to false.
+#
+# The CoreConfig XSD itself defaults x509checkRevocation to "false" (accept
+# any X.509 client cert during authentication regardless of whether it has
+# been revoked in the certificate table). We deliberately override that
+# default to "true" in createCoreConfig.sh, so this test asserts both that
+# the override is in effect when unset, and that an explicit env var still
+# controls it.
+test_x509_check_revocation() {
+    local test_name="Auth X509checkRevocation defaults to true and is overridable"
+    TEST_COUNT=$((TEST_COUNT + 1))
+
+    echo "=== Test $TEST_COUNT: $test_name ==="
+
+    export PostgresUsername="testuser"
+    export PostgresPassword="testpass"
+    export PostgresURL="postgresql://localhost:5432/testdb"
+    local tak_version=$(grep -o '"version": "[^"]*"' "$SCRIPT_DIR/../../cdk.json" | head -1 | cut -d'"' -f4)
+    export TAK_VERSION="takserver-docker-${tak_version:-5.4-RELEASE-19}"
+    export LDAP_DN="dc=example,dc=com"
+    export LDAP_SECURE_URL="ldaps://ldap.example.com:636"
+    export LDAP_Password="ldappass"
+    export StackName="TestStack"
+
+    local overall_pass=true
+
+    # Case 1: unset -> should default to x509checkRevocation="true"
+    TEST_DIR=$(mktemp -d)
+    cd "$TEST_DIR"
+    mkdir -p tmp/test-tak/certs/files
+    if ! bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > test_output.log 2>&1; then
+        echo "❌ FAIL: $test_name - script execution failed (default case)"
+        cat test_output.log
+        overall_pass=false
+    elif ! grep -q '<auth[^>]*x509checkRevocation="true"' "$TEST_DIR/CoreConfig.xml"; then
+        echo "❌ FAIL: $test_name - default x509checkRevocation was not \"true\""
+        grep '<auth' "$TEST_DIR/CoreConfig.xml" || true
+        overall_pass=false
+    elif ! (cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1); then
+        echo "❌ FAIL: $test_name - default case XML validation failed"
+        cat "$TEST_DIR/validation.log"
+        overall_pass=false
+    fi
+    rm -rf "$TEST_DIR"
+
+    # Case 2: explicitly set to false -> should be overridable
+    export TAKSERVER_CoreConfig_Auth_X509checkRevocation=false
+    TEST_DIR=$(mktemp -d)
+    cd "$TEST_DIR"
+    mkdir -p tmp/test-tak/certs/files
+    if ! bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > test_output.log 2>&1; then
+        echo "❌ FAIL: $test_name - script execution failed (override case)"
+        cat test_output.log
+        overall_pass=false
+    elif ! grep -q '<auth[^>]*x509checkRevocation="false"' "$TEST_DIR/CoreConfig.xml"; then
+        echo "❌ FAIL: $test_name - explicit x509checkRevocation=false override did not apply"
+        grep '<auth' "$TEST_DIR/CoreConfig.xml" || true
+        overall_pass=false
+    elif ! (cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1); then
+        echo "❌ FAIL: $test_name - override case XML validation failed"
+        cat "$TEST_DIR/validation.log"
+        overall_pass=false
+    fi
+    rm -rf "$TEST_DIR"
+    unset TAKSERVER_CoreConfig_Auth_X509checkRevocation
+
+    if [[ "$overall_pass" == "true" ]]; then
+        echo "✅ PASS: $test_name"
+        PASS_COUNT=$((PASS_COUNT + 1))
+    else
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+    fi
+    echo ""
+}
+
+test_x509_check_revocation
+
 # Test 14: Federation configuration is preserved across regeneration
 #
 # CoreConfig.xml is otherwise fully regenerated from the template + S3/CDK

@@ -347,6 +347,7 @@ substitute_template() {
         -e "s|{{AUTH_DEFAULT}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_Default" "ldap")|g" \
         -e "s|{{X509_USE_GROUP_CACHE}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_X509useGroupCache" "false" "boolean")|g" \
         -e "s|{{X509_USE_GROUP_CACHE_DEFAULT_ACTIVE}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_X509useGroupCacheDefaultActive" "false" "boolean")|g" \
+        -e "s|{{X509_CHECK_REVOCATION}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_X509checkRevocation" "true" "boolean")|g" \
         -e "s|{{LDAP_URL}}|$LDAP_SECURE_URL|g" \
         -e "s|{{LDAP_USERSTRING}}|cn={username},ou=users,$LDAP_DN|g" \
         -e "s|{{LDAP_GROUP_PREFIX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix" "cn=tak_" | sed 's/[|&/\]/\\&/g')|g" \

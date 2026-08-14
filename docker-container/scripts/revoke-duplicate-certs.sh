@@ -2,8 +2,22 @@
 #
 # TAK Server Certificate Cleanup Script
 # 
-# Phase 1: Revoke duplicate certificates (keeps newest per user+device)
+# Phase 1: Revoke superseded certificates (keeps newest per user+device)
 # Phase 2: Delete old revoked certificates (revoked > X days ago)
+#
+# Phase 1 sources from /certadmin/cert/replaced rather than
+# /certadmin/cert/active. TAK Server's /certadmin/cert/active endpoint
+# (TakCertRepository.getActive()) already returns at most one row per
+# (userDn, clientUid) pair -- the newest by issuanceDate -- so a client-side
+# "find duplicates within active" pass can never find anything: the
+# precondition it's checking for is structurally impossible in that
+# endpoint's response. TAK Server calls every older cert for the same key
+# "replaced" instead, and exposes those via /certadmin/cert/replaced
+# (TakCertRepository.getReplaced()). "Replaced" is a purely cosmetic
+# label for the admin UI though -- X509Authenticator.auth() only checks
+# revocationDate at authentication time, so a replaced-but-not-revoked cert
+# authenticates exactly like an active one. Revoking every row returned by
+# /replaced is what actually retires the old cert.
 #
 # Uses efficient O(N) algorithms and parallel processing
 
@@ -32,63 +46,44 @@ echo "========================================"
 echo ""
 
 # ============================================================================
-# PHASE 1: Revoke Duplicate Certificates
+# PHASE 1: Revoke Superseded Certificates
 # ============================================================================
-echo "PHASE 1: Revoking duplicate certificates"
-echo "----------------------------------------"
+echo "PHASE 1: Revoking superseded certificates"
+echo "------------------------------------------"
 
-echo "Fetching active certificates..."
-ACTIVE_JSON=$(curl -ks \
+echo "Fetching replaced (superseded) certificates..."
+REPLACED_JSON=$(curl -ks \
   --cert "$ADMIN_CERT" \
   --key "$ADMIN_KEY" \
   --pass "$ADMIN_PASS" \
   --max-time "$CURL_TIMEOUT" \
-  "$API_BASE/Marti/api/certadmin/cert/active" 2>/dev/null)
+  "$API_BASE/Marti/api/certadmin/cert/replaced" 2>/dev/null)
 
-if [ -z "$ACTIVE_JSON" ]; then
-    echo "Error: Failed to fetch active certificates"
+if [ -z "$REPLACED_JSON" ]; then
+    echo "Error: Failed to fetch replaced certificates"
     exit 1
 fi
 
-# Build user+device map to find duplicates
-# user_device_newest_date/id are only used to pick which cert to KEEP (the newest).
-# user_device_ids tracks every cert id seen for a key, independent of issuance_date,
-# so duplicate detection never depends on (or is broken by) the issuance date.
-declare -A user_device_newest_date
-declare -A user_device_newest_id
-declare -A user_device_ids
-total_active_certs=0
+# TAK Server's getReplaced() already returns exactly the set of certs that
+# have been superseded by a newer enrollment for the same (userDn,
+# clientUid) -- no client-side dedup math is needed here. We only filter
+# out ones that are already revoked (revocationDate != null), so re-running
+# this script is a no-op for certs it already handled.
+declare -a superseded_to_revoke
+total_replaced_certs=0
 
-while IFS='|' read -r id user_dn client_uid issuance_date; do
+while IFS='|' read -r id revocation_date; do
     [ -z "$id" ] || [ "$id" = "null" ] && continue
+    total_replaced_certs=$((total_replaced_certs + 1))
+    superseded_to_revoke+=("$id")
+done < <(echo "$REPLACED_JSON" | jq -r '.data[] | select(.id != null and .revocationDate == null) | "\(.id)|\(.revocationDate)"')
 
-    # Create unique key from user + device
-    user_device_key="${user_dn}|${client_uid}"
-    total_active_certs=$((total_active_certs + 1))
-    user_device_ids[$user_device_key]+="$id "
+echo "Found $total_replaced_certs replaced certificate(s) not yet revoked"
 
-    if [ -z "${user_device_newest_date[$user_device_key]:-}" ] || [[ "$issuance_date" > "${user_device_newest_date[$user_device_key]}" ]]; then
-        user_device_newest_date[$user_device_key]="$issuance_date"
-        user_device_newest_id[$user_device_key]="$id"
-    fi
-done < <(echo "$ACTIVE_JSON" | jq -r '.data[] | select(.id != null and .userDn != null and .clientUid != null and .issuanceDate != null and .revocationDate == null) | "\(.id)|\(.userDn)|\(.clientUid)|\(.issuanceDate)"')
-
-echo "Found $total_active_certs active certificates"
-echo "Found ${#user_device_newest_id[@]} unique user+device combinations"
-
-# Identify duplicates: every id for a key except the newest one is a duplicate.
-declare -a duplicates_to_revoke
-for user_device_key in "${!user_device_ids[@]}"; do
-    newest_id="${user_device_newest_id[$user_device_key]}"
-    for id in ${user_device_ids[$user_device_key]}; do
-        [ "$id" != "$newest_id" ] && duplicates_to_revoke+=("$id")
-    done
-done
-
-if [ ${#duplicates_to_revoke[@]} -eq 0 ]; then
-    echo "No duplicate certificates found."
+if [ ${#superseded_to_revoke[@]} -eq 0 ]; then
+    echo "No superseded certificates found."
 else
-    echo "Found ${#duplicates_to_revoke[@]} duplicates to revoke"
+    echo "Found ${#superseded_to_revoke[@]} superseded certificates to revoke"
     
     revoke_cert() {
         local id="$1"
@@ -107,7 +102,7 @@ else
     }
     
     if [ "$PARALLEL_MODE" = true ]; then
-        for id in "${duplicates_to_revoke[@]}"; do
+        for id in "${superseded_to_revoke[@]}"; do
             while [ $(jobs -r | wc -l) -ge $MAX_PARALLEL_JOBS ]; do
                 wait -n 2>/dev/null || true
             done
@@ -115,7 +110,7 @@ else
         done
         wait
     else
-        for id in "${duplicates_to_revoke[@]}"; do
+        for id in "${superseded_to_revoke[@]}"; do
             revoke_cert "$id"
         done
     fi
@@ -193,6 +188,6 @@ echo ""
 echo "========================================"
 echo "Certificate cleanup complete"
 echo "========================================"
-echo "Phase 1: Revoked ${#duplicates_to_revoke[@]} duplicate certificates"
+echo "Phase 1: Revoked ${#superseded_to_revoke[@]} superseded certificates"
 echo "Phase 2: Deleted ${#expired_revoked_ids[@]} expired revoked certificates"
 echo ""
