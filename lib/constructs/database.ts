@@ -118,9 +118,17 @@ export class Database extends Construct {
 
     // Create parameter group for PostgreSQL
     const engineVersionString = dbConfig.engineVersion || '17.4';
-    const engineVersion = engineVersionString.startsWith('17') ? 
-      rds.AuroraPostgresEngineVersion.VER_17_4 : 
+    // aws-cdk-lib does not yet ship a named AuroraPostgresEngineVersion constant for
+    // PostgreSQL 18.x, so use the `.of()` escape hatch for that major version.
+    const engineVersion = engineVersionString.startsWith('18') ?
+      rds.AuroraPostgresEngineVersion.of(engineVersionString, '18') :
+      engineVersionString.startsWith('17') ?
+      rds.AuroraPostgresEngineVersion.VER_17_4 :
       rds.AuroraPostgresEngineVersion.VER_16_6;
+    // PostgreSQL 18 turned `log_connections` from a boolean into a comma-separated list of
+    // granular event types (receipt, authentication, authorization, setup_durations, or all/none).
+    // Pre-18 engines still expect the boolean-style '1'.
+    const isPostgres18OrLater = engineVersionString.startsWith('18');
     const parameterGroup = new rds.ParameterGroup(this, 'DBParameterGroup', {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
         version: engineVersion
@@ -130,7 +138,7 @@ export class Database extends Construct {
         'shared_preload_libraries': 'pg_stat_statements',
         'log_statement': 'all',
         'log_min_duration_statement': '1000',
-        'log_connections': '1',
+        'log_connections': isPostgres18OrLater ? 'all' : '1',
         'log_disconnections': '1'
       }
     });

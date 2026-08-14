@@ -28,7 +28,7 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
       "database": {
         "instanceClass": "db.serverless",
         "instanceCount": 1,
-        "engineVersion": "17.4",
+        "engineVersion": "18.3",
         "allocatedStorage": 20,
         "maxAllocatedStorage": 100,
         "enablePerformanceInsights": false,
@@ -69,7 +69,7 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
       "database": {
         "instanceClass": "db.t4g.large",
         "instanceCount": 2,
-        "engineVersion": "17.4",
+        "engineVersion": "18.3",
         "allocatedStorage": 100,
         "maxAllocatedStorage": 1000,
         "enablePerformanceInsights": true,
@@ -146,7 +146,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 |-----------|-------------|----------|------|
 | `instanceClass` | RDS instance class | `db.serverless` | `db.t4g.large` |
 | `instanceCount` | Number of database instances | `1` | `2` |
-| `engineVersion` | PostgreSQL engine version | `17.4` | `17.4` |
+| `engineVersion` | PostgreSQL engine version | `18.3` | `18.3` |
 | `allocatedStorage` | Initial storage allocation (GB) | `20` | `100` |
 | `maxAllocatedStorage` | Maximum storage allocation (GB) | `100` | `1000` |
 | `enablePerformanceInsights` | Enable performance insights | `false` | `true` |
@@ -376,7 +376,7 @@ npm run deploy:dev -- --context tak-region="us-east-1"
 |-----------|------|-------------|-------------|
 | `instanceClass` | string | RDS instance class | `db.serverless`, `db.t4g.micro`, `db.t4g.small`, `db.t4g.medium`, `db.t4g.large` |
 | `instanceCount` | number | Number of database instances | `1`, `2` |
-| `engineVersion` | string | PostgreSQL engine version | `17.4` |
+| `engineVersion` | string | PostgreSQL engine version | `18.3` |
 | `allocatedStorage` | number | Initial storage allocation (GB) | `20-65536` |
 | `maxAllocatedStorage` | number | Maximum storage allocation (GB) | `100-65536` |
 | `enablePerformanceInsights` | boolean | Enable performance insights | `true`, `false` |

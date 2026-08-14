@@ -17,10 +17,11 @@ COPY ./takserver-docker-*.zip $HOME/
 ENV TAK_VERSION=${TAK_VERSION}
 
 RUN unzip "./${TAK_VERSION}.zip" \
-    && rm -rf "./${TAK_VERSION}/docker" \
-    && mv ./${TAK_VERSION}/tak/* ./ \
-    && rmdir ./${TAK_VERSION}/tak \
-    && rmdir ./${TAK_VERSION}
+    && EXTRACTED_DIR=$(find . -maxdepth 1 -type d -name 'takserver-docker*' -not -name '.') \
+    && rm -rf "${EXTRACTED_DIR}/docker" \
+    && mv "${EXTRACTED_DIR}"/tak/* ./ \
+    && rmdir "${EXTRACTED_DIR}/tak" \
+    && rmdir "${EXTRACTED_DIR}"
 
 COPY ./docker-container/ $HOME/
 
