@@ -303,12 +303,15 @@
             <xs:attribute name="serviceAccountCredential" type="xs:string" use="optional"/>
             <xs:attribute name="groupObjectClass" type="xs:string" default="group"/>
             <xs:attribute name="userObjectClass" type="xs:string" default="user"/>
-            <xs:attribute name="groupBaseRDN" type="xs:string" use="optional"/>
-            <xs:attribute name="userBaseRDN" type="xs:string" use="optional"/>
+            <xs:attribute name="groupBaseRDN" type="xs:string" default="ou=Group"/>
+            <xs:attribute name="userBaseRDN" type="xs:string" default="ou=People"/>
             <xs:attribute name="x509groups" type="xs:boolean" default="true"/>
             <xs:attribute name="x509addAnonymous" type="xs:boolean" default="false"/>
             <xs:attribute name="matchGroupInChain" type="xs:boolean" default="false"/>
             <xs:attribute name="nestedGroupLookup" type="xs:boolean" default="false"/>
+            <xs:attribute name="nestedGroupLookupUsingMemberOf" type="xs:boolean" default="false"/>
+            <xs:attribute name="nestedGroupMaxSearchDepth" type="xs:int" use="optional"/>
+            <xs:attribute name="nestedGroupPrefixSearchFilter" type="xs:string" default=""/>
             <xs:attribute name="postMissionEventsAsPublic" type="xs:boolean" default="false"/>
             <xs:attribute name="ldapsTruststore" type="xs:string" use="optional"/>
             <xs:attribute name="ldapsTruststoreFile" type="xs:string" use="optional"/>
@@ -751,6 +754,7 @@
             <xs:attribute name="accessTokenName" type="xs:string" default="access_token"/>
             <xs:attribute name="refreshTokenName" type="xs:string" default="refresh_token"/>
             <xs:attribute name="trustAllCerts" type="xs:boolean" default="false"/>
+            <xs:attribute name="openIdConfiguration" type="xs:string" default="false"/>
           </xs:complexType>
         </xs:element>
         <xs:element name="openIdDiscoveryConfiguration" minOccurs="0" maxOccurs="unbounded">
@@ -1105,6 +1109,8 @@
             </xs:attribute>
             <xs:attribute name="initializationDelaySeconds" type="xs:int" default="30"/>
             <xs:attribute name="maxMessageSizeBytes" type="xs:int" default="268435456"/>
+            <xs:attribute name="caDownloadEnabled" type="xs:boolean" default="false"/>
+            <xs:attribute name="caPemFile" type="xs:string" default="certs/files/ca.pem"/>
           </xs:complexType>
         </xs:element>
 

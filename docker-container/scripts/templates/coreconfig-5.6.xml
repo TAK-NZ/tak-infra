@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Configuration xmlns="http://bbn.com/marti/xml/config">
     <network multicastTTL="5" serverId="{{SERVER_ID}}" version="{{TAK_VERSION}}" cloudwatchEnable="{{CLOUDWATCH_ENABLE}}" cloudwatchName="{{STACK_NAME}}">
-        <input auth="{{INPUT_AUTH}}" _name="stdssl" protocol="tls" port="8089" coreVersion="2" archive="{{INPUT_ARCHIVE}}"/>
+        <input auth="{{INPUT_AUTH}}" authRequired="{{INPUT_AUTH_REQUIRED}}" _name="stdssl" protocol="tls" port="8089" coreVersion="2" archive="{{INPUT_ARCHIVE}}"/>
         <connector port="8443" _name="https" keystore="JKS" keystoreFile="/opt/tak/certs/files/{{LETSENCRYPT_DOMAIN}}/letsencrypt.jks" keystorePass="atakatak" enableAdminUI="true" enableWebtak="true" enableNonAdminUI="true"/>
         <connector port="8446" clientAuth="false" _name="cert_https" keystore="JKS" keystoreFile="/opt/tak/certs/files/{{LETSENCRYPT_DOMAIN}}/letsencrypt.jks" keystorePass="atakatak" enableAdminUI="true" enableWebtak="true" enableNonAdminUI="true"/>
         <announce/>
     </network>
     <auth default="{{AUTH_DEFAULT}}" x509groups="true" x509addAnonymous="false" x509useGroupCache="{{X509_USE_GROUP_CACHE}}" x509useGroupCacheDefaultActive="{{X509_USE_GROUP_CACHE_DEFAULT_ACTIVE}}">
-        <ldap url="{{LDAP_URL}}" userstring="{{LDAP_USERSTRING}}" updateinterval="60" groupprefix="{{LDAP_GROUP_PREFIX}}" groupNameExtractorRegex="{{LDAP_GROUP_REGEX}}" serviceAccountDN="{{LDAP_SERVICE_DN}}" serviceAccountCredential="{{LDAP_PASSWORD}}" groupBaseRDN="{{LDAP_GROUP_BASE}}" userBaseRDN="{{LDAP_USER_BASE}}" ldapsTruststore="JKS" ldapsTruststoreFile="/opt/tak/certs/files/aws-acm-root.jks" ldapsTruststorePass="INTENTIONALLY_NOT_SENSITIVE" callsignAttribute="takCallsign" colorAttribute="takColor" roleAttribute="takRole" dnAttributeName="DN" nameAttr="CN"/>
+        <ldap url="{{LDAP_URL}}" userstring="{{LDAP_USERSTRING}}" updateinterval="1000" groupprefix="{{LDAP_GROUP_PREFIX}}" groupNameExtractorRegex="{{LDAP_GROUP_REGEX}}" serviceAccountDN="{{LDAP_SERVICE_DN}}" serviceAccountCredential="{{LDAP_PASSWORD}}" groupBaseRDN="{{LDAP_GROUP_BASE}}" userBaseRDN="{{LDAP_USER_BASE}}" userObjectClass="{{LDAP_USER_OBJECT_CLASS}}" groupObjectClass="{{LDAP_GROUP_OBJECT_CLASS}}" enableConnectionPool="{{LDAP_ENABLE_CONNECTION_POOL}}" connectionPoolTimeout="{{LDAP_CONNECTION_POOL_TIMEOUT}}" ldapsTruststore="JKS" ldapsTruststoreFile="/opt/tak/certs/files/aws-acm-root.jks" ldapsTruststorePass="INTENTIONALLY_NOT_SENSITIVE" callsignAttribute="takCallsign" colorAttribute="takColor" roleAttribute="takRole" dnAttributeName="dn" nameAttr="cn"/>
         {{OAUTH_SECTION}}
     </auth>
     <submission ignoreStaleMessages="false"/>

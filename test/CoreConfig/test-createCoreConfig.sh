@@ -30,15 +30,19 @@ update_test_files() {
     
     echo "Updating test files from $zip_file..."
     
+    # The vendor's internal zip folder name doesn't always match the zip filename/version
+    # exactly (e.g. "takserver-docker-hardened-<version>" vs "takserver-docker-<version>"),
+    # so match by wildcard instead of reconstructing the exact path.
+    
     # Extract XSD file
-    if unzip -o -j "$zip_file" "takserver-docker-$tak_version/tak/CoreConfig.xsd" -d "$SCRIPT_DIR" 2>/dev/null; then
+    if unzip -o -j "$zip_file" "*/tak/CoreConfig.xsd" -d "$SCRIPT_DIR" 2>/dev/null; then
         echo "Updated CoreConfig.xsd"
     else
         echo "Warning: Could not extract CoreConfig.xsd from zip"
     fi
     
     # Extract validation script
-    if unzip -o -j "$zip_file" "takserver-docker-$tak_version/tak/validateConfig.sh" -d "$SCRIPT_DIR" 2>/dev/null; then
+    if unzip -o -j "$zip_file" "*/tak/validateConfig.sh" -d "$SCRIPT_DIR" 2>/dev/null; then
         chmod +x "$SCRIPT_DIR/validateConfig.sh"
         echo "Updated validateConfig.sh"
     else
@@ -291,10 +295,17 @@ run_test "OAuth with TrustAllCerts" \
     "TAKSERVER_CoreConfig_OAuthServer_TokenEndpoint=https://oauth.example.com/token" \
     "TAKSERVER_CoreConfig_OAuthServer_TrustAllCerts=true"
 
-# Test 11: LDAP groupprefix and groupNameExtractorRegex attributes
+# Test 11: LDAP groupprefix, groupNameExtractorRegex, and the new user/group
+# object class + connection pool timeout attributes
 run_test "LDAP Group Attributes" \
-    "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix=tak_" \
-    "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex=^tak_(.*)$"
+    "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix=cn=tak_" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex=cn=tak_(.*?)(?:,|\$)" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_UserObjectClass=inetOrgPerson" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_GroupObjectClass=groupOfNames" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_EnableConnectionPool=false" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_ConnectionPoolTimeout=30000" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_UserBaseRDN=ou=users" \
+    "TAKSERVER_CoreConfig_Auth_LDAP_GroupBaseRDN=ou=groups"
 
 # Test 11: Empty optional values
 run_test "Empty Optional Values" \
@@ -395,6 +406,83 @@ test_oauth_and_oidc_discovery_combined() {
 }
 
 test_oauth_and_oidc_discovery_combined
+
+# Test: 8089 input authRequired defaults to true (secure-by-default), and can
+# be explicitly overridden to false.
+#
+# The CoreConfig XSD itself defaults authRequired to "false" (accept and
+# archive unauthenticated connections with no identity/groups). We
+# deliberately override that default to "true" in createCoreConfig.sh, so
+# this test asserts both that the override is in effect when unset, and that
+# an explicit env var still controls it.
+test_input_8089_auth_required() {
+    local test_name="Input 8089 AuthRequired defaults to true and is overridable"
+    TEST_COUNT=$((TEST_COUNT + 1))
+
+    echo "=== Test $TEST_COUNT: $test_name ==="
+
+    export PostgresUsername="testuser"
+    export PostgresPassword="testpass"
+    export PostgresURL="postgresql://localhost:5432/testdb"
+    local tak_version=$(grep -o '"version": "[^"]*"' "$SCRIPT_DIR/../../cdk.json" | head -1 | cut -d'"' -f4)
+    export TAK_VERSION="takserver-docker-${tak_version:-5.4-RELEASE-19}"
+    export LDAP_DN="dc=example,dc=com"
+    export LDAP_SECURE_URL="ldaps://ldap.example.com:636"
+    export LDAP_Password="ldappass"
+    export StackName="TestStack"
+
+    local overall_pass=true
+
+    # Case 1: unset -> should default to authRequired="true"
+    TEST_DIR=$(mktemp -d)
+    cd "$TEST_DIR"
+    mkdir -p tmp/test-tak/certs/files
+    if ! bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > test_output.log 2>&1; then
+        echo "❌ FAIL: $test_name - script execution failed (default case)"
+        cat test_output.log
+        overall_pass=false
+    elif ! grep -q '<input[^>]*authRequired="true"' "$TEST_DIR/CoreConfig.xml"; then
+        echo "❌ FAIL: $test_name - default authRequired was not \"true\""
+        grep '<input' "$TEST_DIR/CoreConfig.xml" || true
+        overall_pass=false
+    elif ! (cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1); then
+        echo "❌ FAIL: $test_name - default case XML validation failed"
+        cat "$TEST_DIR/validation.log"
+        overall_pass=false
+    fi
+    rm -rf "$TEST_DIR"
+
+    # Case 2: explicitly set to false -> should be overridable
+    export TAKSERVER_CoreConfig_Network_Input_8089_AuthRequired=false
+    TEST_DIR=$(mktemp -d)
+    cd "$TEST_DIR"
+    mkdir -p tmp/test-tak/certs/files
+    if ! bash "$SCRIPT_DIR/$CREATE_SCRIPT" "$TEST_DIR/CoreConfig.xml" > test_output.log 2>&1; then
+        echo "❌ FAIL: $test_name - script execution failed (override case)"
+        cat test_output.log
+        overall_pass=false
+    elif ! grep -q '<input[^>]*authRequired="false"' "$TEST_DIR/CoreConfig.xml"; then
+        echo "❌ FAIL: $test_name - explicit authRequired=false override did not apply"
+        grep '<input' "$TEST_DIR/CoreConfig.xml" || true
+        overall_pass=false
+    elif ! (cd "$SCRIPT_DIR" && ./validateConfig.sh "$TEST_DIR/CoreConfig.xml" > "$TEST_DIR/validation.log" 2>&1); then
+        echo "❌ FAIL: $test_name - override case XML validation failed"
+        cat "$TEST_DIR/validation.log"
+        overall_pass=false
+    fi
+    rm -rf "$TEST_DIR"
+    unset TAKSERVER_CoreConfig_Network_Input_8089_AuthRequired
+
+    if [[ "$overall_pass" == "true" ]]; then
+        echo "✅ PASS: $test_name"
+        PASS_COUNT=$((PASS_COUNT + 1))
+    else
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+    fi
+    echo ""
+}
+
+test_input_8089_auth_required
 
 # Test 14: Federation configuration is preserved across regeneration
 #

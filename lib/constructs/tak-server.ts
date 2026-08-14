@@ -414,6 +414,21 @@ export class TakServer extends Construct {
       }),
       environment: {
         LDAP_DN: Fn.importValue(createAuthImportValue(props.contextConfig.stackName, AUTH_EXPORT_NAMES.LDAP_BASE_DN)),
+        // The LDAP URL must NOT carry the base DN. When it does (e.g.
+        // "ldaps://host:636/dc=ldap,dc=tak"), TAK Server's JNDI InitialDirContext gets that
+        // base DN baked in as its namespace root, so ctx.lookup(fullyQualifiedDn) -- used by
+        // LdapAuthenticator.getGroupInfoByDN() for every X.509-cert-authenticated
+        // connection's group lookup -- resolves the name *relative* to that root and
+        // double-appends the base DN, silently matching nothing and returning zero groups
+        // (no exception is thrown; confirmed via a live JNDI reproduction outside of TAK
+        // Server's own code during an outage where every client type authenticated fine but
+        // received no CoT routing). ctx.search() (used elsewhere, e.g. searchGroups()) is
+        // NOT affected by this, which is why isolated testing of individual settings didn't
+        // catch it and why this bug survived multiple LDAP config changes. Fix: URL carries
+        // no base DN (empty JNDI namespace root), and every DN-shaped LDAP field --
+        // User String, Service Account DN, User Base RDN, Group Base RDN -- is fully
+        // qualified with the base DN instead. See LDAP_USER_BASE/LDAP_GROUP_BASE below and
+        // userstring/serviceAccountDN in createCoreConfig.sh.
         LDAP_SECURE_URL: Fn.importValue(createAuthImportValue(props.contextConfig.stackName, AUTH_EXPORT_NAMES.LDAPS_ENDPOINT)),
         StackName: Stack.of(this).stackName,
         Environment: props.environment,
@@ -430,12 +445,17 @@ export class TakServer extends Construct {
         // (setenv.sh reads /proc/meminfo which reflects host RAM, not the container limit)
         ECS_TASK_MEMORY_MB: props.contextConfig.ecs.taskMemory.toString(),
         // LDAP Group Prefix Configuration
-        // Regex is case-insensitive on the "cn=" attribute name and treats the prefix as
-        // optional, so non-prefixed groups still resolve (matches known-working reference
-        // server config; TAK Server's own default is case-sensitive and prefix-mandatory).
+        // TAK Server's searchGroups() only re-prepends the configured group prefix before
+        // its exact-match LDAP lookup (used to resolve a group's description for ATAK/
+        // CloudTAK) when groupNameExtractorRegex literally starts with groupprefix's text
+        // (a plain String.startsWith() check, evaluated case-sensitively on the raw config
+        // strings -- not on what the regex actually matches). The regex must therefore
+        // start with exactly "cn=" + the prefix for that fix to activate; the match itself
+        // is still case-insensitive at runtime (TAK Server compiles the pattern with
+        // Pattern.CASE_INSENSITIVE), so this also matches "CN=" in real DN values.
         ...(props.contextConfig.takserver.ldapGroupPrefix && {
           TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix: `cn=${props.contextConfig.takserver.ldapGroupPrefix}`,
-          TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex: `(?:cn|CN)=(?:${props.contextConfig.takserver.ldapGroupPrefix})?(.+?),`
+          TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex: `cn=${props.contextConfig.takserver.ldapGroupPrefix}(.*?)(?:,|$)`
         }),
         // WebTAK Configuration
         TAKSERVER_CoreConfig_Network_Connector_8443_EnableWebtak: (props.contextConfig.webtak?.enabled ?? false).toString(),
