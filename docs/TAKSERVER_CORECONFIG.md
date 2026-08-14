@@ -111,6 +111,7 @@ leaving it unset causes the script to fall back to the XSD default listed.
 | Variable | Default | Effect |
 |---|---|---|
 | `TAKSERVER_CoreConfig_Network_Input_8089_Auth` | `x509` | `<input>` auth mode on the 8089 CoT port. Valid: `x509`, `ldap` |
+| `TAKSERVER_CoreConfig_Network_Input_8089_AuthRequired` | `true` | When `true`, a connection on 8089 that does not present a valid credential (e.g. no client certificate) is hard-rejected at the socket level. When `false`, such a connection is silently admitted with no identity, gets zero groups (since `x509addAnonymous="false"`), and cannot exchange CoT with anyone — it just sits there accepted and archiving into the void. Note this default (`true`) differs from the CoreConfig XSD's own default (`false`); we override it here because the XSD default leaves an unauthenticated door open on 8089 |
 | `TAKSERVER_CoreConfig_Network_Input_8089_Archive` | `true` | When `false`, CoTs received on 8089 are routed to connected clients only and not persisted to the database |
 | `TAKSERVER_CoreConfig_Network_AlwaysArchiveMissionCot` | `false` | Always archive mission-related CoT messages, independent of the `Input_8089_Archive` setting above |
 
@@ -139,19 +140,65 @@ leaving it unset causes the script to fall back to the XSD default listed.
 | Variable | Default | Effect |
 |---|---|---|
 | `TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix` | `cn=tak_` | LDAP group name prefix filter. **Overridden by CDK** if `ldapGroupPrefix` context is set — see [precedence table](#precedence-s3-file-vs-cdk-context) |
-| `TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex` | `cn=tak_(.*)` | Regex used to extract the group name from the LDAP group DN. **Overridden by CDK** if `ldapGroupPrefix` context is set |
+| `TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex` | `cn=tak_(.*?)(?:,\|$)` | Regex used to extract the group name from the LDAP group DN. Must literally start with `cn=` + `Groupprefix`'s text (a case-sensitive `String.startsWith()` on the raw config, not on what the regex matches) for TAK Server's `searchGroups()` to re-prepend the prefix before its exact-match group-description lookup — otherwise ATAK/CloudTAK clients never receive a description for that group. **Overridden by CDK** if `ldapGroupPrefix` context is set |
 | `TAKSERVER_CoreConfig_Auth_LDAP_AdminGroup` | unset | LDAP group granted TAK Server admin rights |
-| `TAKSERVER_CoreConfig_Auth_LDAP_EnableConnectionPool` | `false` | Enables LDAP connection pooling |
+| `TAKSERVER_CoreConfig_Auth_LDAP_EnableConnectionPool` | `false` | Enables LDAP connection pooling. **No-op with our `ldaps://` URL** unless the JVM system property `com.sun.jndi.ldap.connect.pool.protocol=plain ssl` is also set (the JDK's JNDI provider only pools non-SSL connections by default, and that system property can't be set via CoreConfig -- it requires a JVM `-D` flag). Left disabled to avoid implying pooling is active when it isn't; enabling it without the system property change accomplishes nothing |
+| `TAKSERVER_CoreConfig_Auth_LDAP_ConnectionPoolTimeout` | `30000` | LDAP connection pool timeout, in milliseconds |
+| `TAKSERVER_CoreConfig_Auth_LDAP_UserObjectClass` | `inetOrgPerson` | LDAP object class used to identify user entries during search |
+| `TAKSERVER_CoreConfig_Auth_LDAP_GroupObjectClass` | `groupOfNames` | LDAP object class used to identify group entries during search |
+| `TAKSERVER_CoreConfig_Auth_LDAP_UserBaseRDN` | `ou=users,<LdapBaseDn>` | Fully-qualified user search base (see below — must NOT be relative) |
+| `TAKSERVER_CoreConfig_Auth_LDAP_GroupBaseRDN` | `ou=groups,<LdapBaseDn>` | Fully-qualified group search base (see below — must NOT be relative) |
+
+The `<ldap>` element's `url` attribute is built by CDK from `LdapsEndpoint` alone
+(e.g. `ldaps://ldap.tak.nz:636`) and does **not** carry the base DN. Every
+DN-shaped `<ldap>` attribute — `userstring`, `serviceAccountDN`, `userBaseRDN`,
+`groupBaseRDN` — is instead fully qualified with the base DN (e.g.
+`cn={username},ou=users,dc=ldap,dc=tak`, `ou=users,dc=ldap,dc=tak`).
+
+**Do not put the base DN in the URL.** An earlier version of this setup built
+the URL as `<LdapsEndpoint>/<LdapBaseDn>` with `userBaseRDN`/`groupBaseRDN` as
+bare relative RDNs (`ou=users`, `ou=groups`). That combination looked
+reasonable and passed `Test LDAP Connection` in the admin UI, but broke X.509
+group lookups in production: TAK Server's `LdapAuthenticator.getGroupInfoByDN()`
+takes the already-connected `DirContext` (whose JNDI namespace root is the
+URL's base DN) and calls `ctx.lookup(fullyQualifiedUserDn)` using the
+fully-qualified `userstring` value. `lookup()` resolves its argument *relative*
+to the context's existing root, so with the base DN already baked into the
+URL, the effective DN it tries to resolve doubles the base DN suffix and
+matches nothing — silently returning zero groups, with no exception, for
+every X.509/cert-authenticated connection (ATAK, CloudTAK, ETL data feeds).
+`ctx.search()` (used by other paths, e.g. `searchGroups()`'s group-description
+lookup) is not affected by this, which is why toggling individual settings in
+isolation didn't reproduce or fix it — the break only shows up on the specific
+`ctx.lookup()`-based path. Confirmed via a live JNDI reproduction (a small
+standalone Java program using the same bind and `ctx.lookup()` call) run
+directly against the production LDAP server, independent of TAK Server's own
+code, during a live outage.
 
 Every other `<ldap>` attribute (`url`, `userstring`, `serviceAccountDN`,
-`serviceAccountCredential`, `groupBaseRDN`, `userBaseRDN`, `style`,
-`groupObjectClass`, `nestedGroupLookup`, `callsignAttribute`,
+`serviceAccountCredential`, `style`, `nestedGroupLookup`, `callsignAttribute`,
 `colorAttribute`, `roleAttribute`, `dnAttributeName`, `nameAttr`,
 `ldapsTruststore*`, `updateinterval`) is hardcoded in the version templates
 or derived directly from the CDK-provided `LDAP_DN`/`LDAP_SECURE_URL`/
 `LDAP_Password` values. **There is no environment variable that overrides
 any of these** — changing them requires editing the templates in
 `docker-container/scripts/templates/`.
+
+**`dnAttributeName` and `nameAttr` must be lowercase (`dn`, `cn`), not
+uppercase (`DN`, `CN`).** LDAP attribute names are case-insensitive per
+protocol and JNDI's `Attributes.get()` is documented as case-insensitive,
+but TAK Server 5.8-RELEASE-65 was found in production to silently return
+zero groups for every X.509/cert-authenticated connection (`group info for
+<user> : {}`, no exception logged) when these were set to `DN`/`CN` against
+our LDAP directory. Root-caused via a live DEBUG trace on the `messaging`
+process during an outage where CoT was accepted and archived but never
+routed to any subscriber, for every client type (ATAK, CloudTAK, ETL)
+uniformly. Confirmed via isolation testing in the admin UI (reverting every
+other diverged setting back to the broken values one at a time except
+casing; only the casing remained different once the fix was isolated).
+Suspected mechanism: an internal case-sensitive lookup of the returned
+attribute map by the configured attribute name, though the exact code path
+was not confirmed by decompilation.
 
 ### OAuth (`<auth><oauth>`)
 

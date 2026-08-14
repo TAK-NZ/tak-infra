@@ -70,8 +70,8 @@ takserver-config.env.test
 takserver-config.env.demo
 takserver-config.env.prod
 
-# Device Profile packages
-TAK-NZ-ATAK-Standard-Settings-*.zip
+# Device Profile packages (standard-plugins build script still produces these;
+# standard-settings now uploads the raw config.pref directly, see DEVICE_PROFILES.md)
 TAK-NZ-Standard-Plugins-*.zip
 
 # Backup, To-Do and Reference directory 

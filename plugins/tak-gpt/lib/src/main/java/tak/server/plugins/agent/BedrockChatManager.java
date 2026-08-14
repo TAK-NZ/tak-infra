@@ -186,7 +186,7 @@ public class BedrockChatManager implements LLMChatManager {
         }
     }
 
-    private Map<String, String> createMarker(String type, String callsign, String lat, String lon, String iconsetpath, Set<String> groups) {
+    private Map<String, String> createMarker(String type, String callsign, String lat, String lon, String iconsetpath, Set<String> groups, String destUid) {
         LOGGER.debug("createMarker called");
         Map<String, String> map = new HashMap<>();
 
@@ -206,7 +206,9 @@ public class BedrockChatManager implements LLMChatManager {
         }
 
         try {
-            Message msg = MSG_GENERATOR.generateMarker(cotType, callsign, Float.valueOf(lat), Float.valueOf(lon), groups, iconsetpath);
+            // Routed to the requester's device UID only (see TAKMessageGenerator.generateMarker
+            // for why) rather than broadcast to every member of the bot's/user's CoT groups.
+            Message msg = MSG_GENERATOR.generateMarker(cotType, callsign, Float.valueOf(lat), Float.valueOf(lon), groups, iconsetpath, destUid);
             MSG_GENERATOR.send(msg);
             map.put("status", "success");
             map.put("report", "Created a marker of type: " + type + ", callsign: " + callsign + ", at lat: " + lat + ", lon: " + lon);
@@ -319,7 +321,8 @@ public class BedrockChatManager implements LLMChatManager {
                                 
                                 // Execute tool
                                 Map<String, String> result = createMarker(type, callsign, lat, lon, iconsetpath,
-                                        context != null ? context.getGroups() : null);
+                                        context != null ? context.getGroups() : null,
+                                        context != null ? context.getSenderUid() : null);
                                 
                                 // Add tool result
                                 toolResults.add(ContentBlock.builder()
@@ -435,7 +438,8 @@ public class BedrockChatManager implements LLMChatManager {
                         Map<String, String> markerResult = createMarker(
                                 params.get("type"), params.get("callsign"),
                                 params.get("lat"), params.get("lon"), iconsetpath,
-                                context != null ? context.getGroups() : null);
+                                context != null ? context.getGroups() : null,
+                                context != null ? context.getSenderUid() : null);
                         toolResult = String.format("{\"status\":\"%s\",\"report\":\"%s\"}",
                                 markerResult.get("status"), markerResult.get("report"));
                     } else {

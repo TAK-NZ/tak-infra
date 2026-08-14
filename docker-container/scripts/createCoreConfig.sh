@@ -341,19 +341,25 @@ substitute_template() {
         -e "s|{{CLOUDWATCH_ENABLE}}|$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")|g" \
         -e "s|{{STACK_NAME}}|$StackName|g" \
         -e "s|{{INPUT_AUTH}}|$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Auth" "x509")|g" \
+        -e "s|{{INPUT_AUTH_REQUIRED}}|$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_AuthRequired" "true" "boolean")|g" \
         -e "s|{{INPUT_ARCHIVE}}|$(get_env_value "TAKSERVER_CoreConfig_Network_Input_8089_Archive" "true" "boolean")|g" \
         -e "s|{{LETSENCRYPT_DOMAIN}}|$LETSENCRYPT_DOMAIN|g" \
         -e "s|{{AUTH_DEFAULT}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_Default" "ldap")|g" \
         -e "s|{{X509_USE_GROUP_CACHE}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_X509useGroupCache" "false" "boolean")|g" \
         -e "s|{{X509_USE_GROUP_CACHE_DEFAULT_ACTIVE}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_X509useGroupCacheDefaultActive" "false" "boolean")|g" \
+        -e "s|{{X509_CHECK_REVOCATION}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_X509checkRevocation" "true" "boolean")|g" \
         -e "s|{{LDAP_URL}}|$LDAP_SECURE_URL|g" \
         -e "s|{{LDAP_USERSTRING}}|cn={username},ou=users,$LDAP_DN|g" \
         -e "s|{{LDAP_GROUP_PREFIX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_Groupprefix" "cn=tak_" | sed 's/[|&/\]/\\&/g')|g" \
         -e "s|{{LDAP_GROUP_REGEX}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupNameExtractorRegex" "cn=tak_(.*)" | sed 's/[|&/\]/\\&/g')|g" \
         -e "s|{{LDAP_SERVICE_DN}}|cn=ldapservice,ou=users,$LDAP_DN|g" \
         -e "s|{{LDAP_PASSWORD}}|$LDAP_Password|g" \
-        -e "s|{{LDAP_GROUP_BASE}}|ou=groups,$LDAP_DN|g" \
-        -e "s|{{LDAP_USER_BASE}}|ou=users,$LDAP_DN|g" \
+        -e "s|{{LDAP_GROUP_BASE}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupBaseRDN" "ou=groups,$LDAP_DN")|g" \
+        -e "s|{{LDAP_USER_BASE}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_UserBaseRDN" "ou=users,$LDAP_DN")|g" \
+        -e "s|{{LDAP_USER_OBJECT_CLASS}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_UserObjectClass" "inetOrgPerson")|g" \
+        -e "s|{{LDAP_GROUP_OBJECT_CLASS}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_GroupObjectClass" "groupOfNames")|g" \
+        -e "s|{{LDAP_ENABLE_CONNECTION_POOL}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_EnableConnectionPool" "false" "boolean")|g" \
+        -e "s|{{LDAP_CONNECTION_POOL_TIMEOUT}}|$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_ConnectionPoolTimeout" "30000")|g" \
         -e "s|{{DB_URL}}|$PostgresURL|g" \
         -e "s|{{DB_USERNAME}}|$PostgresUsername|g" \
         -e "s|{{DB_PASSWORD}}|$PostgresPassword|g" \
@@ -519,12 +525,6 @@ ldap_admin_group=$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_AdminGroup" "")
 if [[ -n "$ldap_admin_group" ]]; then
     echo "Applying LDAP admin group: $ldap_admin_group"
     safe_xml_update "/Configuration/auth/ldap/@adminGroup" "$ldap_admin_group" "$WORK_FILE"
-fi
-
-ldap_enable_connection_pool=$(get_env_value "TAKSERVER_CoreConfig_Auth_LDAP_EnableConnectionPool" "")
-if [[ -n "$ldap_enable_connection_pool" ]]; then
-    echo "Applying LDAP connection pool: $ldap_enable_connection_pool"
-    safe_xml_update "/Configuration/auth/ldap/@enableConnectionPool" "$ldap_enable_connection_pool" "$WORK_FILE"
 fi
 
 # Mission settings

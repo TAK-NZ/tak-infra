@@ -11,8 +11,19 @@ gc = (
 # handshake with CloudWatch because the TAK Server certificate does not have
 # clientAuth EKU. Disabling native OpenSSL for the API JVM forces Netty to use
 # the JDK JSSE provider, which does not enforce EKU on outbound connections.
-# This flag must NOT be added to the messaging process — Ignite runs its cluster
-# server there and must keep native OpenSSL for inter-process communication.
+#
+# This flag must NOT be added to the messaging process. Tried that (to also
+# fix the same CloudWatch/EKU error there, since messaging stands up its own
+# CloudWatchMeterRegistry too), but messaging also owns SubmissionService's
+# CoT input listener (port 8089, stdssl), which builds its TLS server context
+# via Netty's OpenSslServerContext and has no JSSE fallback -- disabling
+# OpenSSL there makes that listener setup throw UnsatisfiedLinkError,
+# crashing the whole messaging process on every startup, which then cascades
+# to the api process failing too (it depends on messaging via Ignite). This
+# was caught in production as repeated ECS deployment/health-check failures.
+# The messaging-side CloudWatch/EKU error is accepted as-is: those metrics
+# are lost, but the process stays up. Ignite's own TcpCommunicationSpi is
+# unaffected either way since it uses raw NIO, not Netty.
 api_ssl_fix = '-Dio.netty.handler.ssl.noOpenSsl=true'
 
 # Patch configureInDocker.sh - add GC flags to messaging and API JVM invocations
