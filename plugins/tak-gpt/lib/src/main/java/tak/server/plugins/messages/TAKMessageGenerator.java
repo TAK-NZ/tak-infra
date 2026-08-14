@@ -39,6 +39,7 @@ public class TAKMessageGenerator {
                         callsign=\"|||MARKER_NAME|||\"/>
                     <archive/>
                     |||USERICON|||
+                    |||MARTI_DEST|||
                 </detail>
         </event>""";
             
@@ -68,10 +69,23 @@ public class TAKMessageGenerator {
     }
     
     public Message generateMarker(String type, String name, Float lat, Float lon, Set<String> groups) throws DocumentException {
-        return generateMarker(type, name, lat, lon, groups, null);
+        return generateMarker(type, name, lat, lon, groups, null, null);
     }
 
     public Message generateMarker(String type, String name, Float lat, Float lon, Set<String> groups, String iconsetpath) throws DocumentException {
+        return generateMarker(type, name, lat, lon, groups, iconsetpath, null);
+    }
+
+    // Includes <marti><dest uid="..."/></marti> (when destUid is supplied) so TAK Server
+    // routes this marker via explicit UID-based brokering (DistributedSubscriptionManager
+    // .getExplicitUidMatches, which looks up SubscriptionStore.clientUidToSubMap) to exactly
+    // the one subscription for that device UID, mirroring the fix already applied to chat
+    // replies in TAKChatGenerator. Without it, TAK Server falls back to implicit/group
+    // brokering (getImplicitMatches) and broadcasts the marker to every subscription
+    // reachable within the bot's CoT groups, i.e. every member of every group the bot/user
+    // is in, not just the requester. groups is still passed to cotStringToDataMessage for
+    // group-tagging/access-control on the archived CoT event, independent of live routing.
+    public Message generateMarker(String type, String name, Float lat, Float lon, Set<String> groups, String iconsetpath, String destUid) throws DocumentException {
         SimpleDateFormat dateFormater = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ss'Z'");
 		Date now = new Date();
 		String nowStr = dateFormater.format(now);
@@ -89,7 +103,8 @@ public class TAKMessageGenerator {
         .replace("|||LAT|||", lat.toString())
         .replace("|||LON|||", lon.toString())
         .replace("|||MARKER_NAME|||", name)
-        .replace("|||USERICON|||", iconsetpath != null ? "<usericon iconsetpath=\"" + iconsetpath + "\"/>" : "");
+        .replace("|||USERICON|||", iconsetpath != null ? "<usericon iconsetpath=\"" + iconsetpath + "\"/>" : "")
+        .replace("|||MARTI_DEST|||", (destUid != null && !destUid.isBlank()) ? "<marti><dest uid=\"" + destUid + "\"/></marti>" : "");
         return converter.cotStringToDataMessage(messageTemplate, groups, Integer.toString(System.identityHashCode(this)));
         
     }
