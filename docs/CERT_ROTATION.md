@@ -149,9 +149,7 @@ first boot. There is no rotation logic.
 
 The admin cert is used by:
 1. The TAK Server health check (`curl --cert admin.pem`)
-2. `revoke-duplicate-certs.sh`
-3. `check-expiring-certs.sh`
-4. The admin user elevation job (`UserManager.jar certmod -A admin.pem`)
+2. The admin user elevation job (`UserManager.jar certmod -A admin.pem`)
 
 All of these must be updated atomically. If the cert is rotated but the Secrets Manager entry is
 stale, external scripts will fail.
@@ -320,8 +318,14 @@ year of advance notice.
 
 ### Current state
 
-`check-expiring-certs.sh` identifies certs expiring within 30 days and cross-references with
-user activity. `revoke-duplicate-certs.sh` cleans up duplicates. Neither script rotates certs.
+There is currently no user/device cert expiry check in this repo. A prior implementation
+(`check-expiring-certs.sh`) identified certs expiring within 30 days and cross-referenced with
+user activity, but never rotated certs or notified anyone — it only printed to stdout. That
+script has been removed from this repo; its logic and an implementation plan for a proper,
+notification-capable replacement now live in `TAKTeamManager/CERT_EXPIRY_NOTIFICATIONS.md`
+(a sibling repo), since that application already has the mutual-TLS Marti API client, email
+delivery, and scheduled-job infrastructure this feature needs — see that doc before rebuilding
+this from scratch.
 
 ### Automated rotation approach
 
@@ -344,8 +348,12 @@ confmaker (daily cron):
 A CloudWatch alarm on `ActiveUserCertsExpiringSoon > 0` triggers an SNS notification to
 administrators, who can then push renewal data packages via the TAK Server admin UI or API.
 
-This is an enhancement to the existing `check-expiring-certs.sh` — the logic is already there,
-it just needs CloudWatch metric emission added and to be moved into confmaker's cron schedule.
+This confmaker/CloudWatch approach and the TAKTeamManager approach documented in
+`TAKTeamManager/CERT_EXPIRY_NOTIFICATIONS.md` are two different possible homes for this feature —
+not necessarily both needed. TAKTeamManager already has working email delivery and a Marti API
+client, which gets to an actual human-readable notification (not just a metric an admin has to be
+watching a dashboard to see) with less new infrastructure. Decide which owns this before building
+either.
 
 ---
 
@@ -408,9 +416,11 @@ Add CloudWatch alarms in CDK (`lib/constructs/database.ts` pattern) for:
 
 ### Phase E: User cert expiry notifications
 
-1. Extend `check-expiring-certs.sh` with `emit_metric` calls
-2. Move to confmaker daily cron
-3. Add CloudWatch alarm and SNS notification
+Superseded by `TAKTeamManager/CERT_EXPIRY_NOTIFICATIONS.md` — see that doc for the current
+implementation plan (a scheduled job inside TAKTeamManager using its existing `TakServerService`
+Marti API client and `EmailService`/`BroadcastEmailService` notification delivery, rather than a
+confmaker cron job with CloudWatch metrics). Revisit this phase only if TAKTeamManager turns out
+not to be the right home for this feature after all.
 
 ---
 

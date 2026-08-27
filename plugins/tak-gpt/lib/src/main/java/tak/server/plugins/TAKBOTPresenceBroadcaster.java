@@ -21,7 +21,12 @@ import tak.server.plugins.messaging.MessageConverter;
 public class TAKBOTPresenceBroadcaster {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TAKBOTPresenceBroadcaster.class);
 	private static final String DEFAULT_GROUP_NAME = "__ANON__";
-	private static final String COT_TEMPLATE = "<event version=\"2.0\" uid=\"|||BOTUID|||\" type=\"|||TYPE|||\" how=\"m-g\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"|||LAT|||\" lon=\"|||LON|||\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><contact callsign=\"|||BOTNAME|||\" endpoint=\"*:-1:stcp\"/><__group name=\"|||GROUPNAME|||\" role=\"|||ROLE|||\"/><takv device=\"Server\" platform=\"TAK Server\" os=\"Linux - 0\" version=\"5.0\"/><link relation=\"p-p\" type=\"|||TYPE|||\" uid=\"|||BOTUID|||\"/></detail></event>";
+	// marti archive="false" tells TAK Server not to persist this CoT to the retention
+	// database (see docs/CERT_ROTATION.md / archive="false" investigation). The presence
+	// beacon is re-broadcast every ~8s with identical, non-changing content (same lat/lon,
+	// group, role, type from static plugin config) purely to keep the bot's stale window
+	// alive in clients' contact lists -- there is nothing here worth retaining in the DB.
+	private static final String COT_TEMPLATE = "<event version=\"2.0\" uid=\"|||BOTUID|||\" type=\"|||TYPE|||\" how=\"m-g\" time=\"|||TIME|||\" start=\"|||TIME|||\" stale=\"|||STALE|||\"><point lat=\"|||LAT|||\" lon=\"|||LON|||\" hae=\"9999999.0\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><contact callsign=\"|||BOTNAME|||\" endpoint=\"*:-1:stcp\"/><__group name=\"|||GROUPNAME|||\" role=\"|||ROLE|||\"/><takv device=\"Server\" platform=\"TAK Server\" os=\"Linux - 0\" version=\"5.0\"/><link relation=\"p-p\" type=\"|||TYPE|||\" uid=\"|||BOTUID|||\"/><marti archive=\"false\"/></detail></event>";
 	private final String botName;
 	private Double latitude = 0.0;
 	private Double longitude = 0.0;

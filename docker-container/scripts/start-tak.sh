@@ -310,18 +310,6 @@ if [ ! -f /opt/tak/TAKIgniteConfig.xml ]; then
     cp /opt/tak/TAKIgniteConfig.example.xml /opt/tak/TAKIgniteConfig.xml
 fi
 
-# Setup certificate cleanup cron job
-# Temporarily disabled - revoke-duplicate-certs.sh is not run for now. May be re-enabled later.
-echo "TAK Server - Certificate cleanup cron job is disabled (revoke-duplicate-certs.sh not scheduled)"
-cat > /etc/cron.d/tak-cert-cleanup << 'EOF'
-SHELL=/bin/sh
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-
-# Clean up duplicate certificates every hour (staggered to avoid collision with retention job at :00)
-# Disabled for now - uncomment to re-enable.
-# 15 * * * * root /opt/tak/scripts/revoke-duplicate-certs.sh >> /var/log/tak-cert-cleanup.log 2>&1
-EOF
-
 # Setup retention config backup cron job
 echo "TAK Server - Setting up retention config backup cron job"
 cat > /etc/cron.d/tak-retention-backup << 'EOF'
@@ -380,7 +368,6 @@ tail -F /opt/tak/logs/takserver-config.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-db-audit.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver-esapi.log 2>/dev/null &
 tail -F /opt/tak/logs/takserver.log 2>/dev/null &
-tail -F /var/log/tak-cert-cleanup.log 2>/dev/null &
 
 # Run TAK server as main process (not in background)
 echo "TAK Server - Starting main TAK server process..."
