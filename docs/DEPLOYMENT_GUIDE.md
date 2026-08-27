@@ -29,13 +29,10 @@ npm run deploy:prod
 
 ## **📋 Environment Configurations**
 
-| Environment | Stack Name | Domain | TAK Infra Cost* | Complete Stack Cost** | Features |
-|-------------|------------|--------|----------------|----------------------|----------|
-| **dev-test** | `TAK-Dev-TakInfra` | `tak.dev.tak.nz` | ~$65 USD | ~$194 USD | Cost-optimized, Aurora Serverless v2 |
-| **prod** | `TAK-Prod-TakInfra` | `tak.tak.nz` | ~$285 USD | ~$673 USD | High availability, multi-AZ deployment |
-
-*TAK Server Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra)  
-Estimated AWS costs (USD) for ap-southeast-2, excluding data transfer and usage
+| Environment | Stack Name | Domain | Features |
+|-------------|------------|--------|----------|
+| **dev-test** | `TAK-Dev-TakInfra` | `tak.dev.tak.nz` | Cost-optimized, Aurora Serverless v2 |
+| **prod** | `TAK-Prod-TakInfra` | `tak.tak.nz` | High availability, multi-AZ deployment |
 
 ---
 

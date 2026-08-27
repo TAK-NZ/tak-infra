@@ -12,45 +12,13 @@ It is specifically targeted at the deployment of [TAK.NZ](https://tak.nz) via a 
 
 ### Architecture Layers
 
-This TAK Server infrastructure requires the base infrastructure and authentication infrastructure layers. Layers can be deployed in multiple independent environments. As an example:
+This TAK Server infrastructure requires the base infrastructure and authentication infrastructure
+layers, and is itself the foundation for higher level layers, each deployed as a separate stack
+from its own repository.
 
-```
-        PRODUCTION ENVIRONMENT                DEVELOPMENT ENVIRONMENT
-        Domain: tak.nz                        Domain: dev.tak.nz
-
-┌─────────────────────────────────┐    ┌─────────────────────────────────┐
-│         CloudTAK                │    │         CloudTAK                │
-│    CloudFormation Stack         │    │    CloudFormation Stack         │
-└─────────────────────────────────┘    └─────────────────────────────────┘
-                │                                        │
-                ▼                                        ▼
-┌─────────────────────────────────┐    ┌─────────────────────────────────┐
-│         TakInfra                │    │         TakInfra                │
-│    CloudFormation Stack         │    │    CloudFormation Stack         │
-│      (This Repository)          │    │      (This Repository)          │
-└─────────────────────────────────┘    └─────────────────────────────────┘
-                │                                        │
-                ▼                                        ▼
-┌─────────────────────────────────┐    ┌─────────────────────────────────┐
-│        AuthInfra                │    │        AuthInfra                │
-│    CloudFormation Stack         │    │    CloudFormation Stack         │
-└─────────────────────────────────┘    └─────────────────────────────────┘
-                │                                        │
-                ▼                                        ▼
-┌─────────────────────────────────┐    ┌─────────────────────────────────┐
-│        BaseInfra                │    │        BaseInfra                │
-│    CloudFormation Stack         │    │    CloudFormation Stack         │
-└─────────────────────────────────┘    └─────────────────────────────────┘
-```
-
-| Layer | Repository | Description |
-|-------|------------|-------------|
-| **BaseInfra** | [`base-infra`](https://github.com/TAK-NZ/base-infra)  | Foundation: VPC, ECS, S3, KMS, ACM |
-| **AuthInfra** | [`auth-infra`](https://github.com/TAK-NZ/auth-infra) | SSO via Authentik, LDAP |
-| **TakInfra** | `tak-infra` (this repo) | TAK Server |
-| **CloudTAK** | [`CloudTAK`](https://github.com/TAK-NZ/CloudTAK) | CloudTAK web interface, ETL, and media services |
-
-**Deployment Order**: BaseInfra must be deployed first, followed by AuthInfra, then TakInfra, and finally CloudTAK. Each layer imports outputs from the layer below via CloudFormation exports.
+For the full layer diagram and deployment order across all TAK.NZ repositories, see the
+[TAK.NZ organization overview](https://github.com/TAK-NZ). That diagram is maintained in one place
+so it stays current as layers are added.
 
 ## Quick Start
 
@@ -157,12 +125,10 @@ Docker images are built with the TAK Server version specified in configuration:
 
 ## Available Environments
 
-| Environment | Stack Name | Description | Domain | Monthly Cost* |
-|-------------|------------|-------------|--------|----------------|
-| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | `tak.dev.tak.nz` | ~$65 USD |
-| `prod` | `TAK-Prod-TakInfra` | High-availability production | `tak.tak.nz` | ~$285 USD |
-
-*Estimated AWS costs (USD) for ap-southeast-2, excluding data transfer and storage usage
+| Environment | Stack Name | Description | Domain |
+|-------------|------------|-------------|--------|
+| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | `tak.dev.tak.nz` |
+| `prod` | `TAK-Prod-TakInfra` | High-availability production | `tak.tak.nz` |
 
 ## Development Workflow
 
@@ -245,5 +211,5 @@ npm run deploy:dev -- --context branding=generic
 ## License
 
 TAK.NZ is distributed under [AGPL-3.0-only](LICENSE)\
-Copyright (C) 2025 - Christian Elsen, Team Awareness Kit New Zealand (TAK.NZ)\
+Copyright (C) 2026 - Christian Elsen, Team Awareness Kit New Zealand (TAK.NZ)\
 Copyright (c) 2025 DFPC - Center of Excellence 
