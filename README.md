@@ -125,12 +125,10 @@ Docker images are built with the TAK Server version specified in configuration:
 
 ## Available Environments
 
-| Environment | Stack Name | Description | Domain | Monthly Cost* |
-|-------------|------------|-------------|--------|----------------|
-| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | `tak.dev.tak.nz` | ~$65 USD |
-| `prod` | `TAK-Prod-TakInfra` | High-availability production | `tak.tak.nz` | ~$285 USD |
-
-*Estimated AWS costs (USD) for ap-southeast-2, excluding data transfer and storage usage
+| Environment | Stack Name | Description | Domain |
+|-------------|------------|-------------|--------|
+| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | `tak.dev.tak.nz` |
+| `prod` | `TAK-Prod-TakInfra` | High-availability production | `tak.tak.nz` |
 
 ## Development Workflow
 

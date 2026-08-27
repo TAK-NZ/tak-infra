@@ -111,13 +111,10 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
 
 ### **Environment Comparison**
 
-| Environment | Stack Name | Description | TAK Infra Cost* | Complete Stack Cost** |
-|-------------|------------|-------------|----------------|----------------------|
-| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development | ~$65 USD | ~$194 USD |
-| `prod` | `TAK-Prod-TakInfra` | High-availability production | ~$285 USD | ~$673 USD |
-
-*TAK Server Infrastructure only, **Complete deployment (BaseInfra + AuthInfra + TakInfra)  
-Estimated AWS costs (USD) for ap-southeast-2, excluding data processing and storage usage
+| Environment | Stack Name | Description |
+|-------------|------------|-------------|
+| `dev-test` | `TAK-Dev-TakInfra` | Cost-optimized development |
+| `prod` | `TAK-Prod-TakInfra` | High-availability production |
 
 ### **Key Configuration Differences**
 
@@ -233,10 +230,10 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 ## **Cost Optimization**
 
 ### **Development Environment Optimizations**
-- **Aurora Serverless v2**: Pay-per-use database scaling (~$127 USD/month savings vs prod)
-- **Single ECS Task**: Minimal compute allocation (~$75 USD/month savings vs prod)
-- **No Performance Insights**: Reduces database monitoring costs (~$7 USD/month savings)
-- **Container Insights Disabled**: Reduces CloudWatch costs (~$8 USD/month savings)
+- **Aurora Serverless v2**: Pay-per-use database scaling
+- **Single ECS Task**: Minimal compute allocation
+- **No Performance Insights**: Reduces database monitoring costs
+- **Container Insights Disabled**: Reduces CloudWatch costs
 
 ### **Production Environment Features**
 - **High Availability**: Multi-AZ database and ECS deployment

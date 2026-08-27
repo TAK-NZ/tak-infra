@@ -23,7 +23,7 @@ npx cdk deploy --context env=prod --profile your-aws-profile
 ## Environment Comparison
 
 ### Development Environment (`dev-test`)
-- ✅ **Cost optimized** (~$65 USD/month)
+- ✅ **Cost optimized**
 - ✅ **Same core functionality** as production
 - ✅ **Perfect for development** and testing
 - ✅ **Aurora Serverless v2** (pay-per-use scaling)
@@ -37,7 +37,7 @@ npx cdk deploy --context env=prod --profile your-aws-profile
 - ✅ **Production-grade database** (dedicated instances)
 - ✅ **Fixed task count** (reliable performance)
 - ✅ **Data protection** (retention policies)
-- ❌ **Higher cost** (~$285 USD/month)
+- ❌ **Higher cost**
 
 ## Configuration Override Examples
 
@@ -69,36 +69,6 @@ npm run deploy:dev -- \
 | **Secrets Manager** | 2 secrets | 2 secrets | Admin cert, DB credentials |
 | **ECR Repositories** | 1 | 1 | TAK Server image |
 | **CloudWatch Logs** | Basic | Enhanced | Retention and insights |
-
-## Cost Breakdown (Estimated USD for ap-southeast-2)
-
-### TAK Server Infrastructure Only
-
-#### Development Environment (~$65 USD/month)
-- **Aurora Serverless v2**: ~$18 USD/month (0.5 ACU average)
-- **ECS Fargate**: ~$25 USD/month (2048 CPU, 4096 MB, 1 task)
-- **Network Load Balancer**: ~$16 USD/month
-- **EFS Storage**: ~$3 USD/month (minimal usage)
-- **Other Services**: ~$3 USD/month (logs, secrets, ECR)
-
-#### Production Environment (~$285 USD/month)
-- **Aurora Multi-AZ**: ~$145 USD/month (2 × db.t4g.large)
-- **ECS Fargate**: ~$100 USD/month (4096 CPU, 8192 MB, 1 task)
-- **Network Load Balancer**: ~$16 USD/month
-- **Enhanced Features**: ~$15 USD/month (monitoring, insights)
-- **Other Services**: ~$9 USD/month (logs, secrets, ECR)
-
-### Complete TAK Deployment (BaseInfra + AuthInfra + TakInfra)
-
-#### Development Environment (~$194 USD/month)
-- **BaseInfra**: ~$44 USD/month (VPC, ECS cluster, S3, KMS, ACM)
-- **AuthInfra**: ~$85 USD/month (Authentik, LDAP, Aurora, Redis)
-- **TakInfra**: ~$65 USD/month (TAK Server, Aurora, EFS)
-
-#### Production Environment (~$673 USD/month)
-- **BaseInfra**: ~$143 USD/month (VPC, ECS cluster, S3, KMS, ACM, VPC endpoints)
-- **AuthInfra**: ~$245 USD/month (Authentik HA, LDAP, Aurora Multi-AZ, Redis cluster)
-- **TakInfra**: ~$285 USD/month (TAK Server HA, Aurora Multi-AZ, enhanced monitoring)
 
 ## Development Workflow
 
