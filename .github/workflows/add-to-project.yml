@@ -1,0 +1,25 @@
+name: Add issue to roadmap project
+
+# Automatically adds newly opened issues to the org-level "TAK-NZ Roadmap"
+# project (https://github.com/orgs/TAK-NZ/projects/2). Exists because
+# GitHub's built-in "Auto-add to project" workflow is capped at 1 per
+# project on the org's current (Free) plan, and that single slot is
+# already used elsewhere -- this Action-based approach has no such cap
+# and works per-repo instead.
+#
+# Requires the ADD_TO_PROJECT_PAT org secret: a PAT with org-level
+# `project` write scope, since the default GITHUB_TOKEN cannot write to
+# org-level Projects.
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  add-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v2.0.0
+        with:
+          project-url: https://github.com/orgs/TAK-NZ/projects/2
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
