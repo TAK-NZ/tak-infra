@@ -1,5 +1,23 @@
 # TAK Server Certificate Rotation Plan
 
+> **Status: not implemented.** This is a design/roadmap document, not a
+> description of the current deployment. All work described here is tracked
+> in GitHub issue [#128](https://github.com/TAK-NZ/tak-infra/issues/128) and
+> its sub-issues (#129–#136). Check those issues for current status before
+> assuming anything below is built. This doc lives in `docs/roadmap/`
+> specifically to keep unimplemented design work visually and physically
+> separate from `docs/` (which documents the system as it actually exists
+> today). User/device certificate expiry notifications (Part 6 below) are
+> tracked separately in `TAKTeamManager/CERT_EXPIRY_NOTIFICATIONS.md` (a
+> sibling repo), not in this repo's issue tracker.
+>
+> This plan depends on the shared EFS lock-file helper from
+> [#7](https://github.com/TAK-NZ/tak-infra/issues/7) (docs/roadmap/CLUSTERING.md
+> Phase 1). References to a dedicated `confmaker` container/service below are
+> superseded by that issue's corrected design — rotation logic runs inline on
+> every node, using the shared lock helper only for the steps that must be
+> exclusive, not a separate container.
+
 ## Overview
 
 This document describes automated rotation for all certificate types used in a TAK Server
@@ -23,8 +41,9 @@ clear alerting when human intervention is genuinely required.
 - **Advance warning** for CA rotation, which requires coordinated client action
 - **Atomic updates** — new cert written and validated before old cert is replaced
 - **Rollback** — previous cert preserved until new cert is confirmed healthy
-- **Cluster-safe** — all rotation logic runs in confmaker (Phase 1 of CLUSTERING.md), not in
-  individual TAK nodes, preventing race conditions in multi-node deployments
+- **Cluster-safe** — rotation logic runs inline on every node, using the shared EFS lock-file
+  helper from #7 for the steps that must run exactly once, preventing race conditions in
+  multi-node deployments without a dedicated container
 - **Idempotent** — safe to run on every container start
 - **HSM-grade root CA protection** — root CA private key never leaves KMS; all signing operations
   are audited via CloudTrail
@@ -44,16 +63,16 @@ In a multi-node cluster, multiple nodes run certbot independently. The HTTP-01 c
 port 80 to be served by the node requesting the cert, but the NLB distributes traffic across all
 nodes — the challenge request may hit a different node than the one running certbot.
 
-**Fix**: Move certbot to confmaker (one instance per cluster). confmaker uses an EFS lock file to
-ensure only one node requests/renews at a time. The deploy hook (`letsencrypt-deploy-hook-script.sh`)
-triggers an ECS rolling deployment as it does today.
+**Fix**: Wrap the certbot renewal call in `start-tak.sh` with the shared EFS lock-file helper from
+#7, so only one node requests/renews at a time — no separate container needed. The deploy hook
+(`letsencrypt-deploy-hook-script.sh`) triggers an ECS rolling deployment as it does today.
 
 ### Gap 2: No alerting on renewal failure
 
 Certbot silently fails if port 80 is blocked or rate-limited. The current script retries 10 times
 then exits 1, but there is no CloudWatch alarm on this.
 
-**Fix**: Add a CloudWatch custom metric `CertbotRenewalFailure` emitted by confmaker on failure.
+**Fix**: Add a CloudWatch custom metric `CertbotRenewalFailure` emitted by start-tak.sh on failure.
 Add a CloudWatch alarm on this metric with SNS notification.
 
 ### Gap 3: Staging → production transition leaves a gap
@@ -76,7 +95,9 @@ rotation logic.
 
 ### Rotation trigger
 
-confmaker checks the server cert expiry on every start and rotates if expiry is within 30 days:
+start-tak.sh checks the server cert expiry on every start and rotates if expiry is within 30
+days (using the shared EFS lock-file helper from #7, since rotation must run exactly once
+cluster-wide):
 
 ```bash
 check_server_cert_expiry() {
@@ -111,19 +132,20 @@ check_server_cert_expiry() {
 
 4. Emit CloudWatch metric: TakServerCertRotated
 
-5. ECS rolling deployment triggered by confmaker exit
+5. ECS rolling deployment triggered once rotation completes
    (TAK nodes restart and pick up new cert from EFS)
 ```
 
 ### Rollback
 
 If TAK Server fails its health check after rotation, the ECS circuit breaker triggers a rollback
-deployment. confmaker on the next start detects `takserver.jks.prev` and the failed health check
-state, restores the previous cert, and emits a `TakServerCertRotationFailed` CloudWatch metric.
+deployment. On the next start, start-tak.sh detects `takserver.jks.prev` and the failed health
+check state, restores the previous cert, and emits a `TakServerCertRotationFailed` CloudWatch
+metric.
 
 Detection of failed rotation:
 ```bash
-# On confmaker start, if .prev exists and is newer than .jks, the swap failed
+# On next start, if .prev exists and is newer than .jks, the swap failed
 if [[ -f "takserver.jks.prev" ]]; then
     prev_age=$(stat -c %Y takserver.jks.prev)
     curr_age=$(stat -c %Y takserver.jks)
@@ -207,7 +229,8 @@ should be an infrequent, well-signalled event rather than a routine operational 
 
 ### Rotation trigger
 
-confmaker checks intermediate CA expiry on every start:
+start-tak.sh checks intermediate CA expiry on every start (using the shared EFS lock-file helper
+from #7, since rotation must run exactly once cluster-wide):
 - **> 180 days remaining**: no action
 - **≤ 180 days remaining**: emit `IntermediateCAExpiryWarning` CloudWatch metric + SNS alert
 - **≤ 30 days remaining**: automated rotation proceeds (see below)
@@ -236,7 +259,7 @@ users before automated rotation begins.
    Trigger ECS rolling deployment
 
 5. Wait for deployment to stabilise (all nodes healthy)
-   confmaker polls ECS service until runningCount == desiredCount
+   the node holding the lock polls the ECS service until runningCount == desiredCount
 
 6. Rotate server cert and admin cert using new intermediate CA
    (follow Part 2 and Part 3 procedures above)
@@ -259,8 +282,8 @@ must re-enroll via the TAK Server enrollment endpoint. This is the only step tha
 action — the server-side rotation is fully automated.
 
 To minimise disruption, steps 4–8 can be scheduled for a maintenance window by setting a
-`CERT_ROTATION_MAINTENANCE_WINDOW` environment variable (cron expression). confmaker will defer
-step 4 onwards until the window opens, while still emitting the warning metric.
+`CERT_ROTATION_MAINTENANCE_WINDOW` environment variable (cron expression). start-tak.sh will
+defer step 4 onwards until the window opens, while still emitting the warning metric.
 
 ---
 
@@ -278,10 +301,10 @@ The root CA public cert (`ca.pem`) remains on EFS as it is not sensitive.
 ### Toolchain
 
 `makeRootCa.sh` and `makeCert.sh` use OpenSSL and Java keytool directly with local key files.
-To use a KMS-backed key, confmaker uses **`aws-kms-pkcs11`** — a PKCS#11 provider that makes
-the KMS key appear as a local HSM token to OpenSSL. This requires:
+To use a KMS-backed key, the TAK Server Docker image uses **`aws-kms-pkcs11`** — a PKCS#11
+provider that makes the KMS key appear as a local HSM token to OpenSSL. This requires:
 
-1. `aws-kms-pkcs11` installed in the confmaker Docker image
+1. `aws-kms-pkcs11` installed in the TAK Server Docker image
 2. A PKCS#11 config file pointing at the KMS key ARN
 3. OpenSSL configured to use the PKCS#11 engine for the root CA signing step only
 
@@ -291,9 +314,9 @@ Secrets Manager and are unaffected.
 
 ### IAM policy
 
-Only the confmaker ECS task role is granted `kms:Sign` on the root CA KMS key. The TAK Server
-task role has no access. The key policy explicitly denies `kms:GetPublicKey` export to prevent
-key material extraction.
+Only the specific task role that runs cert generation is granted `kms:Sign` on the root CA KMS
+key. No other role has access. The key policy explicitly denies `kms:GetPublicKey` export to
+prevent key material extraction.
 
 ### Rotation
 
@@ -309,7 +332,7 @@ be automated without admin involvement because:
 **Root CA rotation is out of scope for automated rotation.** A separate runbook should document
 the procedure.
 
-confmaker emits a `RootCAExpiryWarning` metric when root CA expiry is ≤ 365 days, giving one
+start-tak.sh emits a `RootCAExpiryWarning` metric when root CA expiry is ≤ 365 days, giving one
 year of advance notice.
 
 ---
@@ -361,7 +384,7 @@ either.
 
 ### Phase A: Instrumentation (prerequisite for all other phases)
 
-Add a shared `emit_metric` helper to confmaker:
+Add a shared `emit_metric` helper to start-tak.sh:
 
 ```bash
 emit_metric() {
@@ -392,24 +415,27 @@ Add CloudWatch alarms in CDK (`lib/constructs/database.ts` pattern) for:
 
 ### Phase B: Server cert and admin cert rotation
 
-1. Add `check_server_cert_expiry()` and `check_admin_cert_expiry()` to confmaker
+1. Add `check_server_cert_expiry()` and `check_admin_cert_expiry()` to start-tak.sh, gated by
+   the shared EFS lock-file helper from #7
 2. Add rotation logic with atomic swap and rollback detection
 3. Add `emit_metric` calls
-4. Test: manually set cert expiry to T-25 days, confirm rotation runs on next confmaker start
+4. Test: manually set cert expiry to T-25 days, confirm rotation runs on next start
 5. Test: simulate rotation failure (corrupt new cert), confirm rollback and metric emission
 
 ### Phase C: Let's Encrypt cluster safety
 
-1. Move certbot to confmaker (Part 1, Gap 1)
-2. Add EFS lock file for single-node renewal in cluster
-3. Add `CertbotRenewalFailure` metric on failure
-4. Test: deploy 2-node cluster, confirm only one node runs certbot
+1. Wrap the certbot renewal call in start-tak.sh with the shared EFS lock-file helper from #7
+   (Part 1, Gap 1) -- no separate container needed
+2. Add `CertbotRenewalFailure` metric on failure
+3. Test: deploy 2-node cluster, confirm only one node runs certbot
 
 ### Phase D: Intermediate CA rotation
 
-1. Add `check_intermediate_ca_expiry()` to confmaker
+1. Add `check_intermediate_ca_expiry()` to start-tak.sh, gated by the shared EFS lock-file
+   helper from #7
 2. Implement warning metric emission (≤ 180 days)
-3. Implement automated rotation procedure (≤ 30 days) with transition truststore
+3. Implement automated rotation procedure (≤ 30 days) with transition truststore -- validate
+   the transition truststore assumption via the spike issue first (#133)
 4. Add `CERT_ROTATION_MAINTENANCE_WINDOW` support
 5. Test: set intermediate CA expiry to T-25 days, confirm rotation with transition truststore
 6. Test: confirm existing client certs are rejected after rotation, re-enrollment works
@@ -419,8 +445,8 @@ Add CloudWatch alarms in CDK (`lib/constructs/database.ts` pattern) for:
 Superseded by `TAKTeamManager/CERT_EXPIRY_NOTIFICATIONS.md` — see that doc for the current
 implementation plan (a scheduled job inside TAKTeamManager using its existing `TakServerService`
 Marti API client and `EmailService`/`BroadcastEmailService` notification delivery, rather than a
-confmaker cron job with CloudWatch metrics). Revisit this phase only if TAKTeamManager turns out
-not to be the right home for this feature after all.
+CloudWatch-metrics-based approach in this repo). Revisit this phase only if TAKTeamManager turns
+out not to be the right home for this feature after all.
 
 ---
 
@@ -452,7 +478,7 @@ AWS Secrets Manager
 
 /run/tak-ca/                   (tmpfs — in-memory only, not persisted)
 └── intermediate-ca-signing.jks     Intermediate CA keystore  ← retrieved from Secrets Manager
-                                    at confmaker start, used by TAK Server via bind mount
+                                    on start, used by TAK Server via bind mount
 ```
 
 > `ca-do-not-share.jks` is **removed** from EFS. The root CA private key exists only in KMS.
