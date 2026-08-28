@@ -22,7 +22,7 @@ public class TAKBOTPresenceBroadcaster {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TAKBOTPresenceBroadcaster.class);
 	private static final String DEFAULT_GROUP_NAME = "__ANON__";
 	// marti archive="false" tells TAK Server not to persist this CoT to the retention
-	// database (see docs/CERT_ROTATION.md / archive="false" investigation). The presence
+	// database (see docs/roadmap/CERT_ROTATION.md / archive="false" investigation). The presence
 	// beacon is re-broadcast every ~8s with identical, non-changing content (same lat/lon,
 	// group, role, type from static plugin config) purely to keep the bot's stale window
 	// alive in clients' contact lists -- there is nothing here worth retaining in the DB.
