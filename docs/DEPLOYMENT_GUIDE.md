@@ -301,10 +301,10 @@ aws secretsmanager get-secret-value --secret-id "TAK-{StackName}-TakInfra/TAK-Se
 ### **Cleanup**
 ```bash
 # Destroy development environment
-npm run cdk:destroy -- --context env=dev-test
+npm run cdk:destroy -- --context envType=dev-test
 
 # Destroy production environment (use with caution!)
-npm run cdk:destroy -- --context env=prod
+npm run cdk:destroy -- --context envType=prod
 ```
 
 ---

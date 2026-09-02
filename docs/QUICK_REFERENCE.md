@@ -14,10 +14,10 @@ npm run deploy:prod
 ### Using Direct CDK Commands
 ```bash
 # Development environment
-npx cdk deploy --context env=dev-test --profile your-aws-profile
+npx cdk deploy --context envType=dev-test --profile your-aws-profile
 
 # Production environment
-npx cdk deploy --context env=prod --profile your-aws-profile
+npx cdk deploy --context envType=prod --profile your-aws-profile
 ```
 
 ## Environment Comparison
