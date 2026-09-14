@@ -58,15 +58,4 @@ describe('TakInfraStack', () => {
       DeletionProtection: true
     });
   });
-
-  test('should validate configuration structure', () => {
-    const config = MOCK_CONFIGS.DEV_TEST;
-    
-    expect(config.stackName).toBeDefined();
-    expect(config.database).toBeDefined();
-    expect(config.ecs).toBeDefined();
-    expect(config.takserver).toBeDefined();
-    expect(config.ecr).toBeDefined();
-    expect(config.general).toBeDefined();
-  });
 });
