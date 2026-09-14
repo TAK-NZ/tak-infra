@@ -90,16 +90,16 @@ describe('Database Construct', () => {
     });
   });
 
-  test('should handle custom engine version', () => {
+  test('should apply custom engine version to the cluster', () => {
     const customConfig = {
       ...MOCK_CONFIGS.DEV_TEST,
       database: {
         ...MOCK_CONFIGS.DEV_TEST.database,
-        engineVersion: '16.6'
+        engineVersion: '17.4'
       }
     };
 
-    const database = new Database(stack, 'TestDB', {
+    new Database(stack, 'TestDB', {
       environment: 'dev-test',
       stackName: 'TestStack',
       contextConfig: customConfig,
@@ -107,10 +107,13 @@ describe('Database Construct', () => {
       securityGroups
     });
 
-    expect(database.cluster).toBeDefined();
+    const template = Template.fromStack(stack);
+    template.hasResourceProperties('AWS::RDS::DBCluster', {
+      EngineVersion: '17.4'
+    });
   });
 
-  test('should handle large instance type', () => {
+  test('should size provisioned instances from a large instance class', () => {
     const largeConfig = {
       ...MOCK_CONFIGS.PROD,
       database: {
@@ -119,7 +122,7 @@ describe('Database Construct', () => {
       }
     };
 
-    const database = new Database(stack, 'TestDB', {
+    new Database(stack, 'TestDB', {
       environment: 'prod',
       stackName: 'TestStack',
       contextConfig: largeConfig,
@@ -127,10 +130,13 @@ describe('Database Construct', () => {
       securityGroups
     });
 
-    expect(database.cluster).toBeDefined();
+    const template = Template.fromStack(stack);
+    template.hasResourceProperties('AWS::RDS::DBInstance', {
+      DBInstanceClass: 'db.t4g.large'
+    });
   });
 
-  test('should handle multiple readers', () => {
+  test('should provision the configured number of reader instances', () => {
     const multiReaderConfig = {
       ...MOCK_CONFIGS.PROD,
       database: {
@@ -139,7 +145,7 @@ describe('Database Construct', () => {
       }
     };
 
-    const database = new Database(stack, 'TestDB', {
+    new Database(stack, 'TestDB', {
       environment: 'prod',
       stackName: 'TestStack',
       contextConfig: multiReaderConfig,
@@ -147,10 +153,12 @@ describe('Database Construct', () => {
       securityGroups
     });
 
-    expect(database.cluster).toBeDefined();
+    const template = Template.fromStack(stack);
+    // 1 writer + 2 readers for instanceCount: 3
+    template.resourceCountIs('AWS::RDS::DBInstance', 3);
   });
 
-  test('should handle monitoring disabled', () => {
+  test('should omit enhanced monitoring properties when monitoring is disabled', () => {
     const noMonitoringConfig = {
       ...MOCK_CONFIGS.DEV_TEST,
       database: {
@@ -159,7 +167,7 @@ describe('Database Construct', () => {
       }
     };
 
-    const database = new Database(stack, 'TestDB', {
+    new Database(stack, 'TestDB', {
       environment: 'dev-test',
       stackName: 'TestStack',
       contextConfig: noMonitoringConfig,
@@ -167,6 +175,10 @@ describe('Database Construct', () => {
       securityGroups
     });
 
-    expect(database.cluster).toBeDefined();
+    const template = Template.fromStack(stack);
+    const instances = template.findResources('AWS::RDS::DBInstance');
+    const writer = Object.values(instances)[0] as { Properties: Record<string, unknown> };
+    expect(writer.Properties.MonitoringInterval).toBeUndefined();
+    expect(writer.Properties.MonitoringRoleArn).toBeUndefined();
   });
 });

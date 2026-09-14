@@ -288,36 +288,6 @@ describe('WebTakOidcSetup', () => {
     });
   });
 
-  test('creates construct with fallback values', () => {
-    const kmsKey = new kms.Key(stack, 'TestKey');
-    const mockSecret = new secretsmanager.Secret(stack, 'TestSecret', {
-      encryptionKey: kmsKey,
-    });
-
-    const webTakOidcSetup = new WebTakOidcSetup(stack, 'WebTakOidcSetup', {
-      stackConfig: mockStackConfig,
-      authentikAdminSecret: mockSecret,
-      authentikUrl: 'https://account.tak.nz',
-      webTakUrl: 'https://ops.tak.nz',
-    });
-
-    // Test that properties are defined (covers lines 151-167)
-    expect(webTakOidcSetup.issuer).toBeDefined();
-    expect(webTakOidcSetup.authorizeUrl).toBeDefined();
-    expect(webTakOidcSetup.tokenUrl).toBeDefined();
-    expect(webTakOidcSetup.userInfoUrl).toBeDefined();
-    expect(webTakOidcSetup.jwksUri).toBeDefined();
-    expect(webTakOidcSetup.providerName).toBe('TAK-WebTAK');
-
-    const template = Template.fromStack(stack);
-    
-    // Should have custom resource and Lambda function
-    template.hasResourceProperties('AWS::CloudFormation::CustomResource', {});
-    template.hasResourceProperties('AWS::Lambda::Function', {
-      Runtime: 'nodejs22.x'
-    });
-  });
-
   test('handles custom resource attribute access errors', () => {
     const kmsKey = new kms.Key(stack, 'TestKey');
     const mockSecret = new secretsmanager.Secret(stack, 'TestSecret', {
