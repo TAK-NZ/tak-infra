@@ -1,6 +1,7 @@
 package tak.server.plugins.agent;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.exception.ApiCallAttemptTimeoutException;
+import software.amazon.awssdk.core.exception.ApiCallTimeoutException;
+import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrockruntime.model.ContentBlock;
@@ -81,6 +85,11 @@ public class BedrockChatManager implements LLMChatManager {
     private static final int TIMEOUT_CONVERSE_S = 30;
     private static final int TIMEOUT_AGENT_S = 60;
     private static final int TIMEOUT_KB_S = 45;
+    // The AWS SDK's Netty client cuts a response stream after 30 s without data. InvokeAgent sends nothing until the
+    // agent has finished all its steps, so that default would end any agent turn longer than 30 s before TIMEOUT_AGENT_S
+    // applies. Keep the HTTP read timeout above TIMEOUT_AGENT_S so the plugin's own timeout is the one that fires.
+    private static final int AGENT_HTTP_READ_TIMEOUT_S = TIMEOUT_AGENT_S + 10;
+    private static final String MSG_UNAVAILABLE = "⚠ Bot unavailable — no response received. Try again shortly.";
     private static final ExecutorService TIMEOUT_EXECUTOR = Executors.newCachedThreadPool();
 
     public BedrockChatManager(Map<String, ? extends Object> config) {
@@ -116,6 +125,9 @@ public class BedrockChatManager implements LLMChatManager {
             agentAsyncClient = BedrockAgentRuntimeAsyncClient.builder()
                     .region(Region.of(region))
                     .credentialsProvider(DefaultCredentialsProvider.create())
+                    .httpClientBuilder(NettyNioAsyncHttpClient.builder()
+                            .connectionTimeout(Duration.ofSeconds(10))
+                            .readTimeout(Duration.ofSeconds(AGENT_HTTP_READ_TIMEOUT_S)))
                     .build();
         }
         if (knowledgeBaseId != null) {
@@ -288,7 +300,7 @@ public class BedrockChatManager implements LLMChatManager {
                             .get(TIMEOUT_CONVERSE_S, TimeUnit.SECONDS);
                 } catch (TimeoutException e) {
                     LOGGER.warn("Bedrock converse timed out after {}s", TIMEOUT_CONVERSE_S);
-                    return "⚠ Bot unavailable — no response received. Try again shortly.";
+                    return MSG_UNAVAILABLE;
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -374,7 +386,7 @@ public class BedrockChatManager implements LLMChatManager {
 
         } catch (Exception e) {
             LOGGER.error("Exception while calling Bedrock", e);
-            return "Error while talking to bot: " + e.getMessage();
+            return describeFailure(e);
         }
     }
 
@@ -412,7 +424,7 @@ public class BedrockChatManager implements LLMChatManager {
                             .get(TIMEOUT_AGENT_S, TimeUnit.SECONDS);
                 } catch (TimeoutException e) {
                     LOGGER.warn("Bedrock agent timed out after {}s", TIMEOUT_AGENT_S);
-                    return "⚠ Bot unavailable — no response received. Try again shortly.";
+                    return MSG_UNAVAILABLE;
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -468,8 +480,34 @@ public class BedrockChatManager implements LLMChatManager {
 
         } catch (Exception e) {
             LOGGER.error("Exception while calling Bedrock Agent", e);
-            return "Error while talking to bot: " + e.getMessage();
+            return describeFailure(e);
         }
+    }
+
+    /**
+     * Turns a failure into a message that is safe to show in a chat window. Timeouts and connection failures (including
+     * the SDK's "Unable to execute HTTP request: null", which wraps a Netty ReadTimeoutException) get the standard
+     * "Bot unavailable" text. Other failures show the root cause instead of Java wrapper class names.
+     */
+    static String describeFailure(Throwable failure) {
+        Throwable root = failure;
+        for (Throwable t = failure; t != null; t = (t.getCause() == t ? null : t.getCause())) {
+            String className = t.getClass().getName();
+            if (t instanceof TimeoutException
+                    || t instanceof java.net.SocketTimeoutException
+                    || t instanceof java.net.ConnectException
+                    || t instanceof java.net.UnknownHostException
+                    || t instanceof ApiCallTimeoutException
+                    || t instanceof ApiCallAttemptTimeoutException
+                    || className.endsWith("ReadTimeoutException")
+                    || className.endsWith("WriteTimeoutException")
+                    || className.endsWith("ConnectTimeoutException")) {
+                return MSG_UNAVAILABLE;
+            }
+            root = t;
+        }
+        String detail = root.getMessage() != null ? root.getMessage() : root.getClass().getSimpleName();
+        return "Error while talking to bot: " + detail;
     }
 
     private String sendKnowledgeBaseRequest(String messageText, TAKContext context) throws IOException {
@@ -495,7 +533,7 @@ public class BedrockChatManager implements LLMChatManager {
                         .get(TIMEOUT_KB_S, TimeUnit.SECONDS);
             } catch (TimeoutException e) {
                 LOGGER.warn("Bedrock KB timed out after {}s", TIMEOUT_KB_S);
-                return "⚠ Bot unavailable — no response received. Try again shortly.";
+                return MSG_UNAVAILABLE;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -503,7 +541,7 @@ public class BedrockChatManager implements LLMChatManager {
 
         } catch (Exception e) {
             LOGGER.error("Exception while calling Bedrock Knowledge Base", e);
-            return "Error while talking to bot: " + e.getMessage();
+            return describeFailure(e);
         }
     }
 }

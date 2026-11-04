@@ -1,0 +1,506 @@
+{
+ "haiku-4.5": {
+  "model_id": "au.anthropic.claude-haiku-4-5-20251001-v1:0",
+  "runs": 111,
+  "failed": 0,
+  "latency_s": {
+   "mean": 5.346919834174359,
+   "median": 4.537921712035313,
+   "p90": 9.228974408935755,
+   "max": 16.578228097991087
+  },
+  "model_only_s_mean": 4.554788514511316,
+  "over_30s": 0,
+  "over_45s": 0,
+  "throttle_retries": 0,
+  "avg_searches": 2.2072072072072073,
+  "avg_model_calls": 2.225225225225225,
+  "avg_in_tokens": 10489.486486486487,
+  "avg_out_tokens": 427.7117117117117,
+  "judged": 111,
+  "correctness": 3.630630630630631,
+  "completeness": 3.5945945945945947,
+  "groundedness": 3.4054054054054053,
+  "accuracy_1to5": 3.5435435435435436,
+  "accuracy_pct": 63.58858858858859,
+  "low_score_answers": 47,
+  "hallucinations": 44,
+  "overconfident": 21,
+  "unnecessary_refusal": 7,
+  "markdown_rate": 0.05405405405405406,
+  "literal_escape": 0,
+  "over_5_bullets": 55,
+  "avg_chars": 856.009009009009,
+  "by_category": {
+   "Operational Procedures": {
+    "median_s": 4.169395051081665,
+    "accuracy_1to5": 4.0476190476190474
+   },
+   "Training & Safety Systems": {
+    "median_s": 4.232019540038891,
+    "accuracy_1to5": 3.1666666666666665
+   },
+   "Organizational & Legal Framework": {
+    "median_s": 4.378348389931489,
+    "accuracy_1to5": 3.759259259259259
+   },
+   "Emergency Response & Incident Management": {
+    "median_s": 5.20057681191247,
+    "accuracy_1to5": 4.088888888888889
+   },
+   "Geographic & Infrastructure": {
+    "median_s": 3.2841914644814096,
+    "accuracy_1to5": 3.138888888888889
+   },
+   "Map Markers & Visualization": {
+    "median_s": 4.678654701507185,
+    "accuracy_1to5": 3.6666666666666665
+   },
+   "Multi-Document Queries": {
+    "median_s": 10.162905656034127,
+    "accuracy_1to5": 2.4074074074074074
+   }
+  }
+ },
+ "haiku-5.5": {
+  "model_id": "au.anthropic.claude-haiku-5-5",
+  "runs": 111,
+  "failed": 0,
+  "latency_s": {
+   "mean": 7.438107388950926,
+   "median": 6.386608477099799,
+   "p90": 11.544381530955434,
+   "max": 26.57597959099803
+  },
+  "model_only_s_mean": 6.603055017732864,
+  "over_30s": 0,
+  "over_45s": 0,
+  "throttle_retries": 0,
+  "avg_searches": 2.3513513513513513,
+  "avg_model_calls": 2.1531531531531534,
+  "avg_in_tokens": 13387.711711711712,
+  "avg_out_tokens": 1000.4324324324324,
+  "judged": 111,
+  "correctness": 4.2342342342342345,
+  "completeness": 3.900900900900901,
+  "groundedness": 4.117117117117117,
+  "accuracy_1to5": 4.084084084084084,
+  "accuracy_pct": 77.10210210210211,
+  "low_score_answers": 20,
+  "hallucinations": 19,
+  "overconfident": 6,
+  "unnecessary_refusal": 9,
+  "markdown_rate": 0.02702702702702703,
+  "literal_escape": 0,
+  "over_5_bullets": 24,
+  "avg_chars": 857.2882882882883,
+  "by_category": {
+   "Operational Procedures": {
+    "median_s": 7.0757373159285635,
+    "accuracy_1to5": 4.222222222222222
+   },
+   "Training & Safety Systems": {
+    "median_s": 5.457522559445351,
+    "accuracy_1to5": 3.9027777777777777
+   },
+   "Organizational & Legal Framework": {
+    "median_s": 5.960234416124877,
+    "accuracy_1to5": 4.037037037037037
+   },
+   "Emergency Response & Incident Management": {
+    "median_s": 6.929063914110884,
+    "accuracy_1to5": 4.533333333333333
+   },
+   "Geographic & Infrastructure": {
+    "median_s": 5.9277886234922335,
+    "accuracy_1to5": 4.194444444444445
+   },
+   "Map Markers & Visualization": {
+    "median_s": 7.677212102047633,
+    "accuracy_1to5": 4.027777777777778
+   },
+   "Multi-Document Queries": {
+    "median_s": 13.26319855521433,
+    "accuracy_1to5": 3.5185185185185186
+   }
+  }
+ },
+ "sonnet-4.5": {
+  "model_id": "au.anthropic.claude-sonnet-4-5-20250929-v1:0",
+  "runs": 111,
+  "failed": 3,
+  "latency_s": {
+   "mean": 10.791597499100371,
+   "median": 8.92622686055256,
+   "p90": 18.026764824998097,
+   "max": 31.328043270856142
+  },
+  "model_only_s_mean": 9.999284247578881,
+  "over_30s": 2,
+  "over_45s": 0,
+  "throttle_retries": 0,
+  "avg_searches": 2.212962962962963,
+  "avg_model_calls": 2.2314814814814814,
+  "avg_in_tokens": 10317.787037037036,
+  "avg_out_tokens": 401.1203703703704,
+  "judged": 108,
+  "correctness": 4.0092592592592595,
+  "completeness": 3.7962962962962963,
+  "groundedness": 3.75,
+  "accuracy_1to5": 3.851851851851852,
+  "accuracy_pct": 71.2962962962963,
+  "low_score_answers": 35,
+  "hallucinations": 34,
+  "overconfident": 15,
+  "unnecessary_refusal": 6,
+  "markdown_rate": 0,
+  "literal_escape": 0,
+  "over_5_bullets": 54,
+  "avg_chars": 800.6203703703703,
+  "by_category": {
+   "Operational Procedures": {
+    "median_s": 8.4441382480436,
+    "accuracy_1to5": 4.316666666666666
+   },
+   "Training & Safety Systems": {
+    "median_s": 8.611956376407761,
+    "accuracy_1to5": 3.4444444444444446
+   },
+   "Organizational & Legal Framework": {
+    "median_s": 9.080043379915878,
+    "accuracy_1to5": 4.148148148148148
+   },
+   "Emergency Response & Incident Management": {
+    "median_s": 8.792473998037167,
+    "accuracy_1to5": 4.4
+   },
+   "Geographic & Infrastructure": {
+    "median_s": 7.426965811930131,
+    "accuracy_1to5": 4.0
+   },
+   "Map Markers & Visualization": {
+    "median_s": 9.623163164942525,
+    "accuracy_1to5": 3.4722222222222223
+   },
+   "Multi-Document Queries": {
+    "median_s": 22.495791157125495,
+    "accuracy_1to5": 2.7407407407407405
+   }
+  }
+ },
+ "sonnet-4.6": {
+  "model_id": "au.anthropic.claude-sonnet-4-6",
+  "runs": 111,
+  "failed": 3,
+  "latency_s": {
+   "mean": 7.739281841568839,
+   "median": 6.456564520485699,
+   "p90": 14.001041087671181,
+   "max": 24.310895695118234
+  },
+  "model_only_s_mean": 6.910336450472069,
+  "over_30s": 0,
+  "over_45s": 0,
+  "throttle_retries": 0,
+  "avg_searches": 2.324074074074074,
+  "avg_model_calls": 2.3703703703703702,
+  "avg_in_tokens": 11658.833333333334,
+  "avg_out_tokens": 512.3796296296297,
+  "judged": 108,
+  "correctness": 3.8981481481481484,
+  "completeness": 4.064814814814815,
+  "groundedness": 3.509259259259259,
+  "accuracy_1to5": 3.824074074074074,
+  "accuracy_pct": 70.60185185185185,
+  "low_score_answers": 31,
+  "hallucinations": 43,
+  "overconfident": 16,
+  "unnecessary_refusal": 0,
+  "markdown_rate": 0,
+  "literal_escape": 0,
+  "over_5_bullets": 61,
+  "avg_chars": 1122.0925925925926,
+  "by_category": {
+   "Operational Procedures": {
+    "median_s": 5.559002509107813,
+    "accuracy_1to5": 4.0
+   },
+   "Training & Safety Systems": {
+    "median_s": 5.625693361507729,
+    "accuracy_1to5": 3.7222222222222223
+   },
+   "Organizational & Legal Framework": {
+    "median_s": 6.575243665429298,
+    "accuracy_1to5": 3.925925925925926
+   },
+   "Emergency Response & Incident Management": {
+    "median_s": 6.4840526500483975,
+    "accuracy_1to5": 4.355555555555555
+   },
+   "Geographic & Infrastructure": {
+    "median_s": 3.9634252928663045,
+    "accuracy_1to5": 3.6666666666666665
+   },
+   "Map Markers & Visualization": {
+    "median_s": 7.083418567548506,
+    "accuracy_1to5": 3.75
+   },
+   "Multi-Document Queries": {
+    "median_s": 20.60240887280088,
+    "accuracy_1to5": 2.8518518518518516
+   }
+  }
+ },
+ "sonnet-5": {
+  "model_id": "au.anthropic.claude-sonnet-5",
+  "runs": 111,
+  "failed": 0,
+  "latency_s": {
+   "mean": 9.343477519514325,
+   "median": 8.156230633961968,
+   "p90": 14.426614149822854,
+   "max": 23.595601369044743
+  },
+  "model_only_s_mean": 8.683731274229373,
+  "over_30s": 0,
+  "over_45s": 0,
+  "throttle_retries": 0,
+  "avg_searches": 1.8198198198198199,
+  "avg_model_calls": 2.1531531531531534,
+  "avg_in_tokens": 11871.774774774774,
+  "avg_out_tokens": 555.927927927928,
+  "judged": 111,
+  "correctness": 4.045045045045045,
+  "completeness": 3.8828828828828827,
+  "groundedness": 3.891891891891892,
+  "accuracy_1to5": 3.93993993993994,
+  "accuracy_pct": 73.49849849849849,
+  "low_score_answers": 26,
+  "hallucinations": 32,
+  "overconfident": 15,
+  "unnecessary_refusal": 1,
+  "markdown_rate": 0.018018018018018018,
+  "literal_escape": 0,
+  "over_5_bullets": 49,
+  "avg_chars": 826.4234234234234,
+  "by_category": {
+   "Operational Procedures": {
+    "median_s": 7.068928170832805,
+    "accuracy_1to5": 4.285714285714286
+   },
+   "Training & Safety Systems": {
+    "median_s": 8.157852294505574,
+    "accuracy_1to5": 3.8472222222222223
+   },
+   "Organizational & Legal Framework": {
+    "median_s": 8.858551766024902,
+    "accuracy_1to5": 4.185185185185185
+   },
+   "Emergency Response & Incident Management": {
+    "median_s": 7.908311270060949,
+    "accuracy_1to5": 4.4
+   },
+   "Geographic & Infrastructure": {
+    "median_s": 6.386362508928869,
+    "accuracy_1to5": 3.7222222222222223
+   },
+   "Map Markers & Visualization": {
+    "median_s": 9.859994798025582,
+    "accuracy_1to5": 3.6944444444444446
+   },
+   "Multi-Document Queries": {
+    "median_s": 19.565162519109435,
+    "accuracy_1to5": 2.740740740740741
+   }
+  }
+ },
+ "sonnet-5.5": {
+  "model_id": "au.anthropic.claude-sonnet-5-5",
+  "runs": 111,
+  "failed": 0,
+  "latency_s": {
+   "mean": 5.948301705500312,
+   "median": 5.156919847941026,
+   "p90": 8.71749002195429,
+   "max": 12.467012462788261
+  },
+  "model_only_s_mean": 5.104545649046682,
+  "over_30s": 0,
+  "over_45s": 0,
+  "throttle_retries": 0,
+  "avg_searches": 2.3603603603603602,
+  "avg_model_calls": 2.1531531531531534,
+  "avg_in_tokens": 13402.549549549549,
+  "avg_out_tokens": 587.5045045045046,
+  "judged": 111,
+  "correctness": 4.5225225225225225,
+  "completeness": 4.171171171171171,
+  "groundedness": 4.27027027027027,
+  "accuracy_1to5": 4.321321321321322,
+  "accuracy_pct": 83.03303303303305,
+  "low_score_answers": 12,
+  "hallucinations": 14,
+  "overconfident": 2,
+  "unnecessary_refusal": 6,
+  "markdown_rate": 0,
+  "literal_escape": 0,
+  "over_5_bullets": 35,
+  "avg_chars": 836.5135135135135,
+  "by_category": {
+   "Operational Procedures": {
+    "median_s": 5.305524121969938,
+    "accuracy_1to5": 4.412698412698413
+   },
+   "Training & Safety Systems": {
+    "median_s": 4.986570010485593,
+    "accuracy_1to5": 4.305555555555555
+   },
+   "Organizational & Legal Framework": {
+    "median_s": 5.5363021200173534,
+    "accuracy_1to5": 4.407407407407407
+   },
+   "Emergency Response & Incident Management": {
+    "median_s": 4.795013733091764,
+    "accuracy_1to5": 4.666666666666667
+   },
+   "Geographic & Infrastructure": {
+    "median_s": 4.853675288904924,
+    "accuracy_1to5": 4.027777777777778
+   },
+   "Map Markers & Visualization": {
+    "median_s": 5.399285697552841,
+    "accuracy_1to5": 4.611111111111111
+   },
+   "Multi-Document Queries": {
+    "median_s": 10.636182249058038,
+    "accuracy_1to5": 3.4074074074074074
+   }
+  }
+ },
+ "sonnet-5.5-ctrl": {
+  "model_id": "au.anthropic.claude-sonnet-5-5",
+  "runs": 111,
+  "failed": 0,
+  "latency_s": {
+   "mean": 6.122913768220282,
+   "median": 5.241054421989247,
+   "p90": 9.696601444855332,
+   "max": 13.956719401990995
+  },
+  "model_only_s_mean": 5.2548929297948375,
+  "over_30s": 0,
+  "over_45s": 0,
+  "throttle_retries": 0,
+  "avg_searches": 2.3783783783783785,
+  "avg_model_calls": 2.171171171171171,
+  "avg_in_tokens": 13665.495495495496,
+  "avg_out_tokens": 578.3333333333334,
+  "judged": 111,
+  "correctness": 4.414414414414415,
+  "completeness": 4.1891891891891895,
+  "groundedness": 4.252252252252252,
+  "accuracy_1to5": 4.285285285285285,
+  "accuracy_pct": 82.13213213213213,
+  "low_score_answers": 13,
+  "hallucinations": 20,
+  "overconfident": 3,
+  "unnecessary_refusal": 4,
+  "markdown_rate": 0,
+  "literal_escape": 0,
+  "over_5_bullets": 36,
+  "avg_chars": 827.2792792792793,
+  "by_category": {
+   "Operational Procedures": {
+    "median_s": 5.56896901584696,
+    "accuracy_1to5": 4.301587301587301
+   },
+   "Training & Safety Systems": {
+    "median_s": 5.0665644885157235,
+    "accuracy_1to5": 4.25
+   },
+   "Organizational & Legal Framework": {
+    "median_s": 5.111417468928266,
+    "accuracy_1to5": 4.462962962962963
+   },
+   "Emergency Response & Incident Management": {
+    "median_s": 4.772655872046016,
+    "accuracy_1to5": 4.6
+   },
+   "Geographic & Infrastructure": {
+    "median_s": 4.471107972553,
+    "accuracy_1to5": 4.111111111111112
+   },
+   "Map Markers & Visualization": {
+    "median_s": 5.2443153519998305,
+    "accuracy_1to5": 4.555555555555555
+   },
+   "Multi-Document Queries": {
+    "median_s": 10.348215083125979,
+    "accuracy_1to5": 3.3333333333333335
+   }
+  }
+ },
+ "sonnet-5.5-nothink": {
+  "model_id": "au.anthropic.claude-sonnet-5-5",
+  "runs": 111,
+  "failed": 0,
+  "latency_s": {
+   "mean": 7.485371106917769,
+   "median": 6.595355767058209,
+   "p90": 10.883624405949377,
+   "max": 21.356874171178788
+  },
+  "model_only_s_mean": 6.359398547246389,
+  "over_30s": 0,
+  "over_45s": 0,
+  "throttle_retries": 0,
+  "avg_searches": 3.081081081081081,
+  "avg_model_calls": 2.1981981981981984,
+  "avg_in_tokens": 15853.045045045044,
+  "avg_out_tokens": 702.2792792792793,
+  "judged": 111,
+  "correctness": 4.4774774774774775,
+  "completeness": 4.333333333333333,
+  "groundedness": 4.1891891891891895,
+  "accuracy_1to5": 4.333333333333333,
+  "accuracy_pct": 83.33333333333333,
+  "low_score_answers": 15,
+  "hallucinations": 25,
+  "overconfident": 6,
+  "unnecessary_refusal": 3,
+  "markdown_rate": 0.05405405405405406,
+  "literal_escape": 0,
+  "over_5_bullets": 59,
+  "avg_chars": 944.2072072072073,
+  "by_category": {
+   "Operational Procedures": {
+    "median_s": 7.051407853141427,
+    "accuracy_1to5": 4.587301587301587
+   },
+   "Training & Safety Systems": {
+    "median_s": 5.745779343997128,
+    "accuracy_1to5": 4.305555555555555
+   },
+   "Organizational & Legal Framework": {
+    "median_s": 6.669137285964098,
+    "accuracy_1to5": 4.277777777777778
+   },
+   "Emergency Response & Incident Management": {
+    "median_s": 6.359617060050368,
+    "accuracy_1to5": 4.666666666666667
+   },
+   "Geographic & Infrastructure": {
+    "median_s": 5.451567882613745,
+    "accuracy_1to5": 4.194444444444445
+   },
+   "Map Markers & Visualization": {
+    "median_s": 7.783022134564817,
+    "accuracy_1to5": 4.611111111111111
+   },
+   "Multi-Document Queries": {
+    "median_s": 15.152518697199412,
+    "accuracy_1to5": 3.185185185185185
+   }
+  }
+ }
+}

@@ -1,0 +1,45 @@
+[
+  {"id": "op-01", "cat": "Operational Procedures", "q": "What does the K2 code mean in fire service communications?"},
+  {"id": "op-02", "cat": "Operational Procedures", "q": "What is the proper radio procedure for a MAYDAY distress call?"},
+  {"id": "op-03", "cat": "Operational Procedures", "q": "What Police event code is used for domestic disputes?"},
+  {"id": "op-04", "cat": "Operational Procedures", "q": "What frequency is the international VHF distress channel?"},
+  {"id": "op-05", "cat": "Operational Procedures", "q": "What are the different false alarm classifications in the K code system?"},
+  {"id": "op-06", "cat": "Operational Procedures", "q": "What is the difference between PAN PAN and SÉCURITÉ radio calls?"},
+  {"id": "op-07", "cat": "Operational Procedures", "q": "What prowords should be used for maritime radio communications?"},
+
+  {"id": "tr-01", "cat": "Training & Safety Systems", "q": "Who is responsible for maintaining MOSS manuals at a Coastguard unit?"},
+  {"id": "tr-02", "cat": "Training & Safety Systems", "q": "What are the requirements for a Maritime Transport Operator Plan?"},
+  {"id": "tr-03", "cat": "Training & Safety Systems", "q": "What are the key components of a MOSS Unit Record?"},
+  {"id": "tr-04", "cat": "Training & Safety Systems", "q": "What qualifications must a vessel master hold under MOSS?"},
+  {"id": "tr-05", "cat": "Training & Safety Systems", "q": "What courses does Coastguard Boating Education offer for maritime radio operators?"},
+  {"id": "tr-06", "cat": "Training & Safety Systems", "q": "What is CBE's refund policy for course withdrawals?"},
+  {"id": "tr-07", "cat": "Training & Safety Systems", "q": "How does CBE handle academic fraud and plagiarism?"},
+  {"id": "tr-08", "cat": "Training & Safety Systems", "q": "What are the responsibilities of a Unit Safety Officer under MOSS?"},
+
+  {"id": "org-01", "cat": "Organizational & Legal Framework", "q": "What are the key principles of the Fire and Emergency New Zealand Act 2017?"},
+  {"id": "org-02", "cat": "Organizational & Legal Framework", "q": "What is the purpose of the National CDEM Plan?"},
+  {"id": "org-03", "cat": "Organizational & Legal Framework", "q": "What are the core principles of CIMS?"},
+  {"id": "org-04", "cat": "Organizational & Legal Framework", "q": "How does Maritime New Zealand's Maritime Radio Service coverage area extend?"},
+  {"id": "org-05", "cat": "Organizational & Legal Framework", "q": "What are the responsibilities of the Maritime Operations Centre?"},
+  {"id": "org-06", "cat": "Organizational & Legal Framework", "q": "What is NAVAREA XIV and what does it cover?"},
+
+  {"id": "er-01", "cat": "Emergency Response & Incident Management", "q": "What information must be included in a distress call?"},
+  {"id": "er-02", "cat": "Emergency Response & Incident Management", "q": "What are the requirements for 406 MHz EPIRB registration?"},
+  {"id": "er-03", "cat": "Emergency Response & Incident Management", "q": "What are the different Police status codes and what do they mean?"},
+  {"id": "er-04", "cat": "Emergency Response & Incident Management", "q": "What incident codes are used for traffic-related events?"},
+  {"id": "er-05", "cat": "Emergency Response & Incident Management", "q": "How should fire severity be classified using K codes?"},
+
+  {"id": "geo-01", "cat": "Geographic & Infrastructure", "q": "Where is the nearest fire station to Queenstown?"},
+  {"id": "geo-02", "cat": "Geographic & Infrastructure", "q": "What are the GPS coordinates for the fire station in Invercargill?"},
+  {"id": "geo-03", "cat": "Geographic & Infrastructure", "q": "What types of fire stations exist in New Zealand (paid, volunteer, etc.)?"},
+  {"id": "geo-04", "cat": "Geographic & Infrastructure", "q": "Which fire stations serve the Canterbury region?"},
+
+  {"id": "map-01", "cat": "Map Markers & Visualization", "q": "Which icon should I use to mark a building with yellow MBIE rapid assessment status?"},
+  {"id": "map-02", "cat": "Map Markers & Visualization", "q": "What icons are available for marking hazardous materials incidents?"},
+  {"id": "map-03", "cat": "Map Markers & Visualization", "q": "How should volcanic unrest levels be represented on a map?"},
+  {"id": "map-04", "cat": "Map Markers & Visualization", "q": "What icons represent different USAR triage levels?"},
+
+  {"id": "multi-01", "cat": "Multi-Document Queries", "q": "If I'm coordinating a marine search and rescue in the Marlborough Sounds, what radio procedures apply, what safety systems must be in place, and what training is required?"},
+  {"id": "multi-02", "cat": "Multi-Document Queries", "q": "For a structure fire in Canterbury, what K codes would be used, which fire stations could respond, and what are the legal responsibilities under the FENZ Act?"},
+  {"id": "multi-03", "cat": "Multi-Document Queries", "q": "What are the complete procedures for a vessel in distress, including radio calls, EPIRB activation, and MOSS compliance requirements?"}
+]

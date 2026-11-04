@@ -38,6 +38,7 @@ dependencies {
     implementation ("com.fasterxml.jackson.core:jackson-databind:2.18.2")
     implementation ("software.amazon.awssdk:bedrockruntime:2.29.45")
     implementation ("software.amazon.awssdk:bedrockagentruntime:2.29.45")
+    implementation ("software.amazon.awssdk:netty-nio-client:2.29.45")
     implementation ("software.amazon.awssdk:auth:2.29.45")
 
     compileOnly ('com.h2database:h2:2.2.224')

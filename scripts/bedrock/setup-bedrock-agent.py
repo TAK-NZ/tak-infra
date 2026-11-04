@@ -25,6 +25,45 @@ from botocore.auth import SigV4Auth
 from botocore.awsrequest import AWSRequest
 from botocore.credentials import Credentials
 import urllib.request
+from pathlib import Path
+
+# Claude model used by the agent. Chosen by benchmark, see docs/TAK_GPT_MODEL_BENCHMARK.md.
+# AU/NZ regions use the Australia-resident inference profile; US regions use the US profile.
+AGENT_MODEL_NAME = "claude-sonnet-5-5"
+
+
+def default_model_id(region):
+    prefix = "us" if region.startswith("us-") else "au"
+    return f"{prefix}.anthropic.{AGENT_MODEL_NAME}"
+
+
+# Orchestration prompt template, pinned (promptCreationMode OVERRIDDEN) instead of left to
+# Bedrock's defaults. Reason: with default prompts, Bedrock adds
+#   additionalModelRequestFields = {"thinking": {"type": "enabled", "budget_tokens": 1024}}
+# when preparing the agent. Claude Sonnet 5.5 rejects that format ("thinking.type.enabled is not
+# supported for this model"), so every chat fails. The template below is the same text the agents
+# used before; the only difference is that no thinking field is sent.
+ORCHESTRATION_TEMPLATE_FILE = Path(__file__).parent / "orchestration-prompt-template.txt"
+
+
+def prompt_override_config():
+    template = ORCHESTRATION_TEMPLATE_FILE.read_text(encoding="utf-8")
+    return {
+        "promptConfigurations": [
+            {"promptType": "PRE_PROCESSING", "promptCreationMode": "DEFAULT"},
+            {"promptType": "MEMORY_SUMMARIZATION", "promptCreationMode": "DEFAULT"},
+            {
+                "promptType": "ORCHESTRATION",
+                "promptCreationMode": "OVERRIDDEN",
+                "promptState": "ENABLED",
+                "basePromptTemplate": template,
+                "inferenceConfiguration": {"temperature": 1.0, "stopSequences": ["</answer>"]},
+                "parserMode": "DEFAULT",
+            },
+            {"promptType": "KNOWLEDGE_BASE_RESPONSE_GENERATION", "promptCreationMode": "DEFAULT"},
+            {"promptType": "POST_PROCESSING", "promptCreationMode": "DEFAULT"},
+        ]
+    }
 
 
 def get_stack_outputs(cf_client, stack_name):
@@ -132,7 +171,6 @@ def ensure_agent_iam_role(iam_client, role_name, region, account_id):
             }
         }]
     }
-    model_id = "us.anthropic.claude-sonnet-5" if region.startswith("us-") else "au.anthropic.claude-sonnet-5"
     policy = {
         "Version": "2012-10-17",
         "Statement": [
@@ -421,6 +459,19 @@ GEOCODE_FUNCTION_SCHEMA = {
             }
         },
         {
+            "name": "route_between",
+            "description": (
+                "Driving route between two New Zealand places. Returns the road distance, a traffic-aware drive time, "
+                "the main roads used, and current NZTA delays and closures along the route. It automatically re-routes "
+                "around full road closures and reports the detour. Use for any travel time, drive time, route or ETA "
+                "question. Call it once per journey."
+            ),
+            "parameters": {
+                "origin": {"type": "string", "description": "Start place name (for example 'Queenstown'), or 'lat,lon' such as the user's own position from the message prefix", "required": True},
+                "destination": {"type": "string", "description": "End place name, or 'lat,lon'", "required": True}
+            }
+        },
+        {
             "name": "reverse_geocode",
             "description": "Reverse geocode coordinates to a street address. Use when the user asks 'Where am I?' or similar and has a location in their message prefix.",
             "parameters": {
@@ -514,9 +565,10 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
                     agentResourceRoleArn=role_arn,
                     foundationModel=model_id,
                     instruction=system_prompt,
-                    idleSessionTTLInSeconds=1800
+                    idleSessionTTLInSeconds=1800,
+                    promptOverrideConfiguration=prompt_override_config()
                 )
-                print(f"  Updated agent instruction")
+                print(f"  Updated agent instruction, model ({model_id}) and orchestration prompt")
                 # Ensure KB is associated
                 existing_kbs = bedrock_agent_client.list_agent_knowledge_bases(
                     agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
@@ -543,7 +595,8 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
         agentResourceRoleArn=role_arn,
         foundationModel=model_id,
         instruction=system_prompt,
-        idleSessionTTLInSeconds=1800
+        idleSessionTTLInSeconds=1800,
+        promptOverrideConfiguration=prompt_override_config()
     )
     agent_id = resp["agent"]["agentId"]
     print(f"  Created agent: {agent_name} ({agent_id})")
@@ -680,7 +733,7 @@ def main():
         caller_arn = f"arn:aws:iam::{account_id}:role/{parts[1]}"
     stack_name = f"TAK-{args.environment}-BaseInfra"
     ssm_prefix = args.ssm_prefix or f"/tak/{args.environment.lower()}"
-    model_id = "us.anthropic.claude-sonnet-5" if region.startswith("us-") else "au.anthropic.claude-sonnet-5"
+    model_id = default_model_id(region)
     print(f"Account: {account_id}, Region: {region}")
 
     tak_infra_stack_name = f"TAK-{args.environment}-TakInfra"

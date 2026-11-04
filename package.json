@@ -39,26 +39,26 @@
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "22.20.0",
-    "aws-cdk": "^2.1141.0",
+    "aws-cdk": "^2.1147.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3"
   },
   "overrides": {
-    "handlebars": ">=4.7.9",
-    "brace-expansion": ">=5.0.9",
+    "handlebars": ">=4.7.10",
+    "brace-expansion": ">=5.0.12",
     "picomatch": ">=4.0.2",
     "yaml": ">=2.7.1",
-    "follow-redirects": ">=1.16.0",
+    "follow-redirects": ">=1.16.2",
     "fast-xml-parser": ">=5.7.0",
     "axios": {
-      "follow-redirects": ">=1.16.0"
+      "follow-redirects": ">=1.16.2"
     }
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.269.0",
-    "axios": "^1.16.0",
+    "aws-cdk-lib": "^2.275.0",
+    "axios": "^1.21.0",
     "constructs": "^10.8.1",
     "form-data": "^4.0.1",
     "source-map-support": "^0.5.21"
