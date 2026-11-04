@@ -123,6 +123,28 @@ The agent has access to live data via the `query_geojson` Lambda action group (d
 
 Proximity queries ("near me") use the user's TAK location automatically when available.
 
+**Driving routes (`route_between`):**
+
+Travel-time, drive-time, route and ETA questions use the `route_between` function of the ArcGIS Lambda (`lambda/arcgis-geocode/index.py`), which uses the same OAuth credentials as the geocoder:
+
+- Resolves the origin and destination (place names biased to New Zealand, or `lat,lon`) and solves a driving route with the ArcGIS `Route_World` service, using traffic for a departure now.
+- Loads the NZTA delays feed in parallel and keeps only events within about 1 km of the actual route line and active during the trip. Events are listed worst first (closed, delays, caution), at most 8, with stop/go or delay details kept.
+- If an active full closure (`Impact: Road Closed`) lies on the route, it re-solves with the closure as a restriction barrier (up to 3 times) and reports the detour, for example "+193 km, +2 h 20 min". If no alternative exists it says so.
+- Returns a short text result (about 1-2 KB) so the agent does not have to read large GeoJSON payloads or estimate drive times from memory.
+
+Measured on Sonnet 5.5 with the real Lambda code (12 travel questions per variant, 4 routes × 3 repeats; the old approach was the three-query rule with `find_place` and `query_geojson`):
+
+| | Mean turn | Slowest turn | Tool calls per turn | Largest model input |
+|---|---|---|---|---|
+| Old rule | 16.7 s | 24.2 s | 5.8 | ~28,700 tokens |
+| `route_between` | **4.4 s** | **5.1 s** | **1.0** | ~4,800 tokens |
+
+This comparison runs the model through the Converse API with the Lambda functions called locally, so it excludes Bedrock Agents runtime overhead. Both variants carry the same overhead, so the difference should hold in production. See [TAK_GPT_MODEL_BENCHMARK.md](TAK_GPT_MODEL_BENCHMARK.md).
+
+Limits: only "depart now" is supported. Delay events are listed, not added to the drive time (the minutes are free text in the NZTA feed). Closures are applied as barriers only when they sit on the direct route and are active during the trip window. The drive time is traffic-aware, but whether ArcGIS has live traffic for a given NZ road is not confirmed.
+
+**Deployment status (2026-11-03):** `route_between` is live on Demo RELAY (agent version 10), Demo SENTINEL (version 5) and Test RELAY (version 8). The Lambda code was updated directly in both accounts with the same file the repo now contains, after checking the deployed copy matched the previous repo version. Commit the repo changes before the next CI deploy, otherwise a deploy from an older checkout would restore the previous Lambda code while the agents still call `route_between`. The agent side was applied with the safe sequence used for all agent changes: update DRAFT, test on the draft alias, publish, test live, roll back automatically on failure. For a fresh environment the order is: (1) `cdk deploy` so the Lambda has `route_between`; (2) run `scripts/bedrock/setup-bedrock-agent.py`, which registers the function in the `geocode` action group and applies the travel-time rule.
+
 **How Bedrock Agents Work:**
 
 1. Create a Bedrock Agent in AWS Console
