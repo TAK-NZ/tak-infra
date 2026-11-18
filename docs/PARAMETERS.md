@@ -26,7 +26,7 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
     "dev-test": {
       "stackName": "Dev",
       "database": {
-        "instanceClass": "db.serverless",
+        "instanceClass": "db.t4g.large",
         "instanceCount": 1,
         "engineVersion": "18.3",
         "allocatedStorage": 20,
@@ -34,7 +34,8 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
         "enablePerformanceInsights": false,
         "monitoringInterval": 0,
         "backupRetentionDays": 7,
-        "deleteProtection": false
+        "deleteProtection": false,
+        "ioOptimized": true
       },
       "ecs": {
         "taskCpu": 2048,
@@ -47,12 +48,12 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.4-RELEASE-19",
+        "version": "5.8-RELEASE-103",
         "useS3TAKServerConfigFile": false,
         "letsEncryptMode": "staging",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true
+        "enableCloudWatchMetrics": false
       },
       "ecr": {
         "imageRetentionCount": 5,
@@ -88,12 +89,12 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.4-RELEASE-19",
+        "version": "5.8-RELEASE-103",
         "useS3TAKServerConfigFile": true,
         "letsEncryptMode": "production",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true
+        "enableCloudWatchMetrics": false
       },
       "ecr": {
         "imageRetentionCount": 20,
@@ -141,7 +142,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 ### **Database Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
-| `instanceClass` | RDS instance class | `db.serverless` | `db.t4g.large` |
+| `instanceClass` | RDS instance class (see the database notes below) | `db.t4g.large` | `db.t4g.large` |
 | `instanceCount` | Number of database instances | `1` | `2` |
 | `engineVersion` | PostgreSQL engine version | `18.3` | `18.3` |
 | `allocatedStorage` | Initial storage allocation (GB) | `20` | `100` |
@@ -151,6 +152,13 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `backupRetentionDays` | Backup retention period (days) | `7` | `30` |
 | `deleteProtection` | Enable deletion protection | `false` | `true` |
 | `enableCloudWatchLogs` | Enable CloudWatch logs exports | `false` | `false` |
+| `ioOptimized` | Aurora storage type: `true` = I/O-Optimized, `false` = Standard, unset = leave the cluster as it is | `true` | unset |
+
+**Database notes**
+- **`instanceClass`:** `db.serverless` selects Aurora Serverless v2 (capacity from `serverlessV2MinCapacity` and `serverlessV2MaxCapacity`). Provisioned classes accepted exactly: `db.t4g.medium`, `db.t4g.large`, and `db.r6g.*`, `db.r7g.*`, `db.r8g.*` from `large` up. Any other value falls back to `db.t4g.large` (if it contains "large") or `db.t4g.medium`, and `cdk synth` prints a warning saying so.
+- **RDS Data API:** switched off on provisioned clusters (`enableDataApi: false`). AWS does not support it on T-class instances, and a cluster that had it enabled while it was Serverless v2 makes the instance-class change fail and roll back. Nothing in this stack uses it.
+- **`ioOptimized`:** unset sends nothing to CloudFormation, so an existing cluster keeps its storage type (the prod profile leaves it unset). AWS only allows moving from I/O-Optimized back to Standard once every 30 days, so keep it the same across every deploy of a stack. The Demo pipeline passes `ioOptimized=true` for both its prod window and its revert for that reason.
+- **Moving a cluster from `db.serverless` to a provisioned class** restarts the writer (a short outage). Watch `FreeableMemory` and `CPUCreditBalance` for a day or two afterwards.
 
 ### **ECS Configuration**
 | Parameter | Description | dev-test | prod |
@@ -167,12 +175,12 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `hostname` | Hostname for TAK Server service | `tak` | `tak` |
 | `servicename` | Service name for TAK Server | `ops` | `ops` |
 | `branding` | Docker image branding variant | `tak-nz` | `tak-nz` |
-| `version` | TAK Server version | `5.4-RELEASE-19` | `5.4-RELEASE-19` |
+| `version` | TAK Server version | `5.8-RELEASE-103` | `5.8-RELEASE-103` |
 | `useS3TAKServerConfigFile` | Use S3 configuration file | `false` | `true` |
 | `letsEncryptMode` | Let's Encrypt certificate mode | `staging` | `production` |
 | `letsEncryptEmail` | Let's Encrypt email address | `admin@tak.nz` | `admin@tak.nz` |
 | `enableFederation` | Enable TAK federation | `true` | `true` |
-| `enableCloudWatchMetrics` | Enable CloudWatch metrics | `true` | `true` |
+| `enableCloudWatchMetrics` | Export TAK Server API (Micrometer) metrics to CloudWatch. Off by default: about 600 billed custom metrics and no alarm or dashboard uses them. The API JVM keeps its Netty TLS workaround (`docker/tak-server/patch-jvm-flags.py`), so turning this back on works without other changes | `false` | `false` |
 
 ### **ECR Configuration**
 | Parameter | Description | dev-test | prod |
@@ -273,7 +281,7 @@ npm run synth:dev
 npm run synth:prod
 
 # Validate specific overrides
-npm run synth:dev -- --context instanceClass=db.t4g.small
+npm run synth:dev -- --context instanceClass=db.t4g.medium
 ```
 
 ### **Parameter Override Examples**
@@ -282,7 +290,7 @@ npm run synth:dev -- --context instanceClass=db.t4g.small
 npm run deploy:dev -- --context hostname=ops
 
 # Database scaling
-npm run deploy:dev -- --context instanceClass=db.t4g.small
+npm run deploy:dev -- --context instanceClass=db.t4g.medium
 
 # Enable production features in development
 npm run deploy:dev -- \
@@ -371,7 +379,7 @@ npm run deploy:dev -- --context tak-region="us-east-1"
 ### **Database Configuration**
 | Parameter | Type | Description | Valid Values |
 |-----------|------|-------------|-------------|
-| `instanceClass` | string | RDS instance class | `db.serverless`, `db.t4g.micro`, `db.t4g.small`, `db.t4g.medium`, `db.t4g.large` |
+| `instanceClass` | string | RDS instance class | `db.serverless`, `db.t4g.medium`, `db.t4g.large`, `db.r6g.large` and up (also `db.r7g.*`, `db.r8g.*`) |
 | `instanceCount` | number | Number of database instances | `1`, `2` |
 | `engineVersion` | string | PostgreSQL engine version | `18.3` |
 | `allocatedStorage` | number | Initial storage allocation (GB) | `20-65536` |
@@ -381,6 +389,7 @@ npm run deploy:dev -- --context tak-region="us-east-1"
 | `backupRetentionDays` | number | Backup retention period (days) | `1-35` |
 | `deleteProtection` | boolean | Enable deletion protection | `true`, `false` |
 | `enableCloudWatchLogs` | boolean | Enable CloudWatch logs exports | `true`, `false` |
+| `ioOptimized` | boolean | Aurora I/O-Optimized storage; unset leaves the cluster unchanged | `true`, `false`, unset |
 
 ### **ECS Configuration**
 | Parameter | Type | Description | Valid Values |
@@ -397,7 +406,7 @@ npm run deploy:dev -- --context tak-region="us-east-1"
 | `hostname` | string | TAK Server hostname | Any valid hostname |
 | `servicename` | string | TAK Service name | Any valid hostname |
 | `branding` | string | Docker image branding | `tak-nz`, `generic` |
-| `version` | string | TAK Server version | `5.4-RELEASE-19`, etc. |
+| `version` | string | TAK Server version | `5.8-RELEASE-103`, etc. |
 | `useS3TAKServerConfigFile` | boolean | Use S3 configuration file | `true`, `false` |
 | `letsEncryptMode` | string | Let's Encrypt mode | `staging`, `production` |
 | `letsEncryptEmail` | string | Let's Encrypt email | Valid email address |
@@ -422,7 +431,7 @@ npm run deploy:prod -- --context r53ZoneName=company.com
 
 # Development with production-like database
 npm run deploy:dev -- \
-  --context instanceClass=db.t4g.small \
+  --context instanceClass=db.t4g.medium \
   --context enablePerformanceInsights=true
 
 # Custom environment for feature testing

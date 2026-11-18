@@ -22,6 +22,13 @@ export interface ContextEnvironmentConfig {
     backupRetentionDays: number;
     deleteProtection: boolean;
     enableCloudWatchLogs?: boolean;
+    /**
+     * Aurora storage type. Unset leaves the cluster's storage type untouched; `true` selects
+     * Aurora I/O-Optimized (no per-request I/O charge, higher instance and storage price);
+     * `false` selects Aurora Standard. AWS allows moving from I/O-Optimized back to Standard
+     * only once every 30 days.
+     */
+    ioOptimized?: boolean;
   };
   ecs: {
     taskCpu: number;

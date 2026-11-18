@@ -20,7 +20,7 @@
     "dev-test": {
       "stackName": "Dev",
       "database": {
-        "instanceClass": "db.serverless",
+        "instanceClass": "db.t4g.large",
         "instanceCount": 1,
         "engineVersion": "18.4",
         "allocatedStorage": 20,
@@ -31,7 +31,8 @@
         "monitoringInterval": 0,
         "backupRetentionDays": 7,
         "deleteProtection": false,
-        "enableCloudWatchLogs": false
+        "enableCloudWatchLogs": false,
+        "ioOptimized": true
       },
       "ecs": {
         "taskCpu": 4096,
@@ -44,12 +45,12 @@
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.8-RELEASE-79",
+        "version": "5.8-RELEASE-103",
         "useS3TAKServerConfigFile": false,
         "letsEncryptMode": "staging",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true,
+        "enableCloudWatchMetrics": false,
         "ldapGroupPrefix": "tak_"
       },
       "ecr": {
@@ -104,12 +105,12 @@
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.8-RELEASE-79",
+        "version": "5.8-RELEASE-103",
         "useS3TAKServerConfigFile": true,
         "letsEncryptMode": "production",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true,
+        "enableCloudWatchMetrics": false,
         "ldapGroupPrefix": "tak_"
       },
       "ecr": {

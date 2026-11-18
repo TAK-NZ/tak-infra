@@ -9,12 +9,14 @@ import {
   aws_iam as iam,
   aws_kms as kms,
   aws_logs as logs,
+  Annotations,
   Duration,
   RemovalPolicy
 } from 'aws-cdk-lib';
 import type { ContextEnvironmentConfig } from '../stack-config';
 import type { InfrastructureConfig } from '../construct-configs';
 import { DATABASE_CONSTANTS } from '../utils/constants';
+import { resolveProvisionedInstanceClass } from '../utils/db-instance-class';
 
 /**
  * Properties for the Database construct
@@ -145,6 +147,15 @@ export class Database extends Construct {
 
     // Create the database cluster with conditional configuration for serverless vs provisioned
     const isServerless = dbConfig.instanceClass === 'db.serverless';
+    // Aurora storage type. Tri-state on purpose:
+    //   - unset (`ioOptimized` not in the config): send nothing to CloudFormation, so an
+    //     existing cluster keeps whatever storage type it has (the prod profile relies on this);
+    //   - true: Aurora I/O-Optimized (`aurora-iopt1`), no per-request I/O charge;
+    //   - false: Aurora Standard (`aurora`). Note AWS only allows moving from I/O-Optimized back
+    //     to Standard once every 30 days, so do not toggle this from a pipeline.
+    const storageType = dbConfig.ioOptimized === undefined ?
+      undefined :
+      dbConfig.ioOptimized ? rds.DBClusterStorageType.AURORA_IOPT1 : rds.DBClusterStorageType.AURORA;
     
     if (isServerless) {
       // Aurora Serverless v2 configuration
@@ -192,15 +203,19 @@ export class Database extends Construct {
           logs.RetentionDays.ONE_WEEK,
         monitoringRole: enableMonitoring ? monitoringRole : undefined,
         monitoringInterval: enableMonitoring ? Duration.seconds(dbConfig.monitoringInterval) : undefined,
+        storageType,
         networkType: rds.NetworkType.DUAL
       });
     } else {
       // Provisioned instances configuration
-      const instanceType = ec2.InstanceType.of(
-        ec2.InstanceClass.T4G,
-        dbConfig.instanceClass.includes('large') ? ec2.InstanceSize.LARGE :
-        ec2.InstanceSize.MEDIUM
-      );
+      const resolved = resolveProvisionedInstanceClass(dbConfig.instanceClass);
+      if (!resolved.recognised) {
+        Annotations.of(this).addWarning(
+          `database.instanceClass "${dbConfig.instanceClass}" is not a supported provisioned class ` +
+          `(db.t4g.medium|large, db.r6g|r7g|r8g.large and up); using db.${resolved.instanceType}`
+        );
+      }
+      const instanceType = new ec2.InstanceType(resolved.instanceType);
 
       this.cluster = new rds.DatabaseCluster(this, 'DBCluster', {
         engine: rds.DatabaseClusterEngine.auroraPostgres({
@@ -226,6 +241,12 @@ export class Database extends Construct {
                 undefined
             })
           ) : [],
+        // The RDS Data API is not supported on T-class instances. Clusters created while they
+        // were Serverless v2 can have it switched on (for example through the console query
+        // editor), and CloudFormation then fails the instance-class change and rolls back.
+        // Nothing in this stack uses the Data API, so make sure it is off. Only set on this
+        // branch: the Serverless v2 branch is left exactly as it was.
+        enableDataApi: false,
         parameterGroup,
         subnetGroup,
         vpc: props.infrastructure.vpc,
@@ -246,6 +267,7 @@ export class Database extends Construct {
           logs.RetentionDays.ONE_WEEK,
         monitoringRole: enableMonitoring ? monitoringRole : undefined,
         monitoringInterval: enableMonitoring ? Duration.seconds(dbConfig.monitoringInterval) : undefined,
+        storageType,
         networkType: rds.NetworkType.DUAL
       });
     }

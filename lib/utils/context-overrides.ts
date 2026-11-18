@@ -29,6 +29,7 @@ export function applyContextOverrides(
       backupRetentionDays: parseContextNumber(app.node.tryGetContext('backupRetentionDays')) ?? baseConfig.database.backupRetentionDays,
       deleteProtection: parseContextBoolean(app.node.tryGetContext('deleteProtection')) ?? baseConfig.database.deleteProtection,
       enableCloudWatchLogs: parseContextBoolean(app.node.tryGetContext('enableCloudWatchLogs')) ?? baseConfig.database.enableCloudWatchLogs,
+      ioOptimized: parseContextBoolean(app.node.tryGetContext('ioOptimized')) ?? baseConfig.database.ioOptimized,
     },
     ecs: {
       ...baseConfig.ecs,
