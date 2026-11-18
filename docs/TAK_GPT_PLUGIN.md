@@ -88,6 +88,7 @@ bots:
     agentId: "AGENT123"          # From SSM: /tak/<env>/bedrock/<kb-name>/agent-id
     agentAliasId: "TSTALIASID"   # TSTALIASID always uses DRAFT (latest). Use a real alias ID for a stable production snapshot.
     knowledgeBaseId: "KB123"     # Optional, with knowledgeBaseResults. The knowledge base attached to the agent (SSM: /tak/<env>/bedrock/<kb-name>/kb-id)
+    # knowledgeBaseIds: ["KB123", "KB456"]   # Instead of knowledgeBaseId when the agent has several knowledge bases (a list, or "KB123,KB456")
     knowledgeBaseResults: 8      # Optional. Chunks the agent retrieves per knowledge base search (Bedrock default 5)
     botName: "NZ Field Assistant"
     latitude: -41.2784
@@ -99,7 +100,7 @@ bots:
 ```
 
 **Note:** In agent mode, `modelName` and `systemPromptFilePath` are ignored — the agent's instruction (set via `setup-bedrock-agent.py`) controls behaviour.
-**Knowledge base results:** set `knowledgeBaseResults` (with `knowledgeBaseId`) to raise the number of chunks the agent retrieves per search from the Bedrock default of 5. With the S3 Vectors knowledge bases, 8 recovers the answers that approximate search misses at 5 (on the 37 benchmark questions, 70 against 59 supported facts; the agent then found the Police traffic incident codes that it missed with 5). Both keys must be set, because Bedrock needs the knowledge base ID to apply the setting. In agent mode `knowledgeBaseId` is only used for this; the agent is still called.
+**Knowledge base results:** set `knowledgeBaseResults` (with `knowledgeBaseId`) to raise the number of chunks the agent retrieves per search from the Bedrock default of 5. With the S3 Vectors knowledge bases, 8 recovers the answers that approximate search misses at 5 (on the 37 benchmark questions, 70 against 59 supported facts; the agent then found the Police traffic incident codes that it missed with 5). `knowledgeBaseResults` needs the knowledge base ID(s), because Bedrock applies it per knowledge base: set `knowledgeBaseId`, or `knowledgeBaseIds` for an agent with several (the Demo NZDF SENTINEL agent has `nzdf` and `nema-cdem`). A knowledge base not listed keeps the default of 5. In agent mode these IDs are only used for this; the agent is still called.
 
 **Setting up a Bedrock Agent:**
 
