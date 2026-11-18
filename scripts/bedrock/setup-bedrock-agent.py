@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Setup a Bedrock Agent with an attached Knowledge Base sourced from an S3 prefix.
+The knowledge base (S3 Vectors index, IAM role, data source) is created by the TakInfra CDK stack, not by
+this script. Deploy the stack with the knowledge base name in `bedrock.knowledgeBases` first. The script
+then syncs the knowledge base(s) if never ingested, and creates or updates the agent, its action
+groups and alias.
 
 Usage:
   python3 setup-bedrock-agent.py \
@@ -17,14 +21,11 @@ The BaseInfra stack name is derived as TAK-<environment>-BaseInfra.
 
 import argparse
 import json
+import re
 import sys
 import time
 import boto3
 from botocore.exceptions import ClientError
-from botocore.auth import SigV4Auth
-from botocore.awsrequest import AWSRequest
-from botocore.credentials import Credentials
-import urllib.request
 from pathlib import Path
 
 # Claude model used by the agent. Chosen by benchmark, see docs/TAK_GPT_MODEL_BENCHMARK.md.
@@ -100,64 +101,6 @@ def get_account_id(sts_client):
     return sts_client.get_caller_identity()["Account"]
 
 
-def ensure_kb_iam_role(iam_client, role_name, bucket_name, region, account_id, kms_key_arn=None):
-    trust = {
-        "Version": "2012-10-17",
-        "Statement": [{
-            "Effect": "Allow",
-            "Principal": {"Service": "bedrock.amazonaws.com"},
-            "Action": "sts:AssumeRole",
-            "Condition": {
-                "StringEquals": {"aws:SourceAccount": account_id},
-                "ArnLike": {"aws:SourceArn": f"arn:aws:bedrock:{region}:{account_id}:knowledge-base/*"}
-            }
-        }]
-    }
-    statements = [
-        {
-            "Effect": "Allow",
-            "Action": ["s3:GetObject", "s3:ListBucket"],
-            "Resource": [f"arn:aws:s3:::{bucket_name}", f"arn:aws:s3:::{bucket_name}/*"]
-        },
-        {
-            "Effect": "Allow",
-            "Action": "bedrock:InvokeModel",
-            "Resource": f"arn:aws:bedrock:{region}::foundation-model/amazon.titan-embed-text-v2:0"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "aoss:APIAccessAll",
-            "Resource": f"arn:aws:aoss:{region}:{account_id}:collection/*"
-        }
-    ]
-    if kms_key_arn:
-        statements.append({
-            "Effect": "Allow",
-            "Action": ["kms:Decrypt", "kms:GenerateDataKey"],
-            "Resource": kms_key_arn
-        })
-    policy = {"Version": "2012-10-17", "Statement": statements}
-    try:
-        role = iam_client.get_role(RoleName=role_name)["Role"]
-        print(f"  IAM role already exists: {role_name}")
-    except ClientError as e:
-        if e.response["Error"]["Code"] != "NoSuchEntity":
-            raise
-        role = iam_client.create_role(
-            RoleName=role_name,
-            AssumeRolePolicyDocument=json.dumps(trust),
-            Description="Bedrock Knowledge Base S3 access role"
-        )["Role"]
-        print(f"  Created IAM role: {role_name}")
-        time.sleep(10)  # IAM propagation
-    iam_client.put_role_policy(
-        RoleName=role_name,
-        PolicyName="BedrockKBPolicy",
-        PolicyDocument=json.dumps(policy)
-    )
-    return role["Arn"]
-
-
 def ensure_agent_iam_role(iam_client, role_name, region, account_id):
     trust = {
         "Version": "2012-10-17",
@@ -217,210 +160,75 @@ def ensure_agent_iam_role(iam_client, role_name, region, account_id):
     return role["Arn"]
 
 
-def ensure_aoss_index(session, collection_endpoint, index_name):
-    """Create the vector index in AOSS if it doesn't exist, using SigV4 signed requests."""
-    import urllib.request, urllib.error, hashlib
-    credentials = session.get_credentials().get_frozen_credentials()
-    region = session.region_name
-    url = f"{collection_endpoint}/{index_name}"
-
-    def signed_request(method, url, body=None):
-        from urllib.parse import urlparse
-        host = urlparse(url).netloc
-        body_hash = hashlib.sha256(body).hexdigest() if body else "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        req = AWSRequest(method=method, url=url, data=body,
-                         headers={"Content-Type": "application/json", "host": host,
-                                  "x-amz-content-sha256": body_hash})
-        SigV4Auth(credentials, "aoss", region).add_auth(req)
-        prepared = req.prepare()
-        headers = dict(prepared.headers)
-        headers["host"] = host
-        headers["x-amz-content-sha256"] = body_hash
-        http_req = urllib.request.Request(url, data=body, headers=headers, method=method)
-        try:
-            with urllib.request.urlopen(http_req) as resp:
-                body_resp = resp.read()
-                return resp.status, json.loads(body_resp) if body_resp else {}
-        except urllib.error.HTTPError as e:
-            body_resp = e.read()
-            return e.code, json.loads(body_resp) if body_resp else {}
-
-    status, body = signed_request("HEAD", url)
-    if status == 200:
-        print(f"  AOSS index already exists: {index_name}")
+def knowledge_base_output_suffix(kb_name):
+    """`nema-cdem` -> `NemaCdem`. Must match knowledgeBaseOutputSuffix() in lib/tak-infra-stack.ts."""
+    return "".join(part[:1].upper() + part[1:].lower() for part in re.split(r"[^a-zA-Z0-9]+", kb_name) if part)
+def get_knowledge_base_ids(cf_client, tak_infra_stack_name, kb_name):
+    """Knowledge base and data source IDs from the TakInfra stack outputs.
+    The knowledge base itself (S3 Vectors index, role, data source) is created by the stack, see
+    lib/constructs/bedrock-knowledge-base.ts. Add `kb_name` to `bedrock.knowledgeBases` in cdk.json
+    (or --context bedrockKnowledgeBases=...) and deploy first."""
+    suffix = knowledge_base_output_suffix(kb_name)
+    outputs = get_stack_outputs(cf_client, tak_infra_stack_name)
+    kb_key, ds_key = f"BedrockKb{suffix}Id", f"BedrockKb{suffix}DataSourceId"
+    if kb_key not in outputs or ds_key not in outputs:
+        raise SystemExit(
+            f"Stack {tak_infra_stack_name} has no output {kb_key}. Add '{kb_name}' to bedrock.knowledgeBases "
+            f"(cdk.json, or --context bedrockKnowledgeBases) and deploy the stack, then run this script again."
+        )
+    return outputs[kb_key], outputs[ds_key]
+def ensure_knowledge_base_synced(bedrock_agent_client, kb_id, ds_id, timeout_s=2700):
+    """Make sure the knowledge base has ingested its documents before an agent uses it.
+    Starts an ingestion job only if the data source has never completed one and none is running.
+    Later document changes still need a manual sync, see README.md."""
+    jobs = bedrock_agent_client.list_ingestion_jobs(knowledgeBaseId=kb_id, dataSourceId=ds_id)["ingestionJobSummaries"]
+    if any(j["status"] == "COMPLETE" for j in jobs):
+        print("  Knowledge base already synced")
         return
-
-    index_body = json.dumps({
-        "settings": {"index": {"knn": True}},
-        "mappings": {"properties": {
-            "embedding": {"type": "knn_vector", "dimension": 1024,
-                          "method": {"name": "hnsw", "engine": "faiss",
-                                     "parameters": {"ef_construction": 512, "m": 16}}},
-            "text": {"type": "text"},
-            "metadata": {"type": "text"}
-        }}
-    }).encode()
-    status, body = signed_request("PUT", url, index_body)
-    if status not in (200, 201):
-        raise RuntimeError(f"Failed to create AOSS index {index_name}: {status} {body}")
-    print(f"  Created AOSS index: {index_name}")
-    time.sleep(20)  # Wait for index to be visible to Bedrock
-
-
-def ensure_aoss_collection(aoss_client, collection_name, kb_role_arn, account_id, caller_arn):
-    # Encryption policy (required before collection creation)
-    enc_policy_name = f"{collection_name}-enc"
-    try:
-        aoss_client.get_security_policy(name=enc_policy_name, type="encryption")
-        print(f"  AOSS encryption policy already exists: {enc_policy_name}")
-    except ClientError as e:
-        if e.response["Error"]["Code"] != "ResourceNotFoundException":
-            raise
-        aoss_client.create_security_policy(
-            name=enc_policy_name,
-            type="encryption",
-            policy=json.dumps({"Rules": [{"ResourceType": "collection", "Resource": [f"collection/{collection_name}"]}], "AWSOwnedKey": True})
-        )
-        print(f"  Created AOSS encryption policy: {enc_policy_name}")
-
-    # Network policy (public access for Bedrock to reach it)
-    net_policy_name = f"{collection_name}-net"
-    try:
-        aoss_client.get_security_policy(name=net_policy_name, type="network")
-        print(f"  AOSS network policy already exists: {net_policy_name}")
-    except ClientError as e:
-        if e.response["Error"]["Code"] != "ResourceNotFoundException":
-            raise
-        aoss_client.create_security_policy(
-            name=net_policy_name,
-            type="network",
-            policy=json.dumps([{"Rules": [{"ResourceType": "collection", "Resource": [f"collection/{collection_name}"]}, {"ResourceType": "dashboard", "Resource": [f"collection/{collection_name}"]}], "AllowFromPublic": True}])
-        )
-        print(f"  Created AOSS network policy: {net_policy_name}")
-
-    # Collection
-    existing = aoss_client.list_collections(collectionFilters={"name": collection_name})["collectionSummaries"]
-    if existing:
-        collection_id = existing[0]["id"]
-        collection_arn = existing[0]["arn"]
-        print(f"  AOSS collection already exists: {collection_name} ({collection_id})")
+    running = [j for j in jobs if j["status"] in ("STARTING", "IN_PROGRESS")]
+    if running:
+        job_id = running[0]["ingestionJobId"]
+        print(f"  Ingestion job already running: {job_id}")
     else:
-        resp = aoss_client.create_collection(name=collection_name, type="VECTORSEARCH")
-        collection_id = resp["createCollectionDetail"]["id"]
-        collection_arn = resp["createCollectionDetail"]["arn"]
-        print(f"  Created AOSS collection: {collection_name} ({collection_id}), waiting for ACTIVE...")
-        for _ in range(120):  # up to 10 minutes
-            status = aoss_client.batch_get_collection(ids=[collection_id])["collectionDetails"][0]["status"]
-            if status == "ACTIVE":
-                break
-            if status == "FAILED":
-                raise RuntimeError(f"AOSS collection {collection_name} failed to create")
-            time.sleep(5)
-        else:
-            raise TimeoutError(f"AOSS collection {collection_name} did not become ACTIVE")
-        print(f"  AOSS collection is ACTIVE")
-
-    # Data access policy — grants KB role index/document permissions
-    access_policy_name = f"{collection_name}-access"
-    access_policy_doc = json.dumps([{
-        "Rules": [
-            {"ResourceType": "index", "Resource": [f"index/{collection_name}/*"],
-             "Permission": ["aoss:CreateIndex", "aoss:DeleteIndex", "aoss:UpdateIndex", "aoss:DescribeIndex", "aoss:ReadDocument", "aoss:WriteDocument"]},
-            {"ResourceType": "collection", "Resource": [f"collection/{collection_name}"],
-             "Permission": ["aoss:CreateCollectionItems", "aoss:DeleteCollectionItems", "aoss:UpdateCollectionItems", "aoss:DescribeCollectionItems"]}
-        ],
-        "Principal": [kb_role_arn, caller_arn]
-    }])
-    try:
-        existing_policy = aoss_client.get_access_policy(name=access_policy_name, type="data")["accessPolicyDetail"]
-        try:
-            aoss_client.update_access_policy(
-                name=access_policy_name, type="data",
-                policy=access_policy_doc,
-                policyVersion=existing_policy["policyVersion"]
-            )
-            print(f"  Updated AOSS data access policy: {access_policy_name}")
-            time.sleep(20)
-        except ClientError as ue:
-            if ue.response["Error"]["Code"] == "ValidationException" and "No changes" in str(ue):
-                print(f"  AOSS data access policy unchanged: {access_policy_name}")
-            else:
-                raise
-    except ClientError as e:
-        if e.response["Error"]["Code"] != "ResourceNotFoundException":
-            raise
-        aoss_client.create_access_policy(name=access_policy_name, type="data", policy=access_policy_doc)
-        print(f"  Created AOSS data access policy: {access_policy_name}")
-        time.sleep(45)
-
-    # Wait for ACTIVE and get endpoint (collection may still be CREATING)
-    for _ in range(120):
-        detail = aoss_client.batch_get_collection(ids=[collection_id])["collectionDetails"][0]
-        if detail["status"] == "ACTIVE":
-            break
-        if detail["status"] == "FAILED":
-            raise RuntimeError(f"AOSS collection {collection_name} is in FAILED state")
-        print(f"  Waiting for collection to become ACTIVE (status: {detail['status']})...")
-        time.sleep(5)
-    else:
-        raise TimeoutError(f"AOSS collection {collection_name} did not become ACTIVE")
-    collection_endpoint = detail["collectionEndpoint"]
-    return collection_arn, collection_endpoint
-
-
-def ensure_knowledge_base(bedrock_agent_client, kb_name, role_arn, bucket_name, s3_prefix, region, collection_arn):
-    # Check if KB already exists by name
-    paginator = bedrock_agent_client.get_paginator("list_knowledge_bases")
-    for page in paginator.paginate():
-        for kb in page["knowledgeBaseSummaries"]:
-            if kb["name"] == kb_name:
-                print(f"  Knowledge base already exists: {kb_name} ({kb['knowledgeBaseId']})")
-                return kb["knowledgeBaseId"]
-
-    resp = bedrock_agent_client.create_knowledge_base(
-        name=kb_name,
-        roleArn=role_arn,
-        knowledgeBaseConfiguration={
-            "type": "VECTOR",
-            "vectorKnowledgeBaseConfiguration": {
-                "embeddingModelArn": f"arn:aws:bedrock:{region}::foundation-model/amazon.titan-embed-text-v2:0"
-            }
-        },
-        storageConfiguration={
-            "type": "OPENSEARCH_SERVERLESS",
-            "opensearchServerlessConfiguration": {
-                "collectionArn": collection_arn,
-                "vectorIndexName": kb_name,
-                "fieldMapping": {"vectorField": "embedding", "textField": "text", "metadataField": "metadata"}
-            }
-        }
-    )
-    kb_id = resp["knowledgeBase"]["knowledgeBaseId"]
-    print(f"  Created knowledge base: {kb_name} ({kb_id})")
-
-    # Add S3 data source
-    bedrock_agent_client.create_data_source(
-        knowledgeBaseId=kb_id,
-        name=f"{kb_name}-s3",
-        dataSourceConfiguration={
-            "type": "S3",
-            "s3Configuration": {
-                "bucketArn": f"arn:aws:s3:::{bucket_name}",
-                "inclusionPrefixes": [f"bedrock-kb/{s3_prefix}/"]
-            }
-        }
-    )
-    print(f"  Created data source: s3://{bucket_name}/bedrock-kb/{s3_prefix}/")
-
-    # Trigger initial sync
-    data_sources = bedrock_agent_client.list_data_sources(knowledgeBaseId=kb_id)["dataSourceSummaries"]
-    ds_id = data_sources[0]["dataSourceId"]
-    bedrock_agent_client.start_ingestion_job(knowledgeBaseId=kb_id, dataSourceId=ds_id)
-    print(f"  Started initial KB sync")
-
-    return kb_id
-
-
+        job_id = bedrock_agent_client.start_ingestion_job(knowledgeBaseId=kb_id, dataSourceId=ds_id)["ingestionJob"]["ingestionJobId"]
+        print(f"  Started initial ingestion job: {job_id}")
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        job = bedrock_agent_client.get_ingestion_job(knowledgeBaseId=kb_id, dataSourceId=ds_id, ingestionJobId=job_id)["ingestionJob"]
+        if job["status"] == "COMPLETE":
+            stats = job.get("statistics", {})
+            print(f"  Ingestion complete: {stats.get('numberOfNewDocumentsIndexed', 0)} documents indexed, {stats.get('numberOfDocumentsFailed', 0)} failed")
+            return
+        if job["status"] in ("FAILED", "STOPPED"):
+            raise RuntimeError(f"Ingestion job {job_id} {job['status']}: {job.get('failureReasons')}")
+        time.sleep(15)
+    raise TimeoutError(f"Ingestion job {job_id} did not finish within {timeout_s // 60} minutes; run the script again once it has")
+def detach_replaced_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name):
+    """Detach the old knowledge bases that the CDK ones replace.
+    The old script created each knowledge base under its plain name (`nema-cdem`); the CDK ones are named
+    `<name>-s3v`. An attached knowledge base is detached only if its name is one of `kb_ids_by_name` and its ID is
+    not the CDK one. Knowledge bases with other names stay attached (the Demo SENTINEL agent has two)."""
+    attached = bedrock_agent_client.list_agent_knowledge_bases(agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
+    detached = False
+    for kb in attached:
+        name = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=kb["knowledgeBaseId"])["knowledgeBase"]["name"]
+        if name in kb_ids_by_name and kb["knowledgeBaseId"] != kb_ids_by_name[name]:
+            bedrock_agent_client.disassociate_agent_knowledge_base(agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb["knowledgeBaseId"])
+            print(f"  Detached old knowledge base {name} ({kb['knowledgeBaseId']}) from agent")
+            detached = True
+    return detached
+def attach_knowledge_bases(bedrock_agent_client, agent_id, kb_ids, description):
+    """Attach every knowledge base in kb_ids that the agent does not have yet. Returns True if any was attached."""
+    attached_ids = {kb["knowledgeBaseId"] for kb in bedrock_agent_client.list_agent_knowledge_bases(
+        agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]}
+    changed = False
+    for kb_id in kb_ids:
+        if kb_id not in attached_ids:
+            bedrock_agent_client.associate_agent_knowledge_base(
+                agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb_id, description=description)
+            print(f"  Attached knowledge base {kb_id} to agent")
+            changed = True
+    return changed
 GEOJSON_SOURCES = (
     "road delays/closures: https://www.journeys.nzta.govt.nz/assets/map-data-cache/delays.json ; "
     "variable message signs (live road messages): https://www.journeys.nzta.govt.nz/assets/map-data-cache/vms.json ; "
@@ -549,7 +357,7 @@ def _ensure_lambda_action_group(bedrock_agent_client, agent_id, action_group_nam
         print(f"  Created {action_group_name} action group (Lambda: {lambda_arn})")
 
 
-def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_id, region, model_id, geojson_lambda_arn=None, arcgis_lambda_arn=None):
+def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_ids_by_name, region, model_id, geojson_lambda_arn=None, arcgis_lambda_arn=None):
     # Check if agent already exists by name
     sanitized_name = agent_name.replace(" ", "-")
     paginator = bedrock_agent_client.get_paginator("list_agents")
@@ -569,17 +377,12 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
                     promptOverrideConfiguration=prompt_override_config()
                 )
                 print(f"  Updated agent instruction, model ({model_id}) and orchestration prompt")
-                # Ensure KB is associated
-                existing_kbs = bedrock_agent_client.list_agent_knowledge_bases(
-                    agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
-                if not any(kb["knowledgeBaseId"] == kb_id for kb in existing_kbs):
-                    bedrock_agent_client.associate_agent_knowledge_base(
-                        agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb_id,
-                        description=f"Knowledge base for {agent_name}")
-                    print(f"  Attached knowledge base {kb_id} to agent")
+                # Ensure the CDK knowledge bases are associated, and the old ones they replace are not
+                if attach_knowledge_bases(bedrock_agent_client, agent_id, list(kb_ids_by_name.values()), f"Knowledge base for {agent_name}"):
                     bedrock_agent_client.prepare_agent(agentId=agent_id)
                     print(f"  Re-preparing agent...")
                     _wait_for_agent(bedrock_agent_client, agent_id, "PREPARED")
+                detach_replaced_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name)
                 _ensure_marker_action_group(bedrock_agent_client, agent_id)
                 if geojson_lambda_arn:
                     _ensure_lambda_action_group(bedrock_agent_client, agent_id, "live-data", geojson_lambda_arn, GEOJSON_FUNCTION_SCHEMA)
@@ -603,14 +406,8 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
     # Wait for agent to leave CREATING state
     _wait_for_agent(bedrock_agent_client, agent_id, "NOT_PREPARED")
 
-    # Attach KB
-    bedrock_agent_client.associate_agent_knowledge_base(
-        agentId=agent_id,
-        agentVersion="DRAFT",
-        knowledgeBaseId=kb_id,
-        description=f"Knowledge base for {agent_name}"
-    )
-    print(f"  Attached knowledge base {kb_id} to agent")
+    # Attach KBs
+    attach_knowledge_bases(bedrock_agent_client, agent_id, list(kb_ids_by_name.values()), f"Knowledge base for {agent_name}")
 
     _ensure_marker_action_group(bedrock_agent_client, agent_id)
     if geojson_lambda_arn:
@@ -708,6 +505,7 @@ def main():
     parser = argparse.ArgumentParser(description="Setup Bedrock Agent with Knowledge Base")
     parser.add_argument("--environment", required=True, help="Environment name, e.g. Demo or Prod (stack: TAK-<env>-BaseInfra)")
     parser.add_argument("--kb-name", required=True, help="Knowledge base name / S3 subfolder (e.g. nema-cdem)")
+    parser.add_argument("--extra-kb-name", action="append", default=[], help="Another knowledge base to attach to the same agent (repeatable), e.g. nema-cdem for the NZDF SENTINEL agent. Must also be in bedrock.knowledgeBases.")
     parser.add_argument("--agent-name", required=True, help="Bedrock Agent display name")
     parser.add_argument("--system-prompt", default=None, help="Agent instruction text")
     parser.add_argument("--system-prompt-file", default=None, help="Path to file containing agent instruction (e.g. nz_rag_responder.txt)")
@@ -726,11 +524,6 @@ def main():
     ssm = session.client("ssm")
 
     account_id = get_account_id(sts)
-    caller_arn = sts.get_caller_identity()["Arn"]
-    # Normalize assumed-role session ARN to role ARN for AOSS data access policy
-    if ":assumed-role/" in caller_arn:
-        parts = caller_arn.split("/")
-        caller_arn = f"arn:aws:iam::{account_id}:role/{parts[1]}"
     stack_name = f"TAK-{args.environment}-BaseInfra"
     ssm_prefix = args.ssm_prefix or f"/tak/{args.environment.lower()}"
     model_id = default_model_id(region)
@@ -762,13 +555,10 @@ def main():
     s3.put_object(Bucket=bucket_name, Key=f"bedrock-kb/{args.kb_name}/.keep", Body=b"")
     print(f"  Created s3://{bucket_name}/bedrock-kb/{args.kb_name}/")
 
-    kb_role_name = f"BedrockKBRole-{args.kb_name}"
     agent_role_name = f"BedrockAgentRole-{args.kb_name}"
 
-    aoss = session.client("opensearchserverless")
 
-    print(f"\n[3/6] Ensuring IAM roles...")
-    kb_role_arn = ensure_kb_iam_role(iam, kb_role_name, bucket_name, region, account_id, kms_key_arn)
+    print(f"\n[3/6] Ensuring agent IAM role...")
     agent_role_arn = ensure_agent_iam_role(iam, agent_role_name, region, account_id)
 
     if args.system_prompt_file:
@@ -780,17 +570,16 @@ def main():
         print("Error: provide --system-prompt or --system-prompt-file", file=sys.stderr)
         sys.exit(1)
 
-    print(f"\n[3b] Ensuring OpenSearch Serverless collection: {args.kb_name}...")
-    collection_arn, collection_endpoint = ensure_aoss_collection(aoss, args.kb_name, kb_role_arn, account_id, caller_arn)
-
-    print(f"  Ensuring AOSS vector index: {args.kb_name}...")
-    ensure_aoss_index(session, collection_endpoint, args.kb_name)
-
-    print(f"\n[4/6] Ensuring Knowledge Base: {args.kb_name}...")
-    kb_id = ensure_knowledge_base(bedrock_agent, args.kb_name, kb_role_arn, bucket_name, args.kb_name, region, collection_arn)
-
+    print(f"\n[4/6] Resolving knowledge base from stack {tak_infra_stack_name}...")
+    kb_ids_by_name = {}
+    for kb_name in [args.kb_name] + [n for n in args.extra_kb_name if n != args.kb_name]:
+        kb_id_for_name, ds_id = get_knowledge_base_ids(cf, tak_infra_stack_name, kb_name)
+        print(f"  {kb_name}: knowledge base {kb_id_for_name}, data source {ds_id}")
+        ensure_knowledge_base_synced(bedrock_agent, kb_id_for_name, ds_id)
+        kb_ids_by_name[kb_name] = kb_id_for_name
+    kb_id = kb_ids_by_name[args.kb_name]
     print(f"\n[5/6] Ensuring Agent: {args.agent_name}...")
-    agent_id = ensure_agent(bedrock_agent, args.agent_name, agent_role_arn, system_prompt, kb_id, region, model_id, geojson_lambda_arn, arcgis_lambda_arn)
+    agent_id = ensure_agent(bedrock_agent, args.agent_name, agent_role_arn, system_prompt, kb_ids_by_name, region, model_id, geojson_lambda_arn, arcgis_lambda_arn)
 
     print(f"\n[5b] Ensuring Agent alias...")
     alias_id = ensure_agent_alias(bedrock_agent, agent_id, args.agent_name)

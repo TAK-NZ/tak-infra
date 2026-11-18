@@ -195,6 +195,15 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `enableDetailedLogging` | Enable detailed CloudWatch logging | `true` | `false` |
 | `enableContainerInsights` | Enable ECS Container Insights | `false` | `true` |
 
+### **Bedrock Knowledge Base Configuration**
+| Parameter | Description | dev-test | prod |
+|-----------|-------------|----------|------|
+| `bedrock.knowledgeBases` | Names of the TAK-GPT Bedrock knowledge bases to create (S3 Vectors storage). Each name is also the folder the documents are read from: `bedrock-kb/<name>/` in the BaseInfra TAK Images bucket | `["nema-cdem"]` | `["nema-cdem"]` |
+
+- Override on the command line with a comma-separated list: `--context bedrockKnowledgeBases=nema-cdem,nzdf`. An empty value (`--context bedrockKnowledgeBases=`) creates none.
+- Names use 3 to 63 lower-case letters, digits and hyphens.
+- The stack creates the vector index, the knowledge base role, the knowledge base (named `<name>-s3v`) and its S3 data source, and outputs the IDs as `BedrockKb<Name>Id` and `BedrockKb<Name>DataSourceId` (`nema-cdem` becomes `NemaCdem`). `scripts/bedrock/setup-bedrock-agent.py` reads them. Ingesting documents is not stack state: see `scripts/bedrock/README.md`.
+
 ### **WebTAK OIDC Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
@@ -412,6 +421,11 @@ npm run deploy:dev -- --context tak-region="us-east-1"
 | `letsEncryptEmail` | string | Let's Encrypt email | Valid email address |
 | `enableFederation` | boolean | Enable TAK federation | `true`, `false` |
 | `enableCloudWatchMetrics` | boolean | Enable CloudWatch metrics | `true`, `false` |
+
+### **Bedrock Configuration**
+| Parameter | Type | Description | Valid Values |
+|-----------|------|-------------|-------------|
+| `bedrock.knowledgeBases` | string[] | Knowledge bases to create; override with `bedrockKnowledgeBases` (comma-separated) | Names of 3 to 63 lower-case letters, digits, hyphens |
 
 ## 📋 Deployment Examples
 

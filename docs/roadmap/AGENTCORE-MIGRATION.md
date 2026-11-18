@@ -23,6 +23,16 @@
 > (#160), giving the agent live map data via the same CloudTAK REST API
 > `utils-infra`'s SitRep Lambda already uses.
 
+> **Update (2026-11-18): the knowledge base storage changed from OpenSearch
+> Serverless to Amazon S3 Vectors** (issue #158). Spikes in Test measured the
+> same retrieval quality on the benchmark questions with no cold start and a
+> much smaller bill, while OpenSearch Serverless costs about $340 to $400 a
+> month for almost no traffic. Wherever this document says AOSS, `CfnCollection`,
+> `CfnIndex` or OpenSearch security policies, read it as
+> `lib/constructs/bedrock-knowledge-base.ts` (`CfnVectorBucket`, `CfnIndex` from
+> `aws-s3vectors`, `CfnKnowledgeBase` with `S3_VECTORS`). Step 3 below is
+> implemented that way.
+
 ## Background
 
 Amazon Bedrock Agents Classic is now in **maintenance mode**. It is closed to new customers from July 30, 2026. Existing accounts can continue running but AWS is not developing it further. The recommended replacement is **Amazon Bedrock AgentCore**, which launched GA in June 2026.

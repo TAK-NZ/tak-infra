@@ -3,6 +3,7 @@ package tak.server.plugins.agent;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,10 @@ import software.amazon.awssdk.services.bedrockagentruntime.model.FunctionInvocat
 import software.amazon.awssdk.services.bedrockagentruntime.model.FunctionResult;
 import software.amazon.awssdk.services.bedrockagentruntime.model.InvocationResultMember;
 import software.amazon.awssdk.services.bedrockagentruntime.model.InvokeAgentRequest;
+import software.amazon.awssdk.services.bedrockagentruntime.model.KnowledgeBaseConfiguration;
+import software.amazon.awssdk.services.bedrockagentruntime.model.KnowledgeBaseRetrievalConfiguration;
 import software.amazon.awssdk.services.bedrockagentruntime.model.KnowledgeBaseRetrieveAndGenerateConfiguration;
+import software.amazon.awssdk.services.bedrockagentruntime.model.KnowledgeBaseVectorSearchConfiguration;
 import software.amazon.awssdk.services.bedrockagentruntime.model.ResponseStream;
 import software.amazon.awssdk.services.bedrockagentruntime.model.ReturnControlPayload;
 import software.amazon.awssdk.services.bedrockagentruntime.model.RetrieveAndGenerateConfiguration;
@@ -70,6 +74,8 @@ public class BedrockChatManager implements LLMChatManager {
     private String systemPrompt;
     private String modelId;
     private String knowledgeBaseId;
+    private Integer knowledgeBaseResults;
+    private List<String> agentKnowledgeBaseIds = new ArrayList<>();
     private String agentId;
     private String agentAliasId;
     private final int conversationHistorySize;
@@ -106,6 +112,22 @@ public class BedrockChatManager implements LLMChatManager {
         }
 
         knowledgeBaseId = config.containsKey("knowledgeBaseId") ? (String) config.get("knowledgeBaseId") : null;
+        knowledgeBaseResults = config.containsKey("knowledgeBaseResults") ?
+                ((Number) config.get("knowledgeBaseResults")).intValue() : null;
+        // Knowledge bases attached to the agent that knowledgeBaseResults applies to: knowledgeBaseIds (a list, or a
+        // comma-separated string) or, failing that, the single knowledgeBaseId.
+        Object kbIds = config.get("knowledgeBaseIds");
+        if (kbIds instanceof Collection) {
+            for (Object id : (Collection<?>) kbIds) {
+                if (id != null && !id.toString().isBlank()) agentKnowledgeBaseIds.add(id.toString().trim());
+            }
+        } else if (kbIds != null) {
+            for (String id : kbIds.toString().split(",")) {
+                if (!id.isBlank()) agentKnowledgeBaseIds.add(id.trim());
+            }
+        } else if (knowledgeBaseId != null) {
+            agentKnowledgeBaseIds.add(knowledgeBaseId);
+        }
         agentId = config.containsKey("agentId") ? (String) config.get("agentId") : null;
         agentAliasId = config.containsKey("agentAliasId") ? (String) config.get("agentAliasId") : null;
         conversationHistorySize = config.containsKey("conversationHistorySize") ?
@@ -390,6 +412,30 @@ public class BedrockChatManager implements LLMChatManager {
         }
     }
 
+    /**
+     * Session state for an InvokeAgent call. When {@code knowledgeBaseResults} is set together with the agent's
+     * knowledge base IDs ({@code knowledgeBaseIds}, or {@code knowledgeBaseId}), the agent retrieves that many chunks
+     * per knowledge base search instead of the Bedrock default of 5. The setting applies to one request, so it is
+     * added to every call of a RETURN_CONTROL loop. Returns null when there is nothing to send.
+     */
+    private SessionState agentSessionState(SessionState.Builder builder) {
+        if (knowledgeBaseResults == null || agentKnowledgeBaseIds.isEmpty()) {
+            return builder == null ? null : builder.build();
+        }
+        SessionState.Builder state = builder != null ? builder : SessionState.builder();
+        List<KnowledgeBaseConfiguration> configurations = new ArrayList<>();
+        for (String id : agentKnowledgeBaseIds) {
+            configurations.add(KnowledgeBaseConfiguration.builder()
+                    .knowledgeBaseId(id)
+                    .retrievalConfiguration(KnowledgeBaseRetrievalConfiguration.builder()
+                            .vectorSearchConfiguration(KnowledgeBaseVectorSearchConfiguration.builder()
+                                    .numberOfResults(knowledgeBaseResults)
+                                    .build())
+                            .build())
+                    .build());
+        }
+        return state.knowledgeBaseConfigurations(configurations).build();
+    }
     private String sendAgentRequest(String messageText, TAKContext context) throws IOException {
         try {
             String contextualMessage = buildContextualMessage(messageText, context);
@@ -397,7 +443,7 @@ public class BedrockChatManager implements LLMChatManager {
                     ? context.getSessionId().replaceAll("[^a-zA-Z0-9_-]", "-")
                     : "tak-session-" + System.currentTimeMillis();
 
-            SessionState sessionState = null;
+            SessionState sessionState = agentSessionState(null);
 
             // Loop to handle RETURN_CONTROL (max 5 tool calls)
             for (int i = 0; i < 5; i++) {
@@ -469,10 +515,9 @@ public class BedrockChatManager implements LLMChatManager {
                             .build());
                 }
 
-                sessionState = SessionState.builder()
+                sessionState = agentSessionState(SessionState.builder()
                         .invocationId(returnControl[0].invocationId())
-                        .returnControlInvocationResults(invocationResults)
-                        .build();
+                        .returnControlInvocationResults(invocationResults));
             }
 
             LOGGER.warn("Agent RETURN_CONTROL loop exceeded max iterations");

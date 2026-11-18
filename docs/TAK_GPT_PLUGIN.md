@@ -87,6 +87,9 @@ bots:
     region: "us-west-2"
     agentId: "AGENT123"          # From SSM: /tak/<env>/bedrock/<kb-name>/agent-id
     agentAliasId: "TSTALIASID"   # TSTALIASID always uses DRAFT (latest). Use a real alias ID for a stable production snapshot.
+    knowledgeBaseId: "KB123"     # Optional, with knowledgeBaseResults. The knowledge base attached to the agent (SSM: /tak/<env>/bedrock/<kb-name>/kb-id)
+    # knowledgeBaseIds: ["KB123", "KB456"]   # Instead of knowledgeBaseId when the agent has several knowledge bases (a list, or "KB123,KB456")
+    knowledgeBaseResults: 8      # Optional. Chunks the agent retrieves per knowledge base search (Bedrock default 5)
     botName: "NZ Field Assistant"
     latitude: -41.2784
     longitude: 174.7767
@@ -97,10 +100,11 @@ bots:
 ```
 
 **Note:** In agent mode, `modelName` and `systemPromptFilePath` are ignored — the agent's instruction (set via `setup-bedrock-agent.py`) controls behaviour.
+**Knowledge base results:** set `knowledgeBaseResults` (with `knowledgeBaseId`) to raise the number of chunks the agent retrieves per search from the Bedrock default of 5. With the S3 Vectors knowledge bases, 8 recovers the answers that approximate search misses at 5 (on the 37 benchmark questions, 70 against 59 supported facts; the agent then found the Police traffic incident codes that it missed with 5). `knowledgeBaseResults` needs the knowledge base ID(s), because Bedrock applies it per knowledge base: set `knowledgeBaseId`, or `knowledgeBaseIds` for an agent with several (the Demo NZDF SENTINEL agent has `nzdf` and `nema-cdem`). A knowledge base not listed keeps the default of 5. In agent mode these IDs are only used for this; the agent is still called.
 
 **Setting up a Bedrock Agent:**
 
-Use the provided setup script to create the OpenSearch Serverless collection, Knowledge Base, and Agent:
+The Knowledge Base (S3 Vectors) is created by the TakInfra stack when its name is listed in `bedrock.knowledgeBases` (see [PARAMETERS.md](PARAMETERS.md)). Then use the provided setup script to sync it and create the Agent:
 
 ```bash
 python3 scripts/bedrock/setup-bedrock-agent.py \
@@ -493,10 +497,11 @@ aws ecs update-service \
 - `docker-container/scripts/download-plugin-config.sh` - S3 download script
 - `scripts/takserver/upload-plugin-config.sh` - S3 upload helper
 - `scripts/takserver/test-bedrock-inference-profile.py` - Bedrock model testing script
-- `scripts/bedrock/setup-bedrock-agent.py` - Idempotent setup for AOSS, Knowledge Base, and Agent
+- `scripts/bedrock/setup-bedrock-agent.py` - Idempotent setup for the Agent (syncs the CDK-created Knowledge Base)
 - `scripts/bedrock/README.md` - Bedrock agent setup and document sync guide
 - `lambda/geojson-query/index.py` - Lambda handler for live GeoJSON queries (proximity + text filter)
 - `lib/constructs/bedrock-geojson-lambda.ts` - CDK construct for the GeoJSON query Lambda
+- `lib/constructs/bedrock-knowledge-base.ts` - CDK construct for a Knowledge Base on S3 Vectors
 
 ### Modified Files
 - `docker/tak-server/Dockerfile.tak-nz` - Plugin build steps
