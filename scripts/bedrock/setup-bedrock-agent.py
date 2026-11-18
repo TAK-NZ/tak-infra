@@ -3,7 +3,7 @@
 Setup a Bedrock Agent with an attached Knowledge Base sourced from an S3 prefix.
 The knowledge base (S3 Vectors index, IAM role, data source) is created by the TakInfra CDK stack, not by
 this script. Deploy the stack with the knowledge base name in `bedrock.knowledgeBases` first. The script
-then syncs the knowledge base if it has never been ingested, and creates or updates the agent, its action
+then syncs the knowledge base(s) if never ingested, and creates or updates the agent, its action
 groups and alias.
 
 Usage:
@@ -203,16 +203,32 @@ def ensure_knowledge_base_synced(bedrock_agent_client, kb_id, ds_id, timeout_s=2
             raise RuntimeError(f"Ingestion job {job_id} {job['status']}: {job.get('failureReasons')}")
         time.sleep(15)
     raise TimeoutError(f"Ingestion job {job_id} did not finish within {timeout_s // 60} minutes; run the script again once it has")
-def detach_other_knowledge_bases(bedrock_agent_client, agent_id, keep_kb_id):
-    """Each agent here has exactly one knowledge base. Detach any other (the old OpenSearch one)."""
+def detach_replaced_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name):
+    """Detach the old knowledge bases that the CDK ones replace.
+    The old script created each knowledge base under its plain name (`nema-cdem`); the CDK ones are named
+    `<name>-s3v`. An attached knowledge base is detached only if its name is one of `kb_ids_by_name` and its ID is
+    not the CDK one. Knowledge bases with other names stay attached (the Demo SENTINEL agent has two)."""
     attached = bedrock_agent_client.list_agent_knowledge_bases(agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
     detached = False
     for kb in attached:
-        if kb["knowledgeBaseId"] != keep_kb_id:
+        name = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=kb["knowledgeBaseId"])["knowledgeBase"]["name"]
+        if name in kb_ids_by_name and kb["knowledgeBaseId"] != kb_ids_by_name[name]:
             bedrock_agent_client.disassociate_agent_knowledge_base(agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb["knowledgeBaseId"])
-            print(f"  Detached old knowledge base {kb['knowledgeBaseId']} from agent")
+            print(f"  Detached old knowledge base {name} ({kb['knowledgeBaseId']}) from agent")
             detached = True
     return detached
+def attach_knowledge_bases(bedrock_agent_client, agent_id, kb_ids, description):
+    """Attach every knowledge base in kb_ids that the agent does not have yet. Returns True if any was attached."""
+    attached_ids = {kb["knowledgeBaseId"] for kb in bedrock_agent_client.list_agent_knowledge_bases(
+        agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]}
+    changed = False
+    for kb_id in kb_ids:
+        if kb_id not in attached_ids:
+            bedrock_agent_client.associate_agent_knowledge_base(
+                agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb_id, description=description)
+            print(f"  Attached knowledge base {kb_id} to agent")
+            changed = True
+    return changed
 GEOJSON_SOURCES = (
     "road delays/closures: https://www.journeys.nzta.govt.nz/assets/map-data-cache/delays.json ; "
     "variable message signs (live road messages): https://www.journeys.nzta.govt.nz/assets/map-data-cache/vms.json ; "
@@ -341,7 +357,7 @@ def _ensure_lambda_action_group(bedrock_agent_client, agent_id, action_group_nam
         print(f"  Created {action_group_name} action group (Lambda: {lambda_arn})")
 
 
-def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_id, region, model_id, geojson_lambda_arn=None, arcgis_lambda_arn=None):
+def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_ids_by_name, region, model_id, geojson_lambda_arn=None, arcgis_lambda_arn=None):
     # Check if agent already exists by name
     sanitized_name = agent_name.replace(" ", "-")
     paginator = bedrock_agent_client.get_paginator("list_agents")
@@ -361,18 +377,12 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
                     promptOverrideConfiguration=prompt_override_config()
                 )
                 print(f"  Updated agent instruction, model ({model_id}) and orchestration prompt")
-                # Ensure KB is associated
-                existing_kbs = bedrock_agent_client.list_agent_knowledge_bases(
-                    agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
-                if not any(kb["knowledgeBaseId"] == kb_id for kb in existing_kbs):
-                    bedrock_agent_client.associate_agent_knowledge_base(
-                        agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb_id,
-                        description=f"Knowledge base for {agent_name}")
-                    print(f"  Attached knowledge base {kb_id} to agent")
+                # Ensure the CDK knowledge bases are associated, and the old ones they replace are not
+                if attach_knowledge_bases(bedrock_agent_client, agent_id, list(kb_ids_by_name.values()), f"Knowledge base for {agent_name}"):
                     bedrock_agent_client.prepare_agent(agentId=agent_id)
                     print(f"  Re-preparing agent...")
                     _wait_for_agent(bedrock_agent_client, agent_id, "PREPARED")
-                detach_other_knowledge_bases(bedrock_agent_client, agent_id, kb_id)
+                detach_replaced_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name)
                 _ensure_marker_action_group(bedrock_agent_client, agent_id)
                 if geojson_lambda_arn:
                     _ensure_lambda_action_group(bedrock_agent_client, agent_id, "live-data", geojson_lambda_arn, GEOJSON_FUNCTION_SCHEMA)
@@ -396,14 +406,8 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
     # Wait for agent to leave CREATING state
     _wait_for_agent(bedrock_agent_client, agent_id, "NOT_PREPARED")
 
-    # Attach KB
-    bedrock_agent_client.associate_agent_knowledge_base(
-        agentId=agent_id,
-        agentVersion="DRAFT",
-        knowledgeBaseId=kb_id,
-        description=f"Knowledge base for {agent_name}"
-    )
-    print(f"  Attached knowledge base {kb_id} to agent")
+    # Attach KBs
+    attach_knowledge_bases(bedrock_agent_client, agent_id, list(kb_ids_by_name.values()), f"Knowledge base for {agent_name}")
 
     _ensure_marker_action_group(bedrock_agent_client, agent_id)
     if geojson_lambda_arn:
@@ -501,6 +505,7 @@ def main():
     parser = argparse.ArgumentParser(description="Setup Bedrock Agent with Knowledge Base")
     parser.add_argument("--environment", required=True, help="Environment name, e.g. Demo or Prod (stack: TAK-<env>-BaseInfra)")
     parser.add_argument("--kb-name", required=True, help="Knowledge base name / S3 subfolder (e.g. nema-cdem)")
+    parser.add_argument("--extra-kb-name", action="append", default=[], help="Another knowledge base to attach to the same agent (repeatable), e.g. nema-cdem for the NZDF SENTINEL agent. Must also be in bedrock.knowledgeBases.")
     parser.add_argument("--agent-name", required=True, help="Bedrock Agent display name")
     parser.add_argument("--system-prompt", default=None, help="Agent instruction text")
     parser.add_argument("--system-prompt-file", default=None, help="Path to file containing agent instruction (e.g. nz_rag_responder.txt)")
@@ -566,11 +571,15 @@ def main():
         sys.exit(1)
 
     print(f"\n[4/6] Resolving knowledge base from stack {tak_infra_stack_name}...")
-    kb_id, ds_id = get_knowledge_base_ids(cf, tak_infra_stack_name, args.kb_name)
-    print(f"  Knowledge base: {kb_id}, data source: {ds_id}")
-    ensure_knowledge_base_synced(bedrock_agent, kb_id, ds_id)
+    kb_ids_by_name = {}
+    for kb_name in [args.kb_name] + [n for n in args.extra_kb_name if n != args.kb_name]:
+        kb_id_for_name, ds_id = get_knowledge_base_ids(cf, tak_infra_stack_name, kb_name)
+        print(f"  {kb_name}: knowledge base {kb_id_for_name}, data source {ds_id}")
+        ensure_knowledge_base_synced(bedrock_agent, kb_id_for_name, ds_id)
+        kb_ids_by_name[kb_name] = kb_id_for_name
+    kb_id = kb_ids_by_name[args.kb_name]
     print(f"\n[5/6] Ensuring Agent: {args.agent_name}...")
-    agent_id = ensure_agent(bedrock_agent, args.agent_name, agent_role_arn, system_prompt, kb_id, region, model_id, geojson_lambda_arn, arcgis_lambda_arn)
+    agent_id = ensure_agent(bedrock_agent, args.agent_name, agent_role_arn, system_prompt, kb_ids_by_name, region, model_id, geojson_lambda_arn, arcgis_lambda_arn)
 
     print(f"\n[5b] Ensuring Agent alias...")
     alias_id = ensure_agent_alias(bedrock_agent, agent_id, args.agent_name)

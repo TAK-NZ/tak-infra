@@ -11,7 +11,15 @@
 
 Creates (or updates) the Bedrock Agent with its action groups, including the `RETURN_CONTROL` group for TAK map marker creation, and an alias. IDs are written to SSM Parameter Store.
 
-The knowledge base is created by the TakInfra CDK stack (`lib/constructs/bedrock-knowledge-base.ts`): an Amazon S3 Vectors index, the knowledge base role, the knowledge base (named `<kb-name>-s3v`) and an S3 data source on `bedrock-kb/<kb-name>/`. The script reads its ID from the stack outputs (`BedrockKb<Name>Id`, `nema-cdem` becomes `NemaCdem`). If the knowledge base has never been ingested, the script starts an ingestion job and waits for it before it attaches the knowledge base to the agent. If the agent still has another knowledge base attached (the old OpenSearch one), the script detaches it.
+The knowledge base is created by the TakInfra CDK stack (`lib/constructs/bedrock-knowledge-base.ts`): an Amazon S3 Vectors index, the knowledge base role, the knowledge base (named `<kb-name>-s3v`) and an S3 data source on `bedrock-kb/<kb-name>/`. The script reads its ID from the stack outputs (`BedrockKb<Name>Id`, `nema-cdem` becomes `NemaCdem`). If the knowledge base has never been ingested, the script starts an ingestion job and waits for it before it attaches the knowledge base to the agent. The script detaches the old OpenSearch knowledge base that the new one replaces: an attached knowledge base is detached only if its name is the plain `<kb-name>` and its ID is not the CDK one. Other attached knowledge bases stay. An agent that uses more than one knowledge base lists the others with `--extra-kb-name` (repeatable), for example the Demo NZDF SENTINEL agent:
+
+```bash
+python3 scripts/bedrock/setup-bedrock-agent.py --environment Demo --profile tak-nz-demo --region ap-southeast-2 \
+  --kb-name nzdf --extra-kb-name nema-cdem \
+  --agent-name "NZDF SENTINEL Bot" --system-prompt-file scripts/bedrock/nzdf_rag_responder.txt
+```
+
+Every name given must be in `bedrock.knowledgeBases`.
 
 ```bash
 python3 scripts/bedrock/setup-bedrock-agent.py \
