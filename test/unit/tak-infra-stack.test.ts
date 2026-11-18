@@ -3,7 +3,7 @@
  */
 import { App } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { Template } from 'aws-cdk-lib/assertions';
+import { Annotations, Match, Template } from 'aws-cdk-lib/assertions';
 import { TakInfraStack, knowledgeBaseOutputSuffix } from '../../lib/tak-infra-stack';
 import { MOCK_CONFIGS } from '../__fixtures__/mock-configs';
 
@@ -67,6 +67,37 @@ describe('TakInfraStack', () => {
       const outputs = build(['nema-cdem']).toJSON().Outputs;
       expect(outputs.BedrockKbNemaCdemId.Export.Name).toBe('TAK-Test-TakInfra-BedrockKbNemaCdemId');
       expect(outputs.BedrockKbNemaCdemDataSourceId).toBeDefined();
+    });
+
+    describe('in a region without Bedrock Knowledge Bases', () => {
+      const buildIn = (region: string, knowledgeBases: string[]) => {
+        const stack = new TakInfraStack(new App(), 'TAK-Test-TakInfra', {
+          environment: 'dev-test',
+          envConfig: { ...MOCK_CONFIGS.DEV_TEST, bedrock: { knowledgeBases } },
+          env: { account: '123456789012', region }
+        });
+        return { template: Template.fromStack(stack), annotations: Annotations.fromStack(stack) };
+      };
+
+      test('ap-southeast-6 creates no knowledge base and says so', () => {
+        const { template, annotations } = buildIn('ap-southeast-6', ['nema-cdem']);
+        template.resourceCountIs('AWS::Bedrock::KnowledgeBase', 0);
+        template.resourceCountIs('AWS::Bedrock::DataSource', 0);
+        template.resourceCountIs('AWS::S3Vectors::VectorBucket', 0);
+        expect(Object.keys(template.toJSON().Outputs ?? {}).filter(k => k.startsWith('BedrockKb'))).toEqual([]);
+        annotations.hasWarning('*', Match.stringLikeRegexp('Bedrock Knowledge Bases are not available in ap-southeast-6.*nema-cdem'));
+      });
+
+      test('no warning when no knowledge base is configured there', () => {
+        const { annotations } = buildIn('ap-southeast-6', []);
+        annotations.hasNoWarning('*', Match.stringLikeRegexp('Bedrock Knowledge Bases are not available'));
+      });
+
+      test('a supported region still creates them, without a warning', () => {
+        const { template, annotations } = buildIn('ap-southeast-2', ['nema-cdem']);
+        template.resourceCountIs('AWS::Bedrock::KnowledgeBase', 1);
+        annotations.hasNoWarning('*', Match.stringLikeRegexp('Bedrock Knowledge Bases are not available'));
+      });
     });
 
     test.each([[undefined], [[]]])('creates none when the list is %p', (list) => {

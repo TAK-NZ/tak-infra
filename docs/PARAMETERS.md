@@ -202,6 +202,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 
 - Override on the command line with a comma-separated list: `--context bedrockKnowledgeBases=nema-cdem,nzdf`. An empty value (`--context bedrockKnowledgeBases=`) creates none.
 - Names use 3 to 63 lower-case letters, digits and hyphens.
+- In a region without Bedrock Knowledge Bases (today `ap-southeast-6`, Auckland; the list is `BEDROCK_KB_UNSUPPORTED_REGIONS` in `lib/utils/constants.ts`) the stack creates none and prints a synth warning. Set the list to `[]` to silence the warning. The TAK-GPT bot then needs an agent in a supported region: set the bot's `region`, for example `ap-southeast-2`.
 - The stack creates the vector index, the knowledge base role, the knowledge base (named `<name>-s3v`) and its S3 data source, and outputs the IDs as `BedrockKb<Name>Id` and `BedrockKb<Name>DataSourceId` (`nema-cdem` becomes `NemaCdem`). `scripts/bedrock/setup-bedrock-agent.py` reads them. Ingesting documents is not stack state: see `scripts/bedrock/README.md`.
 
 ### **WebTAK OIDC Configuration**

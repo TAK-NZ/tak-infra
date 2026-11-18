@@ -3,6 +3,14 @@
  */
 
 export const DEFAULT_AWS_REGION = 'ap-southeast-2';
+/**
+ * Regions where Amazon Bedrock Knowledge Bases (AWS::Bedrock::KnowledgeBase, AWS::Bedrock::DataSource) are not
+ * available, so the stack creates no knowledge bases there. Bedrock model inference may still work in them
+ * (ap-southeast-6, Auckland, has it through cross-Region inference profiles). Remove a region from this list once
+ * AWS adds the service there. Checked 2026-11-18: the Bedrock Agents and Knowledge Bases region tables do not
+ * list ap-southeast-6, and its Knowledge Bases API returns an internal server error.
+ */
+export const BEDROCK_KB_UNSUPPORTED_REGIONS: readonly string[] = ['ap-southeast-6'];
 
 export const DATABASE_CONSTANTS = {
   PORT: 5432,
