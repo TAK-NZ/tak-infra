@@ -26,6 +26,7 @@ import { BedrockKnowledgeBase } from './constructs/bedrock-knowledge-base';
 import { createBaseImportValue, BASE_EXPORT_NAMES, createAuthImportValue, AUTH_EXPORT_NAMES } from './cloudformation-imports';
 import { ContextEnvironmentConfig } from './stack-config';
 import { validateEnvType, validateStackName } from './utils';
+import { BEDROCK_KB_UNSUPPORTED_REGIONS } from './utils/constants';
 import type { InfrastructureConfig, NetworkConfig, StorageConfig, SecretsConfig } from './construct-configs';
 
 export interface TakInfraStackProps extends StackProps {
@@ -392,7 +393,17 @@ export class TakInfraStack extends cdk.Stack {
     // Bedrock knowledge bases (S3 Vectors), one per configured name. The documents live in the
     // base-infra TAK Images bucket under bedrock-kb/<name>/. setup-bedrock-agent.py reads the
     // knowledge base ID from the BedrockKb<Name>Id output below.
-    const knowledgeBaseNames = envConfig.bedrock?.knowledgeBases ?? [];
+    // They are skipped, with a warning, in regions where Bedrock Knowledge Bases do not exist.
+    const configuredKnowledgeBases = envConfig.bedrock?.knowledgeBases ?? [];
+    const kbUnsupported = !Token.isUnresolved(region) && BEDROCK_KB_UNSUPPORTED_REGIONS.includes(region);
+    if (kbUnsupported && configuredKnowledgeBases.length > 0) {
+      cdk.Annotations.of(this).addWarning(
+        `Bedrock Knowledge Bases are not available in ${region}, so ${configuredKnowledgeBases.length} configured ` +
+        `knowledge base(s) (${configuredKnowledgeBases.join(', ')}) were not created. Set bedrock.knowledgeBases to [] ` +
+        `to silence this warning. The TAK-GPT bot then needs an agent in a supported region (bot setting "region").`
+      );
+    }
+    const knowledgeBaseNames = kbUnsupported ? [] : configuredKnowledgeBases;
     if (knowledgeBaseNames.length > 0) {
       const takImagesBucket = s3.Bucket.fromBucketArn(this, 'ImportedTakImagesBucket',
         Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.S3_TAK_IMAGES))
