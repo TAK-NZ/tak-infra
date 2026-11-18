@@ -52,7 +52,7 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
         "letsEncryptMode": "staging",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true
+        "enableCloudWatchMetrics": false
       },
       "ecr": {
         "imageRetentionCount": 5,
@@ -93,7 +93,7 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
         "letsEncryptMode": "production",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true
+        "enableCloudWatchMetrics": false
       },
       "ecr": {
         "imageRetentionCount": 20,
@@ -172,7 +172,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `letsEncryptMode` | Let's Encrypt certificate mode | `staging` | `production` |
 | `letsEncryptEmail` | Let's Encrypt email address | `admin@tak.nz` | `admin@tak.nz` |
 | `enableFederation` | Enable TAK federation | `true` | `true` |
-| `enableCloudWatchMetrics` | Enable CloudWatch metrics | `true` | `true` |
+| `enableCloudWatchMetrics` | Export TAK Server API (Micrometer) metrics to CloudWatch. Off by default: about 600 billed custom metrics and no alarm or dashboard uses them. The API JVM keeps its Netty TLS workaround (`docker/tak-server/patch-jvm-flags.py`), so turning this back on works without other changes | `false` | `false` |
 
 ### **ECR Configuration**
 | Parameter | Description | dev-test | prod |

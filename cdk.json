@@ -49,7 +49,7 @@
         "letsEncryptMode": "staging",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true,
+        "enableCloudWatchMetrics": false,
         "ldapGroupPrefix": "tak_"
       },
       "ecr": {
@@ -109,7 +109,7 @@
         "letsEncryptMode": "production",
         "letsEncryptEmail": "admin@tak.nz",
         "enableFederation": true,
-        "enableCloudWatchMetrics": true,
+        "enableCloudWatchMetrics": false,
         "ldapGroupPrefix": "tak_"
       },
       "ecr": {

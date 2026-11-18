@@ -11,6 +11,7 @@
 ## Version History
 
 ### Pending Release
+- :rocket: Turn off the TAK Server CloudWatch metrics export (`takserver.enableCloudWatchMetrics` is now `false` in both profiles). It published about 600 billed custom metrics (about $180 a month per environment) that no alarm, dashboard or code reads. Set it back to `true` to re-enable: the API JVM keeps its Netty TLS workaround (`patch-jvm-flags.py`, unchanged on purpose), so the exporter works again without other changes. Redeploying restarts the TAK Server task.
 
 ### v2.2.0
 
