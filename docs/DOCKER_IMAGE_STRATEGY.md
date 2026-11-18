@@ -19,7 +19,7 @@ This provides the best of both worlds:
 | Parameter | Description | Example |
 |-----------|-------------|---------|
 | `usePreBuiltImages` | Enable/disable pre-built image usage | `true` or `false` |
-| `takImageTag` | Tag for TAK server image | `tak-5.8-RELEASE-79-tak-nz-c<content-hash>` |
+| `takImageTag` | Tag for TAK server image | `tak-5.8-RELEASE-103-tak-nz-c<content-hash>` |
 
 ### Default Behavior
 
@@ -33,7 +33,7 @@ This provides the best of both worlds:
 ```bash
 npm run cdk deploy -- \
   --context usePreBuiltImages=true \
-  --context takImageTag=tak-5.8-RELEASE-79-tak-nz-c<content-hash>
+  --context takImageTag=tak-5.8-RELEASE-103-tak-nz-c<content-hash>
 ```
 
 ### Local Development (Build on Demand)
@@ -53,7 +53,7 @@ npm run cdk deploy -- \
 npm run cdk deploy -- \
   --context envType=prod \
   --context usePreBuiltImages=true \
-  --context takImageTag=tak-5.8-RELEASE-79-tak-nz-c<content-hash>
+  --context takImageTag=tak-5.8-RELEASE-103-tak-nz-c<content-hash>
 ```
 
 ## Image Repositories
@@ -147,7 +147,7 @@ Error: takImageTag context required
 # Test synthesis with pre-built images
 npm run cdk synth -- \
   --context usePreBuiltImages=true \
-  --context takImageTag=tak-5.8-RELEASE-79-tak-nz-c<content-hash>
+  --context takImageTag=tak-5.8-RELEASE-103-tak-nz-c<content-hash>
 
 # Test synthesis with local building
 npm run cdk synth -- \

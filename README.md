@@ -103,7 +103,7 @@ BUCKET_ARN=$(aws cloudformation describe-stacks --stack-name TAK-<n>-BaseInfra \
 BUCKET_NAME=$(echo $BUCKET_ARN | sed 's|arn:aws:s3:::|s3://|')
 
 # Upload TAK Server distribution
-aws s3 cp takserver-docker-5.8-RELEASE-79.zip $BUCKET_NAME/
+aws s3 cp takserver-docker-5.8-RELEASE-103.zip $BUCKET_NAME/
 ```
 
 **Note**: The Docker build process will automatically check the local repository first, then fall back to downloading from S3 if the file is not found locally.
@@ -119,7 +119,7 @@ The stack supports different Docker image variants via the `branding` configurat
 Docker images are built with the TAK Server version specified in configuration:
 ```json
 "takserver": {
-  "version": "5.8-RELEASE-79"
+  "version": "5.8-RELEASE-103"
 }
 ```
 
