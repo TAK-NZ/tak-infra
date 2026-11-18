@@ -86,7 +86,7 @@ All settings are stored in [`cdk.json`](../cdk.json) under the `context` section
       "takserver": {
         "hostname": "tak",
         "servicename": "ops",
-        "version": "5.4-RELEASE-19"
+        "version": "5.8-RELEASE-79"
       }
     }
   }
@@ -145,7 +145,7 @@ npm install
 #   BUCKET_ARN=$(aws cloudformation describe-stacks --stack-name TAK-<n>-BaseInfra \
 #     --query 'Stacks[0].Outputs[?OutputKey==`S3TAKImagesArnOutput`].OutputValue' --output text)
 #   BUCKET_NAME=$(echo $BUCKET_ARN | sed 's|arn:aws:s3:::|s3://|')
-#   aws s3 cp takserver-docker-5.4-RELEASE-19.zip $BUCKET_NAME/
+#   aws s3 cp takserver-docker-5.8-RELEASE-79.zip $BUCKET_NAME/
 
 # 3. Set environment variables (if using AWS profiles)
 export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text --profile your-profile)

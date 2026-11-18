@@ -48,7 +48,7 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.4-RELEASE-19",
+        "version": "5.8-RELEASE-79",
         "useS3TAKServerConfigFile": false,
         "letsEncryptMode": "staging",
         "letsEncryptEmail": "admin@tak.nz",
@@ -89,7 +89,7 @@ All configurations are stored in [`cdk.json`](../cdk.json) under the `context` s
         "hostname": "tak",
         "servicename": "ops",
         "branding": "tak-nz",
-        "version": "5.4-RELEASE-19",
+        "version": "5.8-RELEASE-79",
         "useS3TAKServerConfigFile": true,
         "letsEncryptMode": "production",
         "letsEncryptEmail": "admin@tak.nz",
@@ -175,7 +175,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `hostname` | Hostname for TAK Server service | `tak` | `tak` |
 | `servicename` | Service name for TAK Server | `ops` | `ops` |
 | `branding` | Docker image branding variant | `tak-nz` | `tak-nz` |
-| `version` | TAK Server version | `5.4-RELEASE-19` | `5.4-RELEASE-19` |
+| `version` | TAK Server version | `5.8-RELEASE-79` | `5.8-RELEASE-79` |
 | `useS3TAKServerConfigFile` | Use S3 configuration file | `false` | `true` |
 | `letsEncryptMode` | Let's Encrypt certificate mode | `staging` | `production` |
 | `letsEncryptEmail` | Let's Encrypt email address | `admin@tak.nz` | `admin@tak.nz` |
@@ -406,7 +406,7 @@ npm run deploy:dev -- --context tak-region="us-east-1"
 | `hostname` | string | TAK Server hostname | Any valid hostname |
 | `servicename` | string | TAK Service name | Any valid hostname |
 | `branding` | string | Docker image branding | `tak-nz`, `generic` |
-| `version` | string | TAK Server version | `5.4-RELEASE-19`, etc. |
+| `version` | string | TAK Server version | `5.8-RELEASE-79`, etc. |
 | `useS3TAKServerConfigFile` | boolean | Use S3 configuration file | `true`, `false` |
 | `letsEncryptMode` | string | Let's Encrypt mode | `staging`, `production` |
 | `letsEncryptEmail` | string | Let's Encrypt email | Valid email address |

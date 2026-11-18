@@ -2,7 +2,7 @@ FROM eclipse-temurin:17-jammy
 LABEL org.opencontainers.image.source=https://github.com/tak-nz/takserver
 LABEL org.opencontainers.image.description="TAK server for deployment with AWS ECS"
 LABEL org.opencontainers.image.licenses=MIT
-ARG TAK_VERSION=takserver-docker-5.4-RELEASE-19
+ARG TAK_VERSION=takserver-docker-5.8-RELEASE-79
 RUN apt update \
     && apt-get install -y net-tools netcat gradle \
         tini cron certbot curl libxml2-utils xmlstarlet unzip zip awscli jq postgresql-client \
