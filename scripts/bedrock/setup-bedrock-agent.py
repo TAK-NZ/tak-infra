@@ -203,20 +203,27 @@ def ensure_knowledge_base_synced(bedrock_agent_client, kb_id, ds_id, timeout_s=2
             raise RuntimeError(f"Ingestion job {job_id} {job['status']}: {job.get('failureReasons')}")
         time.sleep(15)
     raise TimeoutError(f"Ingestion job {job_id} did not finish within {timeout_s // 60} minutes; run the script again once it has")
-def detach_replaced_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name):
-    """Detach the old knowledge bases that the CDK ones replace.
+def swap_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name, description):
+    """Attach the CDK knowledge bases and detach the old ones they replace, one name at a time.
     The old script created each knowledge base under its plain name (`nema-cdem`); the CDK ones are named
     `<name>-s3v`. An attached knowledge base is detached only if its name is one of `kb_ids_by_name` and its ID is
-    not the CDK one. Knowledge bases with other names stay attached (the Demo SENTINEL agent has two)."""
-    attached = bedrock_agent_client.list_agent_knowledge_bases(agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
-    detached = False
-    for kb in attached:
-        name = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=kb["knowledgeBaseId"])["knowledgeBase"]["name"]
-        if name in kb_ids_by_name and kb["knowledgeBaseId"] != kb_ids_by_name[name]:
-            bedrock_agent_client.disassociate_agent_knowledge_base(agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb["knowledgeBaseId"])
-            print(f"  Detached old knowledge base {name} ({kb['knowledgeBaseId']}) from agent")
-            detached = True
-    return detached
+    not the CDK one. Knowledge bases with other names stay attached.
+    The old one is detached right before its replacement is attached, because an agent can have at most 2
+    knowledge bases (quota indexes-per-agent): attaching all new ones first would fail for an agent that has 2.
+    Returns True if anything changed."""
+    changed = False
+    for name, new_id in kb_ids_by_name.items():
+        attached = bedrock_agent_client.list_agent_knowledge_bases(agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
+        for kb in attached:
+            if kb["knowledgeBaseId"] == new_id:
+                continue
+            old_name = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=kb["knowledgeBaseId"])["knowledgeBase"]["name"]
+            if old_name == name:
+                bedrock_agent_client.disassociate_agent_knowledge_base(agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb["knowledgeBaseId"])
+                print(f"  Detached old knowledge base {old_name} ({kb['knowledgeBaseId']}) from agent")
+                changed = True
+        changed |= attach_knowledge_bases(bedrock_agent_client, agent_id, [new_id], description)
+    return changed
 def attach_knowledge_bases(bedrock_agent_client, agent_id, kb_ids, description):
     """Attach every knowledge base in kb_ids that the agent does not have yet. Returns True if any was attached."""
     attached_ids = {kb["knowledgeBaseId"] for kb in bedrock_agent_client.list_agent_knowledge_bases(
@@ -377,12 +384,11 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
                     promptOverrideConfiguration=prompt_override_config()
                 )
                 print(f"  Updated agent instruction, model ({model_id}) and orchestration prompt")
-                # Ensure the CDK knowledge bases are associated, and the old ones they replace are not
-                if attach_knowledge_bases(bedrock_agent_client, agent_id, list(kb_ids_by_name.values()), f"Knowledge base for {agent_name}"):
+                # Swap the old knowledge bases for the CDK ones (see swap_knowledge_bases)
+                if swap_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name, f"Knowledge base for {agent_name}"):
                     bedrock_agent_client.prepare_agent(agentId=agent_id)
                     print(f"  Re-preparing agent...")
                     _wait_for_agent(bedrock_agent_client, agent_id, "PREPARED")
-                detach_replaced_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name)
                 _ensure_marker_action_group(bedrock_agent_client, agent_id)
                 if geojson_lambda_arn:
                     _ensure_lambda_action_group(bedrock_agent_client, agent_id, "live-data", geojson_lambda_arn, GEOJSON_FUNCTION_SCHEMA)
