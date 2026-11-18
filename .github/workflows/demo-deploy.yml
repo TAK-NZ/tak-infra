@@ -80,12 +80,17 @@ jobs:
         id: db-config
         run: |
           COMMIT_MSG="${{ github.event.head_commit.message }}"
+          # The dev-test profile runs a provisioned db.t4g.large on Aurora I/O-Optimized storage.
+          # The prod window must keep the SAME instance class and storage type: otherwise the
+          # database would be resized on every run, and AWS only allows moving from
+          # I/O-Optimized back to Standard storage once every 30 days, so that would fail.
+          # The prod profile leaves ioOptimized unset, hence it is passed explicitly in BOTH branches.
           if [[ "$COMMIT_MSG" != *"[use-prod-db]"* ]]; then
             echo "🔄 Using dev-test database settings for faster deployment"
-            echo "db-context=--context instanceClass=db.serverless --context instanceCount=1 --context enablePerformanceInsights=false --context monitoringInterval=0 --context backupRetentionDays=7 --context deleteProtection=false" >> $GITHUB_OUTPUT
+            echo "db-context=--context instanceClass=db.t4g.large --context ioOptimized=true --context instanceCount=1 --context enablePerformanceInsights=false --context monitoringInterval=0 --context backupRetentionDays=7 --context deleteProtection=false" >> $GITHUB_OUTPUT
           else
-            echo "🚀 Using production database settings"
-            echo "db-context=" >> $GITHUB_OUTPUT
+            echo "🚀 Using production database settings (storage type kept at I/O-Optimized)"
+            echo "db-context=--context ioOptimized=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy Demo with Prod Profile

@@ -35,4 +35,29 @@ describe('Context Overrides', () => {
     expect(typeof result.database.monitoringInterval).toBe('number');
     expect(result.database.monitoringInterval).toBe(60);
   });
+
+  describe('database.ioOptimized', () => {
+    const appWith = (values: Record<string, unknown>) => ({
+      node: { tryGetContext: (key: string) => values[key] }
+    } as any);
+
+    test('"true" from the CLI turns it on', () => {
+      const result = applyContextOverrides(appWith({ ioOptimized: 'true' }), MOCK_CONFIGS.DEV_TEST);
+      expect(result.database.ioOptimized).toBe(true);
+    });
+
+    test('"false" from the CLI turns it off explicitly (not the same as unset)', () => {
+      const result = applyContextOverrides(appWith({ ioOptimized: 'false' }), MOCK_CONFIGS.DEV_TEST);
+      expect(result.database.ioOptimized).toBe(false);
+    });
+
+    test('no override keeps the base config value', () => {
+      const base = { ...MOCK_CONFIGS.DEV_TEST, database: { ...MOCK_CONFIGS.DEV_TEST.database, ioOptimized: true } };
+      expect(applyContextOverrides(appWith({}), base).database.ioOptimized).toBe(true);
+    });
+
+    test('stays unset when neither the base config nor the CLI sets it (the prod profile case)', () => {
+      expect(applyContextOverrides(appWith({}), MOCK_CONFIGS.PROD).database.ioOptimized).toBeUndefined();
+    });
+  });
 });
