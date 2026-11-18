@@ -100,7 +100,7 @@ bots:
 
 **Setting up a Bedrock Agent:**
 
-Use the provided setup script to create the OpenSearch Serverless collection, Knowledge Base, and Agent:
+The Knowledge Base (S3 Vectors) is created by the TakInfra stack when its name is listed in `bedrock.knowledgeBases` (see [PARAMETERS.md](PARAMETERS.md)). Then use the provided setup script to sync it and create the Agent:
 
 ```bash
 python3 scripts/bedrock/setup-bedrock-agent.py \
@@ -493,10 +493,11 @@ aws ecs update-service \
 - `docker-container/scripts/download-plugin-config.sh` - S3 download script
 - `scripts/takserver/upload-plugin-config.sh` - S3 upload helper
 - `scripts/takserver/test-bedrock-inference-profile.py` - Bedrock model testing script
-- `scripts/bedrock/setup-bedrock-agent.py` - Idempotent setup for AOSS, Knowledge Base, and Agent
+- `scripts/bedrock/setup-bedrock-agent.py` - Idempotent setup for the Agent (syncs the CDK-created Knowledge Base)
 - `scripts/bedrock/README.md` - Bedrock agent setup and document sync guide
 - `lambda/geojson-query/index.py` - Lambda handler for live GeoJSON queries (proximity + text filter)
 - `lib/constructs/bedrock-geojson-lambda.ts` - CDK construct for the GeoJSON query Lambda
+- `lib/constructs/bedrock-knowledge-base.ts` - CDK construct for a Knowledge Base on S3 Vectors
 
 ### Modified Files
 - `docker/tak-server/Dockerfile.tak-nz` - Plugin build steps

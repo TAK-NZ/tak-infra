@@ -3,12 +3,15 @@
 ## Prerequisites
 
 - BaseInfra stack deployed (`TAK-<Environment>-BaseInfra`)
+- TakInfra stack deployed (`TAK-<Environment>-TakInfra`) with the knowledge base name listed in `bedrock.knowledgeBases` (`cdk.json`, or `--context bedrockKnowledgeBases=nema-cdem,nzdf`). The stack creates the knowledge base; this script does not.
 - AWS CLI configured with appropriate profile
-- `opensearch-py` and `requests-aws4auth` installed: `pip install opensearch-py requests-aws4auth`
+- `boto3` installed
 
 ## Setup
 
-Creates an OpenSearch Serverless collection, Bedrock Knowledge Base, and Bedrock Agent with a `RETURN_CONTROL` action group for TAK map marker creation. IDs are written to SSM Parameter Store.
+Creates (or updates) the Bedrock Agent with its action groups, including the `RETURN_CONTROL` group for TAK map marker creation, and an alias. IDs are written to SSM Parameter Store.
+
+The knowledge base is created by the TakInfra CDK stack (`lib/constructs/bedrock-knowledge-base.ts`): an Amazon S3 Vectors index, the knowledge base role, the knowledge base (named `<kb-name>-s3v`) and an S3 data source on `bedrock-kb/<kb-name>/`. The script reads its ID from the stack outputs (`BedrockKb<Name>Id`, `nema-cdem` becomes `NemaCdem`). If the knowledge base has never been ingested, the script starts an ingestion job and waits for it before it attaches the knowledge base to the agent. If the agent still has another knowledge base attached (the old OpenSearch one), the script detaches it.
 
 ```bash
 python3 scripts/bedrock/setup-bedrock-agent.py \
@@ -66,7 +69,7 @@ DS_ID=$(aws bedrock-agent list-data-sources --knowledge-base-id $KB_ID --query '
 aws bedrock-agent start-ingestion-job --knowledge-base-id $KB_ID --data-source-id $DS_ID
 ```
 
-Sync typically takes 1–5 minutes depending on document count. Check status:
+Sync takes about 1 minute for a few documents and about 13 minutes for 35 MB of PDFs. Check status:
 
 ```bash
 aws bedrock-agent list-ingestion-jobs --knowledge-base-id $KB_ID --data-source-id $DS_ID \
@@ -87,3 +90,9 @@ region: us-west-2
 ## Re-running
 
 The script is idempotent — safe to re-run. It will skip already-created resources and attach the KB to the agent if not already associated.
+
+## Moving an environment from the OpenSearch knowledge base to S3 Vectors
+Do this once per environment, after the stack with `bedrock.knowledgeBases` is deployed:
+1. Run `setup-bedrock-agent.py` as above. It syncs the new knowledge base, attaches it to the agent and detaches the old one.
+2. Ask the bot a few questions that need the documents. To go back, attach the old knowledge base to the agent again (`aws bedrock-agent associate-agent-knowledge-base`), detach the new one and prepare the agent.
+3. When satisfied, delete the old resources, which stop the OpenSearch OCU charge: the old knowledge base (`<kb-name>`, not `<kb-name>-s3v`), the OpenSearch Serverless collection `<kb-name>` with its policies `<kb-name>-enc`, `<kb-name>-net` and `<kb-name>-access`, and the IAM role `BedrockKBRole-<kb-name>`.
