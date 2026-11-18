@@ -101,6 +101,41 @@ def get_account_id(sts_client):
     return sts_client.get_caller_identity()["Account"]
 
 
+# Files in this folder that are agent configuration, not knowledge base documents.
+NOT_KB_DOCUMENTS = {"nz_rag_responder.txt", "nzdf_rag_responder.txt", "orchestration-prompt-template.txt"}
+def find_stale_source_files(s3_client, bucket_name, kb_name, repo_dir=None):
+    """Names of knowledge base documents whose copy in s3://<bucket>/bedrock-kb/<kb_name>/ differs from the file of the
+    same name in this folder (fire_stations.txt, nzem-iconset.txt, cot-types.txt). Only files that exist on both
+    sides are compared; the knowledge base also holds documents that are not in the repo (PDFs, other .txt files).
+    A stale copy is easy to miss: the agent then answers from old content, for example an icon path without its
+    folder, and the marker shows as a plain circle."""
+    import hashlib
+    repo_dir = Path(repo_dir) if repo_dir else Path(__file__).parent
+    local = {f.name: f for f in repo_dir.glob("*.txt") if f.name not in NOT_KB_DOCUMENTS}
+    prefix = f"bedrock-kb/{kb_name}/"
+    stale = []
+    paginator = s3_client.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            name = obj["Key"][len(prefix):]
+            if name not in local:
+                continue
+            body = s3_client.get_object(Bucket=bucket_name, Key=obj["Key"])["Body"].read()
+            if hashlib.md5(body).hexdigest() != hashlib.md5(local[name].read_bytes()).hexdigest():
+                stale.append(name)
+    return stale
+def warn_stale_source_files(s3_client, bucket_name, kb_name):
+    stale = find_stale_source_files(s3_client, bucket_name, kb_name)
+    if not stale:
+        print("  Source documents match the repo files of the same name")
+        return stale
+    for name in stale:
+        print(f"  WARNING: s3://{bucket_name}/bedrock-kb/{kb_name}/{name} differs from scripts/bedrock/{name}")
+    print("  The knowledge base answers from the S3 copy. If the repo file is the current one, upload it and sync:")
+    for name in stale:
+        print(f"    aws s3 cp scripts/bedrock/{name} s3://{bucket_name}/bedrock-kb/{kb_name}/{name}")
+    print("    aws bedrock-agent start-ingestion-job --knowledge-base-id <kb-id> --data-source-id <data-source-id>")
+    return stale
 def ensure_agent_iam_role(iam_client, role_name, region, account_id):
     trust = {
         "Version": "2012-10-17",
@@ -560,6 +595,8 @@ def main():
     s3 = session.client("s3")
     s3.put_object(Bucket=bucket_name, Key=f"bedrock-kb/{args.kb_name}/.keep", Body=b"")
     print(f"  Created s3://{bucket_name}/bedrock-kb/{args.kb_name}/")
+    for kb_name in [args.kb_name] + [n for n in args.extra_kb_name if n != args.kb_name]:
+        warn_stale_source_files(s3, bucket_name, kb_name)
 
     agent_role_name = f"BedrockAgentRole-{args.kb_name}"
 

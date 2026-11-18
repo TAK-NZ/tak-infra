@@ -66,6 +66,9 @@ This produces `X` (longitude) and `Y` (latitude) columns alongside the feature a
 
 If GDAL is not available, [MyGeodata Converter](https://mygeodata.cloud/converter/kml-to-csv) converts KML/KMZ to CSV online.
 
+### Stale document check
+Each run compares the knowledge base documents that also exist in this folder (`fire_stations.txt`, `nzem-iconset.txt`, `cot-types.txt`) with the copies in `bedrock-kb/<kb-name>/` and prints a warning with the upload and ingestion commands when they differ. It does not compare PDFs or documents that are not in the repo.
+
 ### Syncing after Upload
 
 Upload PDFs to the S3 prefix `bedrock-kb/<kb-name>/` in the artifacts bucket, then trigger a sync:
