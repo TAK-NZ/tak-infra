@@ -209,6 +209,25 @@ describe('Database Construct', () => {
     });
   });
 
+  describe('PostgreSQL statement logging', () => {
+    test('logs DDL only, not every statement (CoT INSERTs would otherwise dominate the log)', () => {
+      new Database(stack, 'TestDB', {
+        environment: 'dev-test',
+        stackName: 'TestStack',
+        contextConfig: MOCK_CONFIGS.DEV_TEST,
+        infrastructure: infrastructureConfig,
+        securityGroups
+      });
+      const template = Template.fromStack(stack);
+      template.hasResourceProperties('AWS::RDS::DBClusterParameterGroup', {
+        Parameters: Match.objectLike({
+          log_statement: 'ddl',
+          log_min_duration_statement: '1000'
+        })
+      });
+    });
+  });
+
   describe('Aurora storage type (ioOptimized)', () => {
     const withIoOptimized = (base: any, value: boolean | undefined) => ({
       ...base,

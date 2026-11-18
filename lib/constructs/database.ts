@@ -138,7 +138,14 @@ export class Database extends Construct {
       description: `${id} cluster parameter group`,
       parameters: {
         'shared_preload_libraries': 'pg_stat_statements',
-        'log_statement': 'all',
+        // 'ddl' on purpose. 'all' (and 'mod') log every INSERT, and TAK Server writes every CoT
+        // message with an INSERT INTO cot_router. With 'all' that was ~2 MB/s of log text per
+        // cluster (about 170-225 GB a day, rotated every ~50 s), including the callsigns and
+        // positions in the bound parameters, for no benefit: CloudWatch export is off and the
+        // local files are only kept for the 3-day `rds.log_retention_period`. 'ddl' keeps schema
+        // changes (CREATE/ALTER/DROP) in the log; slow statements are still caught by
+        // `log_min_duration_statement`. Dynamic parameter, no reboot.
+        'log_statement': 'ddl',
         'log_min_duration_statement': '1000',
         'log_connections': isPostgres18OrLater ? 'all' : '1',
         'log_disconnections': '1'
