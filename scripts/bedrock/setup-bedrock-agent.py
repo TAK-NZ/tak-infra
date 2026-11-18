@@ -101,6 +101,41 @@ def get_account_id(sts_client):
     return sts_client.get_caller_identity()["Account"]
 
 
+# Files in this folder that are agent configuration, not knowledge base documents.
+NOT_KB_DOCUMENTS = {"nz_rag_responder.txt", "nzdf_rag_responder.txt", "orchestration-prompt-template.txt"}
+def find_stale_source_files(s3_client, bucket_name, kb_name, repo_dir=None):
+    """Names of knowledge base documents whose copy in s3://<bucket>/bedrock-kb/<kb_name>/ differs from the file of the
+    same name in this folder (fire_stations.txt, nzem-iconset.txt, cot-types.txt). Only files that exist on both
+    sides are compared; the knowledge base also holds documents that are not in the repo (PDFs, other .txt files).
+    A stale copy is easy to miss: the agent then answers from old content, for example an icon path without its
+    folder, and the marker shows as a plain circle."""
+    import hashlib
+    repo_dir = Path(repo_dir) if repo_dir else Path(__file__).parent
+    local = {f.name: f for f in repo_dir.glob("*.txt") if f.name not in NOT_KB_DOCUMENTS}
+    prefix = f"bedrock-kb/{kb_name}/"
+    stale = []
+    paginator = s3_client.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=bucket_name, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            name = obj["Key"][len(prefix):]
+            if name not in local:
+                continue
+            body = s3_client.get_object(Bucket=bucket_name, Key=obj["Key"])["Body"].read()
+            if hashlib.md5(body).hexdigest() != hashlib.md5(local[name].read_bytes()).hexdigest():
+                stale.append(name)
+    return stale
+def warn_stale_source_files(s3_client, bucket_name, kb_name):
+    stale = find_stale_source_files(s3_client, bucket_name, kb_name)
+    if not stale:
+        print("  Source documents match the repo files of the same name")
+        return stale
+    for name in stale:
+        print(f"  WARNING: s3://{bucket_name}/bedrock-kb/{kb_name}/{name} differs from scripts/bedrock/{name}")
+    print("  The knowledge base answers from the S3 copy. If the repo file is the current one, upload it and sync:")
+    for name in stale:
+        print(f"    aws s3 cp scripts/bedrock/{name} s3://{bucket_name}/bedrock-kb/{kb_name}/{name}")
+    print("    aws bedrock-agent start-ingestion-job --knowledge-base-id <kb-id> --data-source-id <data-source-id>")
+    return stale
 def ensure_agent_iam_role(iam_client, role_name, region, account_id):
     trust = {
         "Version": "2012-10-17",
@@ -203,20 +238,27 @@ def ensure_knowledge_base_synced(bedrock_agent_client, kb_id, ds_id, timeout_s=2
             raise RuntimeError(f"Ingestion job {job_id} {job['status']}: {job.get('failureReasons')}")
         time.sleep(15)
     raise TimeoutError(f"Ingestion job {job_id} did not finish within {timeout_s // 60} minutes; run the script again once it has")
-def detach_replaced_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name):
-    """Detach the old knowledge bases that the CDK ones replace.
+def swap_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name, description):
+    """Attach the CDK knowledge bases and detach the old ones they replace, one name at a time.
     The old script created each knowledge base under its plain name (`nema-cdem`); the CDK ones are named
     `<name>-s3v`. An attached knowledge base is detached only if its name is one of `kb_ids_by_name` and its ID is
-    not the CDK one. Knowledge bases with other names stay attached (the Demo SENTINEL agent has two)."""
-    attached = bedrock_agent_client.list_agent_knowledge_bases(agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
-    detached = False
-    for kb in attached:
-        name = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=kb["knowledgeBaseId"])["knowledgeBase"]["name"]
-        if name in kb_ids_by_name and kb["knowledgeBaseId"] != kb_ids_by_name[name]:
-            bedrock_agent_client.disassociate_agent_knowledge_base(agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb["knowledgeBaseId"])
-            print(f"  Detached old knowledge base {name} ({kb['knowledgeBaseId']}) from agent")
-            detached = True
-    return detached
+    not the CDK one. Knowledge bases with other names stay attached.
+    The old one is detached right before its replacement is attached, because an agent can have at most 2
+    knowledge bases (quota indexes-per-agent): attaching all new ones first would fail for an agent that has 2.
+    Returns True if anything changed."""
+    changed = False
+    for name, new_id in kb_ids_by_name.items():
+        attached = bedrock_agent_client.list_agent_knowledge_bases(agentId=agent_id, agentVersion="DRAFT")["agentKnowledgeBaseSummaries"]
+        for kb in attached:
+            if kb["knowledgeBaseId"] == new_id:
+                continue
+            old_name = bedrock_agent_client.get_knowledge_base(knowledgeBaseId=kb["knowledgeBaseId"])["knowledgeBase"]["name"]
+            if old_name == name:
+                bedrock_agent_client.disassociate_agent_knowledge_base(agentId=agent_id, agentVersion="DRAFT", knowledgeBaseId=kb["knowledgeBaseId"])
+                print(f"  Detached old knowledge base {old_name} ({kb['knowledgeBaseId']}) from agent")
+                changed = True
+        changed |= attach_knowledge_bases(bedrock_agent_client, agent_id, [new_id], description)
+    return changed
 def attach_knowledge_bases(bedrock_agent_client, agent_id, kb_ids, description):
     """Attach every knowledge base in kb_ids that the agent does not have yet. Returns True if any was attached."""
     attached_ids = {kb["knowledgeBaseId"] for kb in bedrock_agent_client.list_agent_knowledge_bases(
@@ -377,12 +419,11 @@ def ensure_agent(bedrock_agent_client, agent_name, role_arn, system_prompt, kb_i
                     promptOverrideConfiguration=prompt_override_config()
                 )
                 print(f"  Updated agent instruction, model ({model_id}) and orchestration prompt")
-                # Ensure the CDK knowledge bases are associated, and the old ones they replace are not
-                if attach_knowledge_bases(bedrock_agent_client, agent_id, list(kb_ids_by_name.values()), f"Knowledge base for {agent_name}"):
+                # Swap the old knowledge bases for the CDK ones (see swap_knowledge_bases)
+                if swap_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name, f"Knowledge base for {agent_name}"):
                     bedrock_agent_client.prepare_agent(agentId=agent_id)
                     print(f"  Re-preparing agent...")
                     _wait_for_agent(bedrock_agent_client, agent_id, "PREPARED")
-                detach_replaced_knowledge_bases(bedrock_agent_client, agent_id, kb_ids_by_name)
                 _ensure_marker_action_group(bedrock_agent_client, agent_id)
                 if geojson_lambda_arn:
                     _ensure_lambda_action_group(bedrock_agent_client, agent_id, "live-data", geojson_lambda_arn, GEOJSON_FUNCTION_SCHEMA)
@@ -554,6 +595,8 @@ def main():
     s3 = session.client("s3")
     s3.put_object(Bucket=bucket_name, Key=f"bedrock-kb/{args.kb_name}/.keep", Body=b"")
     print(f"  Created s3://{bucket_name}/bedrock-kb/{args.kb_name}/")
+    for kb_name in [args.kb_name] + [n for n in args.extra_kb_name if n != args.kb_name]:
+        warn_stale_source_files(s3, bucket_name, kb_name)
 
     agent_role_name = f"BedrockAgentRole-{args.kb_name}"
 
