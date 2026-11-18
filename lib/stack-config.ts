@@ -61,6 +61,14 @@ export interface ContextEnvironmentConfig {
   docker?: {
     takImageTag?: string;
   };
+  /**
+   * TAK-GPT Bedrock knowledge bases to create (S3 Vectors storage). Each name is also the folder
+   * the source documents are read from: `bedrock-kb/<name>/` in the TAK Images bucket.
+   * Unset or empty creates none.
+   */
+  bedrock?: {
+    knowledgeBases?: string[];
+  };
   webtak?: {
     enabled?: boolean;
     enableOidc?: boolean;

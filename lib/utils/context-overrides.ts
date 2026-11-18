@@ -66,7 +66,21 @@ export function applyContextOverrides(
       ...baseConfig.docker,
       takImageTag: app.node.tryGetContext('takImageTag') ?? baseConfig.docker?.takImageTag,
     },
+    bedrock: {
+      ...baseConfig.bedrock,
+      knowledgeBases: parseContextList(app.node.tryGetContext('bedrockKnowledgeBases')) ?? baseConfig.bedrock?.knowledgeBases,
+    },
   };
+}
+
+/**
+ * Parse a comma-separated context value (for example `nema-cdem,nzdf`) into a list.
+ * An empty string is an explicit empty list, so a deployment can switch the list off.
+ */
+function parseContextList(value: any): string[] | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (Array.isArray(value)) return value.map(String);
+  return String(value).split(',').map(v => v.trim()).filter(v => v.length > 0);
 }
 
 /**

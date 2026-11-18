@@ -20,6 +20,7 @@ import { TakServer } from './constructs/tak-server';
 import { WebTakOidcSetup } from './constructs/webtak-oidc-setup';
 import { BedrockGeoJsonLambda } from './constructs/bedrock-geojson-lambda';
 import { BedrockArcGisLambda } from './constructs/bedrock-arcgis-lambda';
+import { BedrockKnowledgeBase } from './constructs/bedrock-knowledge-base';
 
 // Utility imports
 import { createBaseImportValue, BASE_EXPORT_NAMES, createAuthImportValue, AUTH_EXPORT_NAMES } from './cloudformation-imports';
@@ -388,6 +389,35 @@ export class TakInfraStack extends cdk.Stack {
       exportName: `${resolvedStackName}-BedrockArcGisSecretArn`
     });
 
+    // Bedrock knowledge bases (S3 Vectors), one per configured name. The documents live in the
+    // base-infra TAK Images bucket under bedrock-kb/<name>/. setup-bedrock-agent.py reads the
+    // knowledge base ID from the BedrockKb<Name>Id output below.
+    const knowledgeBaseNames = envConfig.bedrock?.knowledgeBases ?? [];
+    if (knowledgeBaseNames.length > 0) {
+      const takImagesBucket = s3.Bucket.fromBucketArn(this, 'ImportedTakImagesBucket',
+        Fn.importValue(createBaseImportValue(stackNameComponent, BASE_EXPORT_NAMES.S3_TAK_IMAGES))
+      );
+      for (const kbName of knowledgeBaseNames) {
+        const knowledgeBase = new BedrockKnowledgeBase(this, `BedrockKnowledgeBase-${kbName}`, {
+          name: kbName,
+          sourceBucket: takImagesBucket,
+          sourceBucketKey: kmsKey,
+          removalPolicy: envConfig.general.removalPolicy === 'RETAIN' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY
+        });
+        const outputSuffix = knowledgeBaseOutputSuffix(kbName);
+        new CfnOutput(this, `BedrockKb${outputSuffix}Id`, {
+          value: knowledgeBase.knowledgeBase.attrKnowledgeBaseId,
+          description: `Bedrock knowledge base ID for ${kbName} (S3 Vectors)`,
+          exportName: `${resolvedStackName}-BedrockKb${outputSuffix}Id`
+        });
+        new CfnOutput(this, `BedrockKb${outputSuffix}DataSourceId`, {
+          value: knowledgeBase.dataSource.attrDataSourceId,
+          description: `Bedrock knowledge base data source ID for ${kbName}`,
+          exportName: `${resolvedStackName}-BedrockKb${outputSuffix}DataSourceId`
+        });
+      }
+    }
+
     // WebTAK OIDC outputs (if enabled)
     if (webTakOidcSetup) {
       new CfnOutput(this, 'WebTakOidcClientId', {
@@ -409,4 +439,16 @@ export class TakInfraStack extends cdk.Stack {
       });
     }
   }
+}
+
+/**
+ * CloudFormation output suffix for a knowledge base name: `nema-cdem` becomes `NemaCdem`.
+ * scripts/bedrock/setup-bedrock-agent.py builds the same key when it looks the ID up.
+ */
+export function knowledgeBaseOutputSuffix(name: string): string {
+  return name
+    .split(/[^a-zA-Z0-9]+/)
+    .filter(part => part.length > 0)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join('');
 }

@@ -60,4 +60,31 @@ describe('Context Overrides', () => {
       expect(applyContextOverrides(appWith({}), MOCK_CONFIGS.PROD).database.ioOptimized).toBeUndefined();
     });
   });
+
+  describe('bedrock.knowledgeBases', () => {
+    const appWith = (values: Record<string, unknown>) => ({
+      node: { tryGetContext: (key: string) => values[key] }
+    } as any);
+    const withKbs = (knowledgeBases?: string[]) => ({ ...MOCK_CONFIGS.DEV_TEST, bedrock: { knowledgeBases } });
+
+    test('keeps the configured list when there is no override', () => {
+      const result = applyContextOverrides(appWith({}), withKbs(['nema-cdem']));
+      expect(result.bedrock?.knowledgeBases).toEqual(['nema-cdem']);
+    });
+
+    test('a comma-separated override replaces the list (spaces and empty items dropped)', () => {
+      const result = applyContextOverrides(appWith({ bedrockKnowledgeBases: 'nema-cdem, nzdf,' }), withKbs(['nema-cdem']));
+      expect(result.bedrock?.knowledgeBases).toEqual(['nema-cdem', 'nzdf']);
+    });
+
+    test('an empty override switches knowledge bases off', () => {
+      const result = applyContextOverrides(appWith({ bedrockKnowledgeBases: '' }), withKbs(['nema-cdem']));
+      expect(result.bedrock?.knowledgeBases).toEqual([]);
+    });
+
+    test('is unset when neither config nor override sets it', () => {
+      const result = applyContextOverrides(appWith({}), MOCK_CONFIGS.DEV_TEST);
+      expect(result.bedrock?.knowledgeBases).toBeUndefined();
+    });
+  });
 });

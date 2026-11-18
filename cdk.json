@@ -78,6 +78,11 @@
         "signingKeyName": "authentik Self-signed Certificate",
         "useTakServerLoginPage": true,
         "hideAuthentikApp": true
+      },
+      "bedrock": {
+        "knowledgeBases": [
+          "nema-cdem"
+        ]
       }
     },
     "prod": {
@@ -138,6 +143,11 @@
         "signingKeyName": "authentik Self-signed Certificate",
         "useTakServerLoginPage": true,
         "hideAuthentikApp": true
+      },
+      "bedrock": {
+        "knowledgeBases": [
+          "nema-cdem"
+        ]
       }
     },
     "tak-defaults": {

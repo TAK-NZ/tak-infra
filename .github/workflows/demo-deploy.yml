@@ -45,7 +45,7 @@ jobs:
           role-session-name: GitHubActions-Demo
 
       - name: Validate CDK Synthesis (Prod Profile)
-        run: npm run cdk synth -- --context envType=prod --context stackName=${{ vars.DEMO_STACK_NAME }}
+        run: npm run cdk synth -- --context envType=prod --context stackName=${{ vars.DEMO_STACK_NAME }} --context bedrockKnowledgeBases=nema-cdem,nzdf
 
       - name: Validate Change Set
         run: |
@@ -94,7 +94,7 @@ jobs:
           fi
 
       - name: Deploy Demo with Prod Profile
-        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.DEMO_STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ needs.build-images.outputs.tak-tag }} --context useS3TAKServerConfigFile=true ${{ steps.db-config.outputs.db-context }} --require-approval never
+        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.DEMO_STACK_NAME }} --context bedrockKnowledgeBases=nema-cdem,nzdf --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ needs.build-images.outputs.tak-tag }} --context useS3TAKServerConfigFile=true ${{ steps.db-config.outputs.db-context }} --require-approval never
 
       - name: Wait for Testing Period
         run: sleep ${{ vars.DEMO_TEST_DURATION || '300' }}
@@ -125,7 +125,7 @@ jobs:
           role-session-name: GitHubActions-Demo
 
       - name: Validate CDK Synthesis (Dev-Test Profile)
-        run: npm run cdk synth -- --context envType=dev-test --context stackName=${{ vars.DEMO_STACK_NAME }}
+        run: npm run cdk synth -- --context envType=dev-test --context stackName=${{ vars.DEMO_STACK_NAME }} --context bedrockKnowledgeBases=nema-cdem,nzdf
 
       - name: Revert Demo to Dev-Test Profile
-        run: npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.DEMO_STACK_NAME }} --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ needs.deploy-and-test.outputs.tak-tag }} --context useS3TAKServerConfigFile=true --require-approval never
+        run: npm run cdk deploy -- --context envType=dev-test --context stackName=${{ vars.DEMO_STACK_NAME }} --context bedrockKnowledgeBases=nema-cdem,nzdf --context letsEncryptMode=production --context usePreBuiltImages=true --context takImageTag=${{ needs.deploy-and-test.outputs.tak-tag }} --context useS3TAKServerConfigFile=true --require-approval never
