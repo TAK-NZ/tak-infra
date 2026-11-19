@@ -593,6 +593,9 @@ async function assignGroupToApplication(api, appSlug, groupName) {
 }
 
 // Helper function to upload application icon
+// Stable media name the bundled logo is stored under in Authentik, and that `meta_icon` points at.
+const APPLICATION_ICON_MEDIA_NAME = 'application-icons/tak-logo.png';
+
 async function uploadApplicationIcon(api, appSlug) {
   try {
     // Check if application already has an icon
@@ -611,36 +614,39 @@ async function uploadApplicationIcon(api, appSlug) {
       return null;
     }
     
-    // Step 1: Upload file to Authentik media storage
+    // Step 1: make sure the file is in Authentik media storage under a stable name.
+    //
+    // Authentik 2026.8 returns an EMPTY body from this upload, so there is no `url` to read back (the old
+    // code PATCHed `meta_icon: undefined`, which sent nothing and left the application without an icon).
+    // The upload is also not idempotent: an existing name gives
+    // `400 {"name":["A file with this name already exists."]}`, which is fine because the file is already there.
     const form = new FormData();
     form.append('file', fs.createReadStream(iconPath), 'tak-logo.png');
-    
+    form.append('name', APPLICATION_ICON_MEDIA_NAME);
     // Don't use the api instance - it has Content-Type: application/json set
     // Create a direct axios request with proper headers
-    const uploadResponse = await axios.post(`${api.defaults.baseURL}/api/v3/admin/file/`, form, {
-      headers: {
-        'Authorization': api.defaults.headers['Authorization'],
-        ...form.getHeaders(),
-      },
-    });
-    
-    console.log('File upload response:', JSON.stringify(uploadResponse.data, null, 2));
-    
-    // The response contains a 'url' field with the file path
-    const uploadedFilePath = uploadResponse.data.url;
-    
-    if (!uploadedFilePath) {
-      console.error('Could not find url field in upload response');
-      return null;
+    try {
+      await axios.post(`${api.defaults.baseURL}/api/v3/admin/file/`, form, {
+        headers: {
+          'Authorization': api.defaults.headers['Authorization'],
+          ...form.getHeaders(),
+        },
+      });
+      console.log(`File uploaded to media storage as ${APPLICATION_ICON_MEDIA_NAME}`);
+    } catch (uploadError) {
+      const status = uploadError.response && uploadError.response.status;
+      const detail = JSON.stringify((uploadError.response && uploadError.response.data) || '');
+      if (status === 400 && detail.includes('already exists')) {
+        console.log(`File ${APPLICATION_ICON_MEDIA_NAME} is already in media storage; reusing it`);
+      } else {
+        throw uploadError;
+      }
     }
-    
-    console.log(`File uploaded successfully: ${uploadedFilePath}`);
-    
-    // Step 2: Update application with the uploaded file path
+    // Step 2: point the application at that media path. `meta_icon` is a plain writable string, and setting it
+    // to the media name is what makes `meta_icon_url` resolve.
     const response = await api.patch(`/api/v3/core/applications/${appSlug}/`, {
-      meta_icon: uploadedFilePath
+      meta_icon: APPLICATION_ICON_MEDIA_NAME
     });
-    
     console.log('Icon set successfully');
     return response.data;
   } catch (error) {
