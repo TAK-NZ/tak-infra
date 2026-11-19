@@ -266,11 +266,14 @@ fi
 
 # Database operations with retry logic
 echo "TAK Server - Validate DB schema"
+VALIDATE_LOG=$(mktemp)
 for i in {1..5}; do
-    if java -jar /opt/tak/db-utils/SchemaManager.jar validate; then
+    if java -jar /opt/tak/db-utils/SchemaManager.jar validate > "$VALIDATE_LOG" 2>&1; then
+        cat "$VALIDATE_LOG"
         echo "TAK Server - Database schema validation successful"
         break
     fi
+    cat "$VALIDATE_LOG"
     if [ $i -eq 5 ]; then
         echo "Error: Database schema validation failed after 5 attempts"
         exit 1
@@ -279,6 +282,21 @@ for i in {1..5}; do
     sleep 10
 done
 
+# The schema migrations (V7 onwards) call PostGIS functions such as AddGeometryColumn but do not
+# install PostGIS. A new Aurora cluster has no extensions, so install them with SetupRds before the
+# first upgrade. SetupRds is not idempotent (a second run fails with "extension already exists"),
+# so run it only while the database is uninitialized, and treat a failure as non-fatal: if PostGIS
+# is really missing the upgrade below fails with a clear error, and if a previous attempt already
+# installed it (the task restarted after a failed upgrade) there is nothing left to do.
+if grep -q "does not appear to be initialized" "$VALIDATE_LOG"; then
+    echo "TAK Server - Database is not initialized, installing PostGIS extensions"
+    if java -jar /opt/tak/db-utils/SchemaManager.jar SetupRds; then
+        echo "TAK Server - PostGIS extensions installed"
+    else
+        echo "TAK Server - SetupRds returned an error (PostGIS may already be installed), continuing"
+    fi
+fi
+rm -f "$VALIDATE_LOG"
 echo "TAK Server - Upgrading DB schema"
 for i in {1..3}; do
     if java -jar /opt/tak/db-utils/SchemaManager.jar upgrade; then
