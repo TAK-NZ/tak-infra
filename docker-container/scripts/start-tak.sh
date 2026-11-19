@@ -283,18 +283,30 @@ for i in {1..5}; do
 done
 
 # The schema migrations (V7 onwards) call PostGIS functions such as AddGeometryColumn but do not
-# install PostGIS. A new Aurora cluster has no extensions, so install them with SetupRds before the
-# first upgrade. SetupRds is not idempotent (a second run fails with "extension already exists"),
-# so run it only while the database is uninitialized, and treat a failure as non-fatal: if PostGIS
-# is really missing the upgrade below fails with a clear error, and if a previous attempt already
-# installed it (the task restarted after a failed upgrade) there is nothing left to do.
+# install PostGIS, so a new Aurora cluster fails the first upgrade. Install it with psql before the
+# first upgrade. SchemaManager's own SetupRds is not used: it sends all its statements as one
+# batch, and the "alter schema ... owner to rds_superuser" statement in it is rejected on Aurora
+# PostgreSQL 18, which rolls back "create extension postgis" with it. CREATE EXTENSION IF NOT
+# EXISTS is idempotent, so a restart after a failed upgrade is safe. PostGIS is required; the
+# other three extensions are the ones SetupRds installs and are best effort.
 if grep -q "does not appear to be initialized" "$VALIDATE_LOG"; then
     echo "TAK Server - Database is not initialized, installing PostGIS extensions"
-    if java -jar /opt/tak/db-utils/SchemaManager.jar SetupRds; then
-        echo "TAK Server - PostGIS extensions installed"
-    else
-        echo "TAK Server - SetupRds returned an error (PostGIS may already be installed), continuing"
+    DB_HOST=$(echo "$PostgresURL" | sed -E 's#^jdbc:postgresql://([^:/]+).*#\1#')
+    DB_PORT=$(echo "$PostgresURL" | sed -nE 's#^jdbc:postgresql://[^:/]+:([0-9]+)/.*#\1#p')
+    DB_NAME=$(echo "$PostgresURL" | sed -E 's#^jdbc:postgresql://[^/]+/([^?]+).*#\1#')
+    run_sql() {
+        PGPASSWORD="$PostgresPassword" psql -v ON_ERROR_STOP=1 -qtA \
+            -h "$DB_HOST" -p "${DB_PORT:-5432}" -U "$PostgresUsername" -d "$DB_NAME" -c "$1"
+    }
+    if ! run_sql "CREATE EXTENSION IF NOT EXISTS postgis"; then
+        echo "Error: Failed to install the PostGIS extension in database $DB_NAME on $DB_HOST"
+        exit 1
     fi
+    for ext in fuzzystrmatch postgis_tiger_geocoder postgis_topology; do
+        run_sql "CREATE EXTENSION IF NOT EXISTS $ext" \
+            || echo "TAK Server - Warning: could not install extension $ext, continuing"
+    done
+    echo "TAK Server - PostGIS extensions installed"
 fi
 rm -f "$VALIDATE_LOG"
 echo "TAK Server - Upgrading DB schema"
