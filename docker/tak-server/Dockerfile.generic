@@ -9,6 +9,28 @@ RUN apt update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# AWS KMS PKCS#11 module: lets OpenSSL sign CA certificates with the Root CA and Intermediate CA
+# keys in AWS KMS (#136). The keys never leave KMS. Pinned release with a checksum (GitHub also
+# publishes these digests for the release assets). libp11 provides the OpenSSL "pkcs11" engine.
+ARG KMS_PKCS11_VERSION=v0.0.19
+ARG KMS_PKCS11_SHA256_X86_64=b41b3cc0c339bf80a336adcd38818a75841e08a2d24ab225de617514407e8344
+ARG KMS_PKCS11_SHA256_AARCH64=08154b3298994d70cad0736b12edd7c47098146f67ab738617a1aa96e05aef88
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libengine-pkcs11-openssl libjson-c5 \
+    && ARCH="$(uname -m)" \
+    && case "${ARCH}" in \
+         x86_64)  SHA="${KMS_PKCS11_SHA256_X86_64}" ;; \
+         aarch64) SHA="${KMS_PKCS11_SHA256_AARCH64}" ;; \
+         *) echo "Unsupported architecture ${ARCH}" >&2; exit 1 ;; \
+       esac \
+    && mkdir -p /usr/lib/pkcs11 \
+    && curl -fsSL -o /usr/lib/pkcs11/aws_kms_pkcs11.so \
+         "https://github.com/JackOfMostTrades/aws-kms-pkcs11/releases/download/${KMS_PKCS11_VERSION}/aws_kms_pkcs11-ubuntu22.04-${ARCH}.so" \
+    && echo "${SHA}  /usr/lib/pkcs11/aws_kms_pkcs11.so" | sha256sum -c - \
+    && chmod 755 /usr/lib/pkcs11/aws_kms_pkcs11.so \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+ENV PKCS11_MODULE_PATH=/usr/lib/pkcs11/aws_kms_pkcs11.so
 ENV HOME=/opt/tak
 WORKDIR $HOME
 
@@ -36,6 +58,7 @@ COPY ./docker-container/ $HOME/
 COPY ./docker/tak-server/patch-jvm-flags.py /tmp/
 RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/download-plugin-config.sh \
+    && chmod +x /opt/tak/scripts/kms-ca.sh \
     && python3 /tmp/patch-jvm-flags.py \
     && grep 'G1HeapRegionSize' /opt/tak/configureInDocker.sh \
     && rm /tmp/patch-jvm-flags.py

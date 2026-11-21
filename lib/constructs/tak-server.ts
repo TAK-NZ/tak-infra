@@ -22,6 +22,7 @@ import type {
   StorageConfig
 } from '../construct-configs';
 import { TAK_SERVER_PORTS } from '../utils/constants';
+import { CaKmsKeys } from './ca-kms-keys';
 import { createAuthImportValue, AUTH_EXPORT_NAMES } from '../cloudformation-imports';
 import { Fn } from 'aws-cdk-lib';
 
@@ -97,6 +98,10 @@ export interface TakServerProps {
  * CDK construct for the TAK Server container and ECS service
  */
 export class TakServer extends Construct {
+  /**
+   * Root CA and Intermediate CA signing keys in KMS. Only set when `pki.kmsCa.enabled` (#136).
+   */
+  public caKmsKeys?: CaKmsKeys;
   /**
    * The ECS task definition for the TAK Server
    */
@@ -313,6 +318,19 @@ export class TakServer extends Construct {
       ]
     }));
 
+    // Root CA and Intermediate CA signing keys in KMS (#136). Created after the task role because
+    // the key policy names the role as the only principal allowed to sign.
+    const kmsCa = props.contextConfig.pki?.kmsCa;
+    if (kmsCa?.enabled) {
+      this.caKmsKeys = new CaKmsKeys(this, 'CaKmsKeys', {
+        environmentLabel: kmsCa.environmentLabel,
+        signerRole: taskRole,
+        rootCaNumbers: kmsCa.rootCaNumbers,
+        intermediateCaNumbers: kmsCa.intermediateCaNumbers,
+        alertEmail: kmsCa.alertEmail,
+      });
+    }
+
     // Create task definition
     this.taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDef', {
       cpu: props.contextConfig.ecs.taskCpu,
@@ -432,6 +450,11 @@ export class TakServer extends Construct {
         LDAP_SECURE_URL: Fn.importValue(createAuthImportValue(props.contextConfig.stackName, AUTH_EXPORT_NAMES.LDAPS_ENDPOINT)),
         StackName: Stack.of(this).stackName,
         Environment: props.environment,
+        ...(this.caKmsKeys ? {
+          PKI_ENV_LABEL: props.contextConfig.pki!.kmsCa!.environmentLabel,
+          PKI_KMS_CA_KEYS: this.caKmsKeys.pkcs11SlotsValue,
+          PKI_KMS_REGION: Stack.of(this).region,
+        } : {}),
         ECS_Cluster_Name: props.infrastructure.ecsCluster.clusterName,
         ECS_Service_Name: `${Stack.of(this).stackName}-TakServer`,
         PostgresURL: `jdbc:postgresql://${props.network.databaseHostname}:5432/takserver`,

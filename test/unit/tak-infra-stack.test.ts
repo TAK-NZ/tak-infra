@@ -107,6 +107,57 @@ describe('TakInfraStack', () => {
     });
   });
 
+  describe('Root CA and Intermediate CA keys in KMS (#136)', () => {
+    const build = (pki?: any) => {
+      const stack = new TakInfraStack(new App(), 'TAK-Try-TakInfra', {
+        environment: 'dev-test',
+        envConfig: { ...MOCK_CONFIGS.DEV_TEST, pki },
+        env: { account: '123456789012', region: 'ap-southeast-2' }
+      });
+      return Template.fromStack(stack);
+    };
+    const kmsKeysWithSigningPolicy = (template: Template) =>
+      Object.values(template.findResources('AWS::KMS::Key')).filter(
+        (r: any) => r.Properties.KeySpec === 'RSA_4096'
+      );
+
+    test('creates nothing and sets no container variables by default', () => {
+      const template = build();
+      expect(kmsKeysWithSigningPolicy(template)).toHaveLength(0);
+      const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];
+      const env = JSON.stringify(defs[0].Properties.ContainerDefinitions[0].Environment);
+      expect(env).not.toContain('PKI_KMS_CA_KEYS');
+    });
+
+    test('creates nothing when disabled', () => {
+      expect(kmsKeysWithSigningPolicy(build({ kmsCa: { enabled: false, environmentLabel: 'Try' } }))).toHaveLength(0);
+    });
+
+    test('creates the keys and passes them to the container when enabled', () => {
+      const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
+      expect(kmsKeysWithSigningPolicy(template)).toHaveLength(2);
+      template.hasResourceProperties('AWS::KMS::Alias', { AliasName: 'alias/tak-nz-try-root-ca-01' });
+      const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];
+      const env = defs[0].Properties.ContainerDefinitions[0].Environment as any[];
+      const byName = Object.fromEntries(env.map(e => [e.Name, e.Value]));
+      expect(byName.PKI_ENV_LABEL).toBe('Try');
+      expect(byName.PKI_KMS_REGION).toBe('ap-southeast-2');
+      const slots = JSON.stringify(byName.PKI_KMS_CA_KEYS);
+      expect(slots).toContain('root-ca-01=');
+      expect(slots).toContain('intermediate-ca-01=');
+    });
+
+    test('the signer in the key policy is the task role of the TAK Server task', () => {
+      const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
+      const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];
+      const taskRoleRef = defs[0].Properties.TaskRoleArn['Fn::GetAtt'][0];
+      for (const key of kmsKeysWithSigningPolicy(template) as any[]) {
+        const signer = key.Properties.KeyPolicy.Statement.find((st: any) => st.Sid === 'SignerRoleCanSign');
+        expect(signer.Principal.AWS['Fn::GetAtt'][0]).toBe(taskRoleRef);
+      }
+    });
+  });
+
   test('knowledgeBaseOutputSuffix turns a knowledge base name into a PascalCase output suffix', () => {
     expect(knowledgeBaseOutputSuffix('nema-cdem')).toBe('NemaCdem');
     expect(knowledgeBaseOutputSuffix('nzdf')).toBe('Nzdf');

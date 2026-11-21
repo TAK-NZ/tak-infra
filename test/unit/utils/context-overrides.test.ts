@@ -87,4 +87,42 @@ describe('Context Overrides', () => {
       expect(result.bedrock?.knowledgeBases).toBeUndefined();
     });
   });
+  describe('pki.kmsCa (#136)', () => {
+    const appWith = (ctx: Record<string, string>) => ({ node: { tryGetContext: (k: string) => ctx[k] } }) as any;
+    const withKmsCa = (kmsCa?: any) => ({ ...MOCK_CONFIGS.DEV_TEST, pki: kmsCa ? { kmsCa } : undefined });
+
+    test('stays undefined when neither the config nor the command line mention it', () => {
+      expect(applyContextOverrides(appWith({}), withKmsCa()).pki).toBeUndefined();
+    });
+
+    test('the command line can switch it on', () => {
+      const result = applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true', pkiEnvironmentLabel: 'Try' }), withKmsCa());
+      expect(result.pki?.kmsCa).toMatchObject({ enabled: true, environmentLabel: 'Try' });
+    });
+
+    test('keeps the config values when there are no overrides', () => {
+      const base = { enabled: true, environmentLabel: 'Try', rootCaNumbers: [1], intermediateCaNumbers: [1, 2] };
+      expect(applyContextOverrides(appWith({}), withKmsCa(base)).pki?.kmsCa).toMatchObject(base);
+    });
+
+    test('the command line can add the next generation', () => {
+      const base = { enabled: true, environmentLabel: 'Try', intermediateCaNumbers: [1] };
+      const result = applyContextOverrides(appWith({ pkiIntermediateCaNumbers: '1, 2' }), withKmsCa(base));
+      expect(result.pki?.kmsCa?.intermediateCaNumbers).toEqual([1, 2]);
+    });
+
+    test('the command line can switch it off', () => {
+      const base = { enabled: true, environmentLabel: 'Try' };
+      expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'false' }), withKmsCa(base)).pki?.kmsCa?.enabled).toBe(false);
+    });
+
+    test('enabled without an environment label is an error', () => {
+      expect(() => applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true' }), withKmsCa())).toThrow(/environmentLabel/);
+    });
+
+    test('a number list with a non-number is an error', () => {
+      expect(() => applyContextOverrides(appWith({ pkiRootCaNumbers: '1,x', pkiEnvironmentLabel: 'Try' }), withKmsCa()))
+        .toThrow(/Invalid number 'x'/);
+    });
+  });
 });

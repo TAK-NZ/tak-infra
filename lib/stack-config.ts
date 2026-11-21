@@ -69,6 +69,26 @@ export interface ContextEnvironmentConfig {
   bedrock?: {
     knowledgeBases?: string[];
   };
+  /**
+   * PKI settings for new stacks (#136, #171, #189).
+   */
+  pki?: {
+    /**
+     * Root CA and Intermediate CA signing keys in AWS KMS. Unset or `enabled: false` keeps the
+     * existing behaviour (CA keys as files on EFS) and creates nothing.
+     */
+    kmsCa?: {
+      enabled: boolean;
+      /** Environment label in CA names and aliases, e.g. `Try` -> `TAK.NZ Try Root CA 01`. */
+      environmentLabel: string;
+      /** Root CA key generations to create. Default `[1]`. Add the next number to start a rotation. */
+      rootCaNumbers?: number[];
+      /** Intermediate CA key generations to create. Default `[1]`. */
+      intermediateCaNumbers?: number[];
+      /** Email address that receives an alert on every Root CA signature. */
+      alertEmail?: string;
+    };
+  };
   webtak?: {
     enabled?: boolean;
     enableOidc?: boolean;
