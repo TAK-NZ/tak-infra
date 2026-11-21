@@ -9,9 +9,11 @@ on:
   push:
     branches:
       - main
+      - feature/ca-overhaul
   pull_request:
     branches:
       - main
+      - feature/ca-overhaul
   workflow_call:
   workflow_dispatch:
 
