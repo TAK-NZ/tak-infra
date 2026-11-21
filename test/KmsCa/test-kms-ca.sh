@@ -121,7 +121,7 @@ assert_eq "200 serials are 64-bit and never negative" "${bad}" "0"
 echo "root CA"
 assert_ok "self-signs Root CA 01" "${SCRIPT}" root-self-sign root-ca-01 root1.pem 7300
 assert_eq "root subject" "$(subject_of root1.pem)" "CN=TAK.NZ Try Root CA 01,O=TAK.NZ"
-assert_contains "root is a CA with pathlen 2" "$(openssl x509 -in root1.pem -noout -ext basicConstraints)" "pathlen:2"
+assert_contains "root is a CA with pathlen 3" "$(openssl x509 -in root1.pem -noout -ext basicConstraints)" "pathlen:3"
 assert_contains "root key usage is certSign and CRLSign" "$(openssl x509 -in root1.pem -noout -ext keyUsage)" "Certificate Sign, CRL Sign"
 assert_fails "refuses an intermediate label as root" "not a Root CA key" "${SCRIPT}" root-self-sign intermediate-ca-01 x.pem 100
 assert_fails "refuses days of 0" "invalid number of days" "${SCRIPT}" root-self-sign root-ca-01 x.pem 0
@@ -132,7 +132,7 @@ echo "intermediate CA"
 assert_ok "CSR for Intermediate CA 01" "${SCRIPT}" csr intermediate-ca-01 inter1.csr
 assert_contains "CSR subject" "$(openssl req -in inter1.csr -noout -subject -nameopt RFC2253)" "CN=TAK.NZ Try Intermediate CA 01,O=TAK.NZ"
 assert_ok "Root CA 01 issues Intermediate CA 01" "${SCRIPT}" issue-ca root-ca-01 root1.pem inter1.csr inter1.pem 3650
-assert_contains "intermediate has pathlen 1" "$(openssl x509 -in inter1.pem -noout -ext basicConstraints)" "pathlen:1"
+assert_contains "intermediate has pathlen 2" "$(openssl x509 -in inter1.pem -noout -ext basicConstraints)" "pathlen:2"
 assert_eq "intermediate issuer is Root CA 01" "$(openssl x509 -in inter1.pem -noout -issuer -nameopt RFC2253)" "issuer=CN=TAK.NZ Try Root CA 01,O=TAK.NZ"
 ROOT_SKI="$(openssl x509 -in root1.pem -noout -ext subjectKeyIdentifier | tail -1 | tr -d ' ')"
 assert_contains "authority key id is the root's key id" "$(openssl x509 -in inter1.pem -noout -ext authorityKeyIdentifier | tr -d ' ')" "${ROOT_SKI}"
@@ -178,6 +178,18 @@ assert_ok "server certificate chains to the root" openssl verify -CAfile root1.p
 assert_contains "server certificate keeps its SAN" "$(openssl x509 -in l1.pem -noout -ext subjectAltName)" "tak.try.tak.nz"
 assert_ok "server certificate also verifies via the cross-certificate" openssl verify -CAfile root2.pem -untrusted inter1_by_root2.pem l1.pem
 assert_fails "sign needs an existing extension file" "extension file not found" "${SCRIPT}" sign intermediate-ca-01 inter1.pem l1.csr l1b.pem 330 server missing.cfg
+
+# --- bridge: the chain R -> S1 -> S2(A) -> Cl -> client must pass a strict full-path check (#172) ----------
+echo "bridge"
+assert_ok "Intermediate CA 02 certificate A issued by Intermediate CA 01 with pathlen 1" "${SCRIPT}" issue-ca intermediate-ca-01 inter1.pem inter2.csr inter2_A.pem 3000 1
+assert_contains "bridged certificate has pathlen 1" "$(openssl x509 -in inter2_A.pem -noout -ext basicConstraints)" "pathlen:1"
+soft_csr clb.key clb.csr "/O=TAK.NZ/CN=TAK.NZ Try Enrollment CA 03"
+assert_ok "Intermediate CA 02 issues an Enrollment CA below the bridged certificate" "${SCRIPT}" issue-ca intermediate-ca-02 inter2_A.pem clb.csr clb.pem 365
+soft_csr cb.key cb.csr "/CN=bridge-client"
+env OPENSSL_CONF=/dev/null openssl x509 -req -sha256 -days 30 -in cb.csr -CA clb.pem -CAkey clb.key -set_serial 0x1234 -out cb.pem > /dev/null 2>&1
+assert_ok "client chain R -> S1 -> S2(A) -> Cl -> client passes a strict path check" openssl verify -CAfile root1.pem -untrusted <(cat inter1.pem inter2_A.pem clb.pem) cb.pem
+assert_fails "pathlen outside 0-3 is refused" "invalid pathlen" "${SCRIPT}" issue-ca intermediate-ca-01 inter1.pem inter2.csr x.pem 3000 7
+assert_fails "pathlen that is not a number is refused" "invalid pathlen" "${SCRIPT}" issue-ca intermediate-ca-01 inter1.pem inter2.csr x.pem 3000 '1; id'
 
 # --- CRL -----------------------------------------------------------------------------------
 echo "crl"

@@ -60,10 +60,12 @@ To start a rotation, add the next number (`rootCaNumbers: [1, 2]` or `intermedia
 |---|---|
 | `kms-ca.sh config` | Write the module config from `PKI_KMS_CA_KEYS`. The other commands do this themselves |
 | `kms-ca.sh csr <label> <out.csr>` | CSR for a KMS key, subject from the naming rules |
-| `kms-ca.sh root-self-sign <root-label> <out.pem> <days>` | Self-signed Root CA certificate |
-| `kms-ca.sh issue-ca <issuer-label> <issuer.pem> <in.csr> <out.pem> <days>` | CA certificate: root issues an Intermediate CA (pathlen 1), intermediate issues an Enrollment Signing CA (pathlen 0). Signing the CSR of an existing key with another root is the cross-certification of #169 |
+| `kms-ca.sh root-self-sign <root-label> <out.pem> <days>` | Self-signed Root CA certificate (pathlen 3) |
+| `kms-ca.sh issue-ca <issuer-label> <issuer.pem> <in.csr> <out.pem> <days> [pathlen]` | CA certificate: root issues an Intermediate CA (pathlen 2), intermediate issues an Enrollment Signing CA (pathlen 0). Pass `[pathlen]` 1 for a bridged Intermediate CA certificate (#172). Signing the CSR of an existing key with another root is the cross-certification of #169 |
 | `kms-ca.sh sign <issuer-label> <issuer.pem> <in.csr> <out.pem> <days> <ext-section> <ext-file>` | Server or client certificate, same `-extensions`/`-extfile` handling as `makeCert.sh` |
 | `kms-ca.sh crl <label> <cert.pem> <out.crl> <days>` | CRL signed by a KMS key (`makeCert.sh` makes one for every CA it creates) |
+
+The path length defaults leave room for the Intermediate CA bridge of #172 (`R -> S_old -> S_new(A) -> Cl -> client`): Root CA 3, Intermediate CA 2, bridged Intermediate CA 1, Enrollment CA 0. With smaller values a strict validator rejects client certs issued below a bridged certificate (`path length constraint exceeded`; found while testing #133).
 
 Every command checks its result against the issuer certificate and deletes the output if the KMS key is not the key of that certificate.
 

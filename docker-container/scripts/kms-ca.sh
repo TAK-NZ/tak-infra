@@ -32,9 +32,10 @@ Usage: kms-ca.sh <command> [arguments]
   config                                           write the aws-kms-pkcs11 config from PKI_KMS_CA_KEYS
   csr           <label> <out.csr>                  CSR for the key behind <label> (subject from the naming rules)
   root-self-sign <root-label> <out.pem> <days>     self-signed Root CA certificate
-  issue-ca      <issuer-label> <issuer.pem> <in.csr> <out.pem> <days>
-                                                   CA certificate; issuer root -> Intermediate CA (pathlen 1),
-                                                   issuer intermediate -> Enrollment Signing CA (pathlen 0)
+  issue-ca      <issuer-label> <issuer.pem> <in.csr> <out.pem> <days> [pathlen]
+                                                   CA certificate; issuer root -> Intermediate CA (pathlen 2, so it can
+                                                   issue a bridged successor), issuer intermediate -> Enrollment Signing
+                                                   CA (pathlen 0). Give [pathlen] 1 for a bridged Intermediate CA (#172)
   sign          <issuer-label> <issuer.pem> <in.csr> <out.pem> <days> <ext-section> <ext-file>
                                                    leaf certificate, same extension handling as makeCert.sh
                                                    (-extensions <ext-section> -extfile <ext-file>)
@@ -151,7 +152,7 @@ cmd_root_self_sign() {
   ensure_config
   openssl req -x509 -new "${ENGINE_OPTS[@]}" -key "pkcs11:token=${label}" -sha256 -days "${days}" \
     -set_serial "$(random_serial)" -subj "$(subject_for "${label}")" \
-    -addext "basicConstraints=critical,CA:TRUE,pathlen:2" \
+    -addext "basicConstraints=critical,CA:TRUE,pathlen:3" \
     -addext "keyUsage=critical,keyCertSign,cRLSign" \
     -addext "subjectKeyIdentifier=hash" \
     -out "${out}" || { rm -f "${out}"; die "could not self-sign with '${label}'"; }
@@ -181,10 +182,16 @@ sign_csr() {
 }
 
 cmd_issue_ca() {
-  [[ $# -eq 5 ]] || usage
+  [[ $# -eq 5 || $# -eq 6 ]] || usage
   local issuer_label="$1" issuer_pem="$2" csr="$3" out="$4" days="$5" pathlen
   validate_label "${issuer_label}"
-  if [[ "$(tier_of "${issuer_label}")" == root ]]; then pathlen=1; else pathlen=0; fi
+  # Defaults leave room for the bridge of #172 (R -> S_old -> S_new(A) -> Cl -> client): the root allows
+  # 3 CA certificates below it, an Intermediate CA issued by the root allows 2, a bridged one 1, an
+  # Enrollment Signing CA 0. A strict validator rejects the bridged chain with smaller values.
+  if [[ $# -eq 6 ]]; then
+    pathlen="$6"
+    [[ "${pathlen}" =~ ^[0-3]$ ]] || die "invalid pathlen '${pathlen}' (0-3)"
+  elif [[ "$(tier_of "${issuer_label}")" == root ]]; then pathlen=2; else pathlen=0; fi
   TMP_DIR="$(mktemp -d)"
   cat > "${TMP_DIR}/ca_ext.cnf" <<EOF
 [ca_ext]
