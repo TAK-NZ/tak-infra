@@ -84,6 +84,7 @@ function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']):
   const rootCaNumbers = parseContextNumberList(app.node.tryGetContext('pkiRootCaNumbers'));
   const intermediateCaNumbers = parseContextNumberList(app.node.tryGetContext('pkiIntermediateCaNumbers'));
   const alertEmail = app.node.tryGetContext('pkiAlertEmail');
+  const infoEmail = app.node.tryGetContext('pkiInfoEmail');
   const p12Profile = app.node.tryGetContext('pkiP12Profile');
   const days = {
     rootDays: parseContextNumber(app.node.tryGetContext('pkiRootDays')),
@@ -93,7 +94,7 @@ function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']):
     adminCertDays: parseContextNumber(app.node.tryGetContext('pkiAdminCertDays')),
   };
   const daysOverridden = Object.values(days).some(v => v !== undefined);
-  const overridden = [enabled, environmentLabel, rootCaNumbers, intermediateCaNumbers, alertEmail, p12Profile].some(v => v !== undefined) || daysOverridden;
+  const overridden = [enabled, environmentLabel, rootCaNumbers, intermediateCaNumbers, alertEmail, infoEmail, p12Profile].some(v => v !== undefined) || daysOverridden;
   if (!base?.kmsCa && !overridden) return base;
   const kmsCa = base?.kmsCa;
   const merged = {
@@ -102,6 +103,7 @@ function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']):
     rootCaNumbers: rootCaNumbers ?? kmsCa?.rootCaNumbers,
     intermediateCaNumbers: intermediateCaNumbers ?? kmsCa?.intermediateCaNumbers,
     alertEmail: alertEmail ?? kmsCa?.alertEmail,
+    infoEmail: infoEmail ?? kmsCa?.infoEmail,
     p12Profile: p12Profile ?? kmsCa?.p12Profile,
     validity: daysOverridden || kmsCa?.validity
       ? { ...kmsCa?.validity, ...Object.fromEntries(Object.entries(days).filter(([, v]) => v !== undefined)) }

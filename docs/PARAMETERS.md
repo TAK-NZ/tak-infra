@@ -212,10 +212,11 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `pki.kmsCa.environmentLabel` | Environment label in CA names and key aliases, for example `Try` gives `TAK.NZ Try Root CA 01` and `alias/tak-nz-try-root-ca-01`. 1 to 24 letters, digits, spaces or hyphens. Required when enabled | none |
 | `pki.kmsCa.rootCaNumbers` | Root CA key generations to create. Add the next number to start a Root CA rotation | `[1]` |
 | `pki.kmsCa.intermediateCaNumbers` | Intermediate CA key generations to create. Add the next number to start an Intermediate CA rotation | `[1]` |
-| `pki.kmsCa.alertEmail` | Email address that receives an alert on every Root CA signature | none |
+| `pki.kmsCa.alertEmail` | Email address for the certificate alert and critical topics (every Root CA signature, expiry warnings, failed rotations) | none |
+| `pki.kmsCa.infoEmail` | Email address for the certificate info topic (a rotation step happened) | none |
 | `pki.kmsCa.validity.rootDays` / `intermediateDays` / `enrollmentCaDays` / `serverCertDays` / `adminCertDays` | Validity of the first-boot PKI in days (#189). A certificate must not outlive its issuer | 7300 / 3650 / 1095 / 365 / 365 |
 | `pki.kmsCa.p12Profile` | PKCS#12 profile of the user-facing p12 files: `compat3des` (3DES, SHA-1 MAC) or `aes256` | `compat3des` |
-- Command line: `--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=Try`, plus `pkiRootCaNumbers=1,2`, `pkiIntermediateCaNumbers=1,2`, `pkiAlertEmail=...`, `pkiP12Profile=aes256` and `pkiRootDays`, `pkiIntermediateDays`, `pkiEnrollmentCaDays`, `pkiServerCertDays`, `pkiAdminCertDays`.
+- Command line: `--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=Try`, plus `pkiRootCaNumbers=1,2`, `pkiIntermediateCaNumbers=1,2`, `pkiAlertEmail=...`, `pkiInfoEmail=...`, `pkiP12Profile=aes256` and `pkiRootDays`, `pkiIntermediateDays`, `pkiEnrollmentCaDays`, `pkiServerCertDays`, `pkiAdminCertDays`.
 - The keys are never deleted by CloudFormation. The Root CA signing alert needs a CloudTrail trail that logs read and write management events; BaseInfra creates one by default (`cloudTrail.enabled`). See [KMS_CA_KEYS.md](KMS_CA_KEYS.md).
 
 ### **WebTAK OIDC Configuration**

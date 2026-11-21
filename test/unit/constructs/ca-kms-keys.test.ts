@@ -3,6 +3,7 @@
  */
 import { Stack } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sns from 'aws-cdk-lib/aws-sns';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { CaKmsKeys, CaKmsKeysProps } from '../../../lib/constructs/ca-kms-keys';
 import { CDKTestHelper } from '../../__helpers__/cdk-test-utils';
@@ -117,6 +118,17 @@ describe('CaKmsKeys construct', () => {
     const actions = statements.flatMap(s => ([] as string[]).concat(s.Action));
     expect(actions).toEqual(expect.arrayContaining(['secretsmanager:GetSecretValue', 'secretsmanager:PutSecretValue']));
     expect(stack.resolve(keys.enrollmentCaSecret.secretArn)).toBeDefined();
+  });
+
+  test('publishes to the given alert topic instead of creating its own', () => {
+    const topic = new sns.Topic(stack, 'SharedAlerts');
+    const keys = create({ alertTopic: topic, alertEmail: 'ignored@example.org' });
+    const template = Template.fromStack(stack);
+    template.resourceCountIs('AWS::SNS::Topic', 1);
+    template.resourceCountIs('AWS::SNS::Subscription', 0);
+    expect(keys.rootSignAlertTopic).toBe(topic);
+    const rule = Object.values(template.findResources('AWS::Events::Rule'))[0] as any;
+    expect(rule.Properties.Targets[0].Arn).toEqual(stack.resolve(topic.topicArn));
   });
 
   test('email subscription only when an address is given', () => {

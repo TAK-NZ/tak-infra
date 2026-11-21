@@ -103,6 +103,30 @@ Files in `/opt/tak/certs/files`, with the names TAK Server and the other scripts
 
 `pki-state.json` records the names, the p12 profile and the expiry dates, for the rotation orchestrator (#171).
 
+## Metrics and alarms (`cert-metrics.sh`)
+
+One helper for all certificate work ([#129](https://github.com/TAK-NZ/tak-infra/issues/129)). Metrics go to the CloudWatch namespace `TAK/Certificates` with the dimension `Stack=<stack name>`; the alarms (created with `pki.kmsCa`) fire at a value of 1 and treat missing data as fine, so an alarm whose emitter is not built yet stays in OK.
+
+From a script: `/opt/tak/scripts/cert-metrics.sh emit <MetricName> [value] [Dimension=Value ...]`, or `source` it with `CERT_METRICS_SOURCE_ONLY=1` and call `emit_metric`. It refuses names that are not in the table (a typo would feed no alarm), validates the dimensions, and never fails the caller when CloudWatch cannot be reached.
+
+| Metric | Alarm | Severity | Emitted by |
+|---|---|---|---|
+| `RootCAExpiryWarning` | daily maximum >= 1 | alert | `cert-metrics.sh check-expiry`: Root CA expires in 730 days or less |
+| `IntermediateCAExpiryWarning` | daily maximum >= 1 | alert | `check-expiry`: Intermediate CA expires in 1275 days (2W + 1 year) or less |
+| `CAExpired` | daily maximum >= 1 | critical | `check-expiry`: Root, Intermediate or Enrollment CA has expired |
+| `RootCASigned` | every `kms:Sign` with a Root CA key | alert | the EventBridge rule of #136 (CloudTrail), not a metric |
+| `CertbotRenewalFailure` | 5 minute sum >= 1 | alert | #130 |
+| `TakServerCertRotated` / `TakServerCertRotationFailed` | 5 minute sum >= 1 | info / alert | #131 |
+| `AdminCertRotated` | 5 minute sum >= 1 | info | #132 |
+| `SigningCARotated` | 5 minute sum >= 1 | info | #135 |
+| `IntermediateCARotationPhase` (`Phase=bridge`, `cut`, `retire`) | 5 minute sum >= 1, one alarm per phase | info | #172 |
+| `RootCARotated` | 5 minute sum >= 1 | info | #169 |
+| `RotationCoverageStragglers` | 5 minute sum >= 1 | alert | #171 |
+
+`check-expiry` reads `root-ca.pem`, `intermediate-ca.pem` and `enrollment-ca.pem` in the files directory and emits 0 or 1 for the three metrics every time, so the alarms return to OK and "no data" is not mistaken for "fine". It does nothing on a stack without `pki-state.json` (a PKI from the old scripts). `start-tak.sh` runs it 60 seconds after the start and then every 24 hours. The thresholds are `PKI_ROOT_WARN_DAYS` (730) and `PKI_INTERMEDIATE_WARN_DAYS` (1275).
+
+Three SNS topics by severity: alert, critical and info. `pki.kmsCa.alertEmail` subscribes the alert and critical topics, `pki.kmsCa.infoEmail` the info topic; without an address the topics exist and you subscribe to them yourself. The Root CA signing alert of #136 publishes to the alert topic.
+
 ## Retiring a key
 
 When a rotation is complete (#169, #172), schedule the old key for deletion with the full window:
@@ -116,6 +140,7 @@ The task role has no permission to do this. Afterwards remove the number from `r
 ## Tests
 
 - `npx jest test/unit/constructs/ca-kms-keys.test.ts test/unit/utils/pki-names.test.ts`: key spec, policy, alias names, alert rule.
+- `test/KmsCa/test-cert-metrics.sh`: the metric helper (refused input, dimensions, CloudWatch down) and the expiry check (thresholds, expired CA, unreadable certificate) with a stub `aws`. Runs in CI.
 - `test/KmsCa/test-pki-bootstrap.sh`: the first-boot PKI end to end (names, constraints, chains, keystores, truststores, no CA key on the EFS, restore on a later start, fail-closed cases, validities, p12 profiles) with SoftHSM and a stub `aws`. Runs in CI.
 - `test/KmsCa/test-kms-ca.sh`: the wrapper end to end with SoftHSM standing in for KMS (root, intermediate, cross-certificate, enrollment CA, server cert, CRL, wrong-key and bad-input cases). Needs `softhsm2 opensc libengine-pkcs11-openssl jq`. It runs in CI.
 - Not covered by automated tests: the real KMS call and a task role in ECS. The module was validated against KMS in #134.

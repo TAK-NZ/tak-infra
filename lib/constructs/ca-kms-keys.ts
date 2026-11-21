@@ -48,7 +48,13 @@ export interface CaKmsKeysProps {
   rootCaNumbers?: number[];
   /** Intermediate CA generations to create keys for. Default `[1]`. */
   intermediateCaNumbers?: number[];
-  /** Email address subscribed to the Root CA signing alert topic. Optional. */
+  /**
+   * Topic that receives the alert on every Root CA signature. Default: the construct creates its own
+   * topic. The TAK Server stack passes the alert topic of `CertificateAlarms` so that every alert
+   * arrives in one place (#129).
+   */
+  alertTopic?: sns.ITopic;
+  /** Email address subscribed to the topic the construct creates itself. Ignored when `alertTopic` is given. */
   alertEmail?: string;
   /** Key that encrypts the Enrollment CA secret. Default: the AWS managed key for Secrets Manager. */
   secretEncryptionKey?: kms.IKey;
@@ -67,7 +73,7 @@ export interface CaKmsKey {
 export class CaKmsKeys extends Construct {
   public readonly keys: CaKmsKey[];
   /** SNS topic that receives an alert on every Root CA signature. */
-  public readonly rootSignAlertTopic: sns.Topic;
+  public readonly rootSignAlertTopic: sns.ITopic;
   /**
    * Holds the Enrollment CA keystore (PKCS#12 with the key and the chain [Cl, S, R]). `pki-bootstrap.sh`
    * writes it on the first start and restores it into tmpfs on every later start, so the Enrollment CA
@@ -96,12 +102,17 @@ export class CaKmsKeys extends Construct {
     this.enrollmentCaSecret.grantWrite(props.signerRole);
 
     // Alert on every use of a Root CA key
-    this.rootSignAlertTopic = new sns.Topic(this, 'RootCaSignAlertTopic', {
-      displayName: `TAK.NZ ${props.environmentLabel} Root CA signing alert`,
-      enforceSSL: true,
-    });
-    if (props.alertEmail) {
-      this.rootSignAlertTopic.addSubscription(new subscriptions.EmailSubscription(props.alertEmail));
+    if (props.alertTopic) {
+      this.rootSignAlertTopic = props.alertTopic;
+    } else {
+      const own = new sns.Topic(this, 'RootCaSignAlertTopic', {
+        displayName: `TAK.NZ ${props.environmentLabel} Root CA signing alert`,
+        enforceSSL: true,
+      });
+      if (props.alertEmail) {
+        own.addSubscription(new subscriptions.EmailSubscription(props.alertEmail));
+      }
+      this.rootSignAlertTopic = own;
     }
 
     const rootKeyArns = this.keys.filter(k => k.tier === 'root').map(k => k.key.keyArn);
