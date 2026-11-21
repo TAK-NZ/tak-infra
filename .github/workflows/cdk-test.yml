@@ -73,5 +73,7 @@ jobs:
       - name: Test cert-metrics.sh (certificate metrics)
         run: test/KmsCa/test-cert-metrics.sh
 
+      - name: Test cluster-lock.sh (lock for steps that run once per cluster)
+        run: test/KmsCa/test-cluster-lock.sh
       - name: Run tests with coverage report
         run: npm run test:coverage
