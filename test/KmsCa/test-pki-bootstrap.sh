@@ -148,7 +148,7 @@ assert_eq "it points into tmpfs" "$(readlink "${FILES}/intermediate-ca-signing.j
 assert_file "the tmpfs signing keystore exists" "${TMPFS}/intermediate-ca-signing.jks"
 assert_eq "tmpfs directory is private" "$(stat -c %a "${TMPFS}")" "700"
 assert_eq "no work directory left behind" "$(ls "${TMPFS}" | grep -c '^work\.')" "0"
-assert_eq "the lock is released" "$([[ -d "${FILES}/.pki-bootstrap.lock" ]] && echo held || echo free)" "free"
+assert_eq "the lock is released" "$([[ -d "${FILES}/.locks/pki-bootstrap.lock" ]] && echo held || echo free)" "free"
 
 echo "-- file modes"
 mode() { stat -c %a "${FILES}/$1"; }
@@ -265,6 +265,30 @@ assert_eq "intermediate validity" "$(days "${FILES}/intermediate-ca.pem")" "1999
 assert_eq "enrollment CA validity" "$(days "${FILES}/enrollment-ca.pem")" "899"
 assert_eq "server certificate validity" "$(days "${FILES}/takserver.pem")" "299"
 
+# --- several nodes on a fresh stack (#7) -----------------------------------------------------
+echo "three nodes start at the same time on a fresh stack"
+fresh e
+for n in 1 2 3; do
+  ( export PKI_TMPFS_DIR="${WORK}/e/tmpfs-node${n}"; "${SCRIPT}" > "${WORK}/node${n}.log" 2>&1; echo $? > "${WORK}/node${n}.rc" ) &
+done
+wait
+assert_eq "all three nodes succeed" "$(cat "${WORK}"/node?.rc | sort -u | tr '\n' ' ')" "0 "
+assert_eq "exactly one node built the PKI" "$(cat "${WORK}"/node?.log | grep -c 'PKI ready (bootstrapped)')" "1"
+assert_eq "the other two restored it" "$(cat "${WORK}"/node?.log | grep -c 'PKI ready (restored)')" "2"
+assert_eq "one set of CA certificates (one Root CA, not three)" "$(grep -c 'BEGIN CERTIFICATE' "${FILES}/root-ca.pem")" "1"
+for n in 1 2 3; do
+  assert_file "node ${n} has the Enrollment CA keystore in its own tmpfs" "${WORK}/e/tmpfs-node${n}/intermediate-ca-signing.jks"
+done
+assert_eq "the lock is released" "$([[ -d "${FILES}/.locks/pki-bootstrap.lock" ]] && echo held || echo free)" "free"
+# a node that starts while another one is half way: ca.pem exists, the state file does not yet. It must wait for the lock,
+# not take the stack for one with a PKI from the old flow.
+echo "a node that sees ca.pem of a node that is still bootstrapping waits"
+fresh f
+mkdir -p "${FILES}/.locks/pki-bootstrap.lock"
+printf 'other:1:1:1 %s othernode\n' "$(($(date +%s) + 60))" > "${FILES}/.locks/pki-bootstrap.lock/owner"
+echo "half done" > "${FILES}/ca.pem"
+( export CLUSTER_LOCK_WAIT=2 CLUSTER_LOCK_POLL=0.2; "${SCRIPT}" > "${WORK}/run.log" 2>&1; echo $? > "${WORK}/rc" )
+assert_eq "it did not decide (exit 75 from the lock, not 2 for the old flow)" "$(cat "${WORK}/rc")" "75"
 echo
 echo "passed: ${PASS}, failed: ${FAIL}"
 [[ "${FAIL}" -eq 0 ]]

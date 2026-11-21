@@ -31,6 +31,11 @@ set -euo pipefail
 FILES_DIR="${PKI_FILES_DIR:-/opt/tak/certs/files}"
 TMPFS_DIR="${PKI_TMPFS_DIR:-/dev/shm/tak-pki}"
 KMS_CA="${PKI_KMS_CA_SCRIPT:-/opt/tak/scripts/kms-ca.sh}"
+# The cluster lock (#7): with several nodes starting on a fresh stack, only one builds the PKI
+export CLUSTER_LOCK_DIR="${CLUSTER_LOCK_DIR:-${FILES_DIR}/.locks}"
+export CLUSTER_LOCK_WAIT="${CLUSTER_LOCK_WAIT:-600}"
+# shellcheck source=cluster-lock.sh
+source "$(dirname "${BASH_SOURCE[0]}")/cluster-lock.sh"
 # The keystore password CoreConfig.xml already uses for every keystore. It protects the JKS/PKCS#12
 # files, not the CA keys (R and S are in KMS, the Enrollment CA key is in Secrets Manager).
 KS_PASS="atakatak"
@@ -41,11 +46,9 @@ log() { echo "TAK Server - PKI: $*"; }
 die() { echo "TAK Server - PKI: ERROR: $*" >&2; exit 1; }
 
 WORK=""
-LOCK=""
 cleanup() {
   # the work directory holds only files
   [[ -n "${WORK}" && -d "${WORK}" ]] && { find "${WORK}" -type f -delete 2> /dev/null; rmdir "${WORK}" 2> /dev/null; }
-  [[ -n "${LOCK}" ]] && rmdir "${LOCK}" 2> /dev/null
   return 0
 }
 trap cleanup EXIT
@@ -146,17 +149,6 @@ link_signing_keystore() { # dir with intermediate-ca-signing.{jks,p12}
   ln -sfn "${TMPFS_DIR}/intermediate-ca-signing.p12" "${FILES_DIR}/intermediate-ca-signing.p12"
 }
 
-acquire_lock() {
-  local i
-  for i in $(seq 1 120); do
-    if mkdir "${FILES_DIR}/.pki-bootstrap.lock" 2> /dev/null; then
-      LOCK="${FILES_DIR}/.pki-bootstrap.lock"
-      return 0
-    fi
-    sleep 1
-  done
-  die "another task holds ${FILES_DIR}/.pki-bootstrap.lock for more than 2 minutes"
-}
 
 # ---------------------------------------------------------------------------------------------
 # Restore: the Enrollment CA keystore from Secrets Manager into tmpfs
@@ -290,18 +282,17 @@ bootstrap() {
 }
 
 # ---------------------------------------------------------------------------------------------
-main() {
-  if [[ -z "${PKI_KMS_CA_KEYS:-}" ]]; then
-    log "not configured (PKI_KMS_CA_KEYS is empty): using the TAK Server certificate scripts"
-    exit 2
-  fi
-  mkdir -p "${FILES_DIR}"
+# Runs under the cluster lock. A node that waited for the lock finds the state file of the node that
+# built the PKI, and only restores. Everything that decides between "build", "restore" and "not
+# applicable" is checked here, inside the lock: outside it, a node could see the ca.pem that another node
+# has just written and take it for a PKI of the old flow.
+NOT_APPLICABLE=0
+run_locked() {
   if [[ ! -f "${STATE_FILE}" && -f "${FILES_DIR}/ca.pem" ]]; then
     log "this stack already has a PKI from the old flow (ca.pem exists, no ${STATE_FILE}): leaving it alone"
-    exit 2
+    NOT_APPLICABLE=1
+    return 0
   fi
-  load_settings
-  acquire_lock
   if [[ -f "${STATE_FILE}" ]]; then
     local f
     for f in takserver.jks truststore-intermediate-ca.jks admin.pem admin.key ca.pem; do
@@ -314,5 +305,17 @@ main() {
     log "PKI ready (bootstrapped)"
   fi
 }
-
+# ---------------------------------------------------------------------------------------------
+main() {
+  if [[ -z "${PKI_KMS_CA_KEYS:-}" ]]; then
+    log "not configured (PKI_KMS_CA_KEYS is empty): using the TAK Server certificate scripts"
+    exit 2
+  fi
+  mkdir -p "${FILES_DIR}"
+  load_settings
+  # Not `with_cluster_lock ... || ...`: run_locked relies on set -e. A failure ends this script, and the
+  # heartbeat of the lock releases it.
+  with_cluster_lock pki-bootstrap run_locked
+  [[ "${NOT_APPLICABLE}" -eq 0 ]] || exit 2
+}
 main "$@"

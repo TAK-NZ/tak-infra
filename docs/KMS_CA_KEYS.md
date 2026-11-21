@@ -99,7 +99,8 @@ Files in `/opt/tak/certs/files`, with the names TAK Server and the other scripts
 - **PKCS#12 profile** of the user-facing p12 files (`takserver.p12`, `admin.p12`): `P12_PROFILE`, `compat3des` by default (3DES, SHA-1 MAC; plain `-legacy` is never used).
 - **Not touched:** a stack that already has a PKI from the old scripts (`ca.pem` without `pki-state.json`) keeps it. There is no migration.
 - **Fails closed:** with `pki-state.json` present, a missing file or an unreadable secret stops the start instead of generating a second PKI. A failed write to Secrets Manager installs nothing, so the next start can bootstrap again.
-- **Not in this step:** renewal and rotation, the CRLs and revocation scripts of the old flow, the alarms (#129).
+- **Several nodes:** `pki-bootstrap.sh` runs under the cluster lock (`docs/CLUSTER_LOCK.md`). On a fresh stack one node builds the PKI, the others wait and restore it. The decision between build, restore and "old flow" is made inside the lock.
+- **Not in this step:** renewal and rotation, the CRLs and revocation scripts of the old flow.
 
 `pki-state.json` records the names, the p12 profile and the expiry dates, for the rotation orchestrator (#171).
 
@@ -141,6 +142,7 @@ The task role has no permission to do this. Afterwards remove the number from `r
 
 - `npx jest test/unit/constructs/ca-kms-keys.test.ts test/unit/utils/pki-names.test.ts`: key spec, policy, alias names, alert rule.
 - `test/KmsCa/test-cert-metrics.sh`: the metric helper (refused input, dimensions, CloudWatch down) and the expiry check (thresholds, expired CA, unreadable certificate) with a stub `aws`. Runs in CI.
-- `test/KmsCa/test-pki-bootstrap.sh`: the first-boot PKI end to end (names, constraints, chains, keystores, truststores, no CA key on the EFS, restore on a later start, fail-closed cases, validities, p12 profiles) with SoftHSM and a stub `aws`. Runs in CI.
+- `test/KmsCa/test-cluster-lock.sh`: the cluster lock (`docs/CLUSTER_LOCK.md`). Runs in CI.
+- `test/KmsCa/test-pki-bootstrap.sh`: the first-boot PKI end to end (names, constraints, chains, keystores, truststores, no CA key on the EFS, restore on a later start, three nodes at once, fail-closed cases, validities, p12 profiles) with SoftHSM and a stub `aws`. Runs in CI.
 - `test/KmsCa/test-kms-ca.sh`: the wrapper end to end with SoftHSM standing in for KMS (root, intermediate, cross-certificate, enrollment CA, server cert, CRL, wrong-key and bad-input cases). Needs `softhsm2 opensc libengine-pkcs11-openssl jq`. It runs in CI.
 - Not covered by automated tests: the real KMS call and a task role in ECS. The module was validated against KMS in #134.
