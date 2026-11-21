@@ -70,7 +70,48 @@ export function applyContextOverrides(
       ...baseConfig.bedrock,
       knowledgeBases: parseContextList(app.node.tryGetContext('bedrockKnowledgeBases')) ?? baseConfig.bedrock?.knowledgeBases,
     },
+    pki: applyPkiOverrides(app, baseConfig.pki),
   };
+}
+
+/**
+ * Root CA / Intermediate CA keys in KMS (#136). Stays undefined unless the config or the command
+ * line mentions it, so stacks that do not use it are unchanged.
+ */
+function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']): ContextEnvironmentConfig['pki'] {
+  const enabled = parseContextBoolean(app.node.tryGetContext('pkiKmsCaEnabled'));
+  const environmentLabel = app.node.tryGetContext('pkiEnvironmentLabel');
+  const rootCaNumbers = parseContextNumberList(app.node.tryGetContext('pkiRootCaNumbers'));
+  const intermediateCaNumbers = parseContextNumberList(app.node.tryGetContext('pkiIntermediateCaNumbers'));
+  const alertEmail = app.node.tryGetContext('pkiAlertEmail');
+  const overridden = [enabled, environmentLabel, rootCaNumbers, intermediateCaNumbers, alertEmail].some(v => v !== undefined);
+  if (!base?.kmsCa && !overridden) return base;
+  const kmsCa = base?.kmsCa;
+  const merged = {
+    enabled: enabled ?? kmsCa?.enabled ?? false,
+    environmentLabel: environmentLabel ?? kmsCa?.environmentLabel,
+    rootCaNumbers: rootCaNumbers ?? kmsCa?.rootCaNumbers,
+    intermediateCaNumbers: intermediateCaNumbers ?? kmsCa?.intermediateCaNumbers,
+    alertEmail: alertEmail ?? kmsCa?.alertEmail,
+  };
+  if (merged.enabled && !merged.environmentLabel) {
+    throw new Error('pki.kmsCa is enabled but has no environmentLabel (set pki.kmsCa.environmentLabel or --context pkiEnvironmentLabel=<label>)');
+  }
+  return { ...base, kmsCa: merged as NonNullable<ContextEnvironmentConfig['pki']>['kmsCa'] };
+}
+
+/**
+ * Parse a comma-separated list of numbers (for example `1,2`). Anything that is not a number is
+ * an error rather than silently dropped.
+ */
+function parseContextNumberList(value: any): number[] | undefined {
+  const items = parseContextList(value);
+  if (items === undefined) return undefined;
+  return items.map(item => {
+    const n = Number(item);
+    if (!Number.isInteger(n)) throw new Error(`Invalid number '${item}' in context list '${value}'`);
+    return n;
+  });
 }
 
 /**

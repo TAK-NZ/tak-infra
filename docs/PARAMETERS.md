@@ -205,6 +205,17 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 - In a region without Bedrock Knowledge Bases (today `ap-southeast-6`, Auckland; the list is `BEDROCK_KB_UNSUPPORTED_REGIONS` in `lib/utils/constants.ts`) the stack creates none and prints a synth warning. Set the list to `[]` to silence the warning. The TAK-GPT bot then needs an agent in a supported region: set the bot's `region`, for example `ap-southeast-2`.
 - The stack creates the vector index, the knowledge base role, the knowledge base (named `<name>-s3v`) and its S3 data source, and outputs the IDs as `BedrockKb<Name>Id` and `BedrockKb<Name>DataSourceId` (`nema-cdem` becomes `NemaCdem`). `scripts/bedrock/setup-bedrock-agent.py` reads them. Ingesting documents is not stack state: see `scripts/bedrock/README.md`.
 
+### **KMS CA Keys**
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `pki.kmsCa.enabled` | Create the Root CA and Intermediate CA signing keys in AWS KMS (#136). Off keeps today's behaviour and creates nothing | unset (off) |
+| `pki.kmsCa.environmentLabel` | Environment label in CA names and key aliases, for example `Try` gives `TAK.NZ Try Root CA 01` and `alias/tak-nz-try-root-ca-01`. 1 to 24 letters, digits, spaces or hyphens. Required when enabled | none |
+| `pki.kmsCa.rootCaNumbers` | Root CA key generations to create. Add the next number to start a Root CA rotation | `[1]` |
+| `pki.kmsCa.intermediateCaNumbers` | Intermediate CA key generations to create. Add the next number to start an Intermediate CA rotation | `[1]` |
+| `pki.kmsCa.alertEmail` | Email address that receives an alert on every Root CA signature | none |
+- Command line: `--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=Try`, plus `pkiRootCaNumbers=1,2`, `pkiIntermediateCaNumbers=1,2` and `pkiAlertEmail=...`.
+- The keys are never deleted by CloudFormation. The Root CA signing alert needs a CloudTrail trail that logs read and write management events; BaseInfra creates one by default (`cloudTrail.enabled`). See [KMS_CA_KEYS.md](KMS_CA_KEYS.md).
+
 ### **WebTAK OIDC Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
