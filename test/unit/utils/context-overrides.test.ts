@@ -116,6 +116,18 @@ describe('Context Overrides', () => {
       expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'false' }), withKmsCa(base)).pki?.kmsCa?.enabled).toBe(false);
     });
 
+    test('the command line can set the p12 profile and the validities', () => {
+      const base = { enabled: true, environmentLabel: 'Try', validity: { serverCertDays: 300 } };
+      const result = applyContextOverrides(appWith({ pkiP12Profile: 'aes256', pkiRootDays: '5000', pkiAdminCertDays: '100' }), withKmsCa(base));
+      expect(result.pki?.kmsCa?.p12Profile).toBe('aes256');
+      expect(result.pki?.kmsCa?.validity).toEqual({ serverCertDays: 300, rootDays: 5000, adminCertDays: 100 });
+    });
+
+    test('no validity is created when nothing sets one', () => {
+      const result = applyContextOverrides(appWith({}), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.validity).toBeUndefined();
+    });
+
     test('enabled without an environment label is an error', () => {
       expect(() => applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true' }), withKmsCa())).toThrow(/environmentLabel/);
     });

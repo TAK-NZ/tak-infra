@@ -23,6 +23,7 @@ import type {
 } from '../construct-configs';
 import { TAK_SERVER_PORTS } from '../utils/constants';
 import { CaKmsKeys } from './ca-kms-keys';
+import { resolvePkiValidity, validateP12Profile } from '../utils/pki-settings';
 import { createAuthImportValue, AUTH_EXPORT_NAMES } from '../cloudformation-imports';
 import { Fn } from 'aws-cdk-lib';
 
@@ -328,6 +329,7 @@ export class TakServer extends Construct {
         rootCaNumbers: kmsCa.rootCaNumbers,
         intermediateCaNumbers: kmsCa.intermediateCaNumbers,
         alertEmail: kmsCa.alertEmail,
+        secretEncryptionKey: props.infrastructure.kmsKey,
       });
     }
 
@@ -454,6 +456,24 @@ export class TakServer extends Construct {
           PKI_ENV_LABEL: props.contextConfig.pki!.kmsCa!.environmentLabel,
           PKI_KMS_CA_KEYS: this.caKmsKeys.pkcs11SlotsValue,
           PKI_KMS_REGION: Stack.of(this).region,
+          // First-boot PKI (pki-bootstrap.sh, #189). The server cert CN is the first name: the public
+          // service name, then the TAK host name; both come from the config and the hosted zone.
+          PKI_ENROLLMENT_CA_SECRET: this.caKmsKeys.enrollmentCaSecret.secretArn,
+          PKI_SERVER_NAMES: [
+            props.contextConfig.takserver.servicename,
+            props.contextConfig.takserver.hostname,
+          ].map(n => `${n}.${Fn.importValue(props.network.hostedZoneName)}`).join(','),
+          P12_PROFILE: validateP12Profile(props.contextConfig.pki!.kmsCa!.p12Profile),
+          ...(() => {
+            const v = resolvePkiValidity(props.contextConfig.pki!.kmsCa!.validity);
+            return {
+              PKI_ROOT_DAYS: String(v.rootDays),
+              PKI_INTERMEDIATE_DAYS: String(v.intermediateDays),
+              PKI_ENROLLMENT_CA_DAYS: String(v.enrollmentCaDays),
+              PKI_SERVER_CERT_DAYS: String(v.serverCertDays),
+              PKI_ADMIN_CERT_DAYS: String(v.adminCertDays),
+            };
+          })(),
         } : {}),
         ECS_Cluster_Name: props.infrastructure.ecsCluster.clusterName,
         ECS_Service_Name: `${Stack.of(this).stackName}-TakServer`,

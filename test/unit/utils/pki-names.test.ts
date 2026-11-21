@@ -17,6 +17,12 @@ describe('pki-names', () => {
     expect(caCommonName('Prod', 'intermediate', 12)).toBe('TAK.NZ Prod Intermediate CA 12');
   });
 
+  test('the Enrollment CA tier is named like the others', () => {
+    expect(caCommonName('Try', 'enrollment', 1)).toBe('TAK.NZ Try Enrollment CA 01');
+    expect(caKeyLabel('enrollment', 2)).toBe('enrollment-ca-02');
+    expect(caSlug('Try', 'enrollment', 1)).toBe('tak-nz-try-enrollment-ca-01');
+  });
+
   test('slugs and labels contain no spaces', () => {
     expect(caSlug('Try', 'root', 1)).toBe('tak-nz-try-root-ca-01');
     expect(caSlug('Dev Test', 'intermediate', 2)).toBe('tak-nz-dev-test-intermediate-ca-02');

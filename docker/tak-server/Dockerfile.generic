@@ -59,6 +59,7 @@ COPY ./docker/tak-server/patch-jvm-flags.py /tmp/
 RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/download-plugin-config.sh \
     && chmod +x /opt/tak/scripts/kms-ca.sh \
+    && chmod +x /opt/tak/scripts/pki-bootstrap.sh \
     && python3 /tmp/patch-jvm-flags.py \
     && grep 'G1HeapRegionSize' /opt/tak/configureInDocker.sh \
     && rm /tmp/patch-jvm-flags.py

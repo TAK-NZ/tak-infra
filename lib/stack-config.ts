@@ -87,6 +87,16 @@ export interface ContextEnvironmentConfig {
       intermediateCaNumbers?: number[];
       /** Email address that receives an alert on every Root CA signature. */
       alertEmail?: string;
+      /** Validity of the first-boot PKI, in days (#189). Defaults: 7300 / 3650 / 1095 / 365 / 365. */
+      validity?: {
+        rootDays?: number;
+        intermediateDays?: number;
+        enrollmentCaDays?: number;
+        serverCertDays?: number;
+        adminCertDays?: number;
+      };
+      /** PKCS#12 profile of the user-facing p12 files: `compat3des` (default) or `aes256` (#133). */
+      p12Profile?: 'compat3des' | 'aes256';
     };
   };
   webtak?: {

@@ -4,7 +4,7 @@ Tracked in [#136](https://github.com/TAK-NZ/tak-infra/issues/136), part of the c
 
 New stacks keep the private keys of the Root CA (R) and the Intermediate CA (S) in AWS KMS. They never exist as files on EFS, in container memory or in Secrets Manager. The Enrollment Signing CA (Cl) is not in KMS: TAK Server signs client certificates in-process from a keystore.
 
-This page covers the keys, how the container signs with them, and how to operate them. This change does not yet use the keys on first boot: that is [#189](https://github.com/TAK-NZ/tak-infra/issues/189).
+This page covers the keys, how the container signs with them, and how to operate them. On a new stack the first boot builds the PKI with these keys (`pki-bootstrap.sh`, [#189](https://github.com/TAK-NZ/tak-infra/issues/189), see below). Renewal and rotation come later ([#131](https://github.com/TAK-NZ/tak-infra/issues/131), [#132](https://github.com/TAK-NZ/tak-infra/issues/132), [#135](https://github.com/TAK-NZ/tak-infra/issues/135), [#169](https://github.com/TAK-NZ/tak-infra/issues/169), [#171](https://github.com/TAK-NZ/tak-infra/issues/171), [#172](https://github.com/TAK-NZ/tak-infra/issues/172)).
 
 ## Turning it on
 
@@ -75,6 +75,34 @@ Notes from the #134 spike:
 - Signing takes about 1.2 s per `openssl` process (module start-up fetches the public key of every configured key). The account quota is 1000 RSA operations per second.
 - The module config lists only the keys in `PKI_KMS_CA_KEYS`.
 
+## First boot of a new stack (`pki-bootstrap.sh`)
+
+`start-tak.sh` runs `/opt/tak/scripts/pki-bootstrap.sh` before it looks at the TAK Server certificate scripts. With `pki.kmsCa` enabled and no PKI on the EFS yet it builds, in this order:
+
+| Step | Result |
+|---|---|
+| Root CA 01 | self-signed in KMS, 20 years, pathlen 3 |
+| Intermediate CA 01 | issued by Root CA 01 in KMS, 10 years, pathlen 2 |
+| Enrollment CA 01 | software key, issued by Intermediate CA 01, 3 years, pathlen 0 |
+| Server certificate | CN `<servicename>.<zone>`, SAN `takserver`, `<servicename>.<zone>`, `<hostname>.<zone>`, issued by Intermediate CA 01, 1 year |
+| Admin certificate | issued by Enrollment CA 01, 1 year |
+
+Names follow the rules above (`TAK.NZ <Env> <Tier> NN`); the host names come from `takserver.servicename`, `takserver.hostname` and the hosted zone, never from a literal. Every CA certificate has a key-id based Authority Key Identifier.
+
+Files in `/opt/tak/certs/files`, with the names TAK Server and the other scripts already use: `takserver.jks/.p12/.pem/.key`, `admin.p12/.pem/.key`, `truststore-intermediate-ca.jks/.p12`, `fed-truststore.jks`, `ca.pem` (the issuing Intermediate CA), `root-ca.pem`, `intermediate-ca.pem`, `enrollment-ca.pem`, `pki-state.json` and, new, `truststore-phone.jks/.p12`.
+
+- **Server truststore** holds Root CA, Intermediate CA and the Enrollment CA: TAK Server must trust the issuer of every client cert, because ATAK sends only its leaf cert (#133).
+- **Phone truststore** (`truststore-phone.p12`, use it for data packages) holds only Intermediate CA and Root CA. A phone does not need the Enrollment CA, and keeping it out of phone stores avoids the known limit in #171. `truststore-root.p12` is not created: a phone with only the root cannot validate the server cert (#170).
+- **The Enrollment CA key** is generated in tmpfs and written only to the secret `<stack>/...Enrollment-CA` (a retained Secrets Manager secret, PKCS#12 with the key and the chain). The file TAK Server reads, `intermediate-ca-signing.jks`, is a symlink into tmpfs, restored from the secret at every start. No CA key is on the EFS: there is no `root-ca-do-not-share.key` and no `ca-do-not-share.key`.
+- **Admin cert files:** `admin.p12` for the services that call the TAK API, and `admin.pem` / `admin.key`, which the container health check reads (#189 finding from #133).
+- **Keystore password** stays `atakatak`, the value `CoreConfig.xml` uses for every keystore. It protects the JKS and PKCS#12 files only: R and S are in KMS and the Enrollment CA key is in Secrets Manager.
+- **PKCS#12 profile** of the user-facing p12 files (`takserver.p12`, `admin.p12`): `P12_PROFILE`, `compat3des` by default (3DES, SHA-1 MAC; plain `-legacy` is never used).
+- **Not touched:** a stack that already has a PKI from the old scripts (`ca.pem` without `pki-state.json`) keeps it. There is no migration.
+- **Fails closed:** with `pki-state.json` present, a missing file or an unreadable secret stops the start instead of generating a second PKI. A failed write to Secrets Manager installs nothing, so the next start can bootstrap again.
+- **Not in this step:** renewal and rotation, the CRLs and revocation scripts of the old flow, the alarms (#129).
+
+`pki-state.json` records the names, the p12 profile and the expiry dates, for the rotation orchestrator (#171).
+
 ## Retiring a key
 
 When a rotation is complete (#169, #172), schedule the old key for deletion with the full window:
@@ -88,5 +116,6 @@ The task role has no permission to do this. Afterwards remove the number from `r
 ## Tests
 
 - `npx jest test/unit/constructs/ca-kms-keys.test.ts test/unit/utils/pki-names.test.ts`: key spec, policy, alias names, alert rule.
+- `test/KmsCa/test-pki-bootstrap.sh`: the first-boot PKI end to end (names, constraints, chains, keystores, truststores, no CA key on the EFS, restore on a later start, fail-closed cases, validities, p12 profiles) with SoftHSM and a stub `aws`. Runs in CI.
 - `test/KmsCa/test-kms-ca.sh`: the wrapper end to end with SoftHSM standing in for KMS (root, intermediate, cross-certificate, enrollment CA, server cert, CRL, wrong-key and bad-input cases). Needs `softhsm2 opensc libengine-pkcs11-openssl jq`. It runs in CI.
 - Not covered by automated tests: the real KMS call and a task role in ECS. The module was validated against KMS in #134.

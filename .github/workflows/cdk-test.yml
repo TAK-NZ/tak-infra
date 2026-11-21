@@ -67,5 +67,8 @@ jobs:
       - name: Test kms-ca.sh (CA signing through PKCS#11)
         run: test/KmsCa/test-kms-ca.sh
 
+      - name: Test pki-bootstrap.sh (first-boot PKI)
+        run: test/KmsCa/test-pki-bootstrap.sh
+
       - name: Run tests with coverage report
         run: npm run test:coverage

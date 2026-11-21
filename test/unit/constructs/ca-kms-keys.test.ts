@@ -107,6 +107,18 @@ describe('CaKmsKeys construct', () => {
     template.hasResourceProperties('AWS::SNS::TopicPolicy', Match.anyValue());
   });
 
+  test('creates a retained Enrollment CA secret that only the signer role can read and write', () => {
+    const keys = create();
+    const template = Template.fromStack(stack);
+    template.resourceCountIs('AWS::SecretsManager::Secret', 1);
+    template.allResources('AWS::SecretsManager::Secret', { DeletionPolicy: 'Retain', UpdateReplacePolicy: 'Retain' });
+    const policies = Object.values(template.findResources('AWS::IAM::Policy')) as any[];
+    const statements = policies.flatMap(p => p.Properties.PolicyDocument.Statement as any[]);
+    const actions = statements.flatMap(s => ([] as string[]).concat(s.Action));
+    expect(actions).toEqual(expect.arrayContaining(['secretsmanager:GetSecretValue', 'secretsmanager:PutSecretValue']));
+    expect(stack.resolve(keys.enrollmentCaSecret.secretArn)).toBeDefined();
+  });
+
   test('email subscription only when an address is given', () => {
     create();
     Template.fromStack(stack).resourceCountIs('AWS::SNS::Subscription', 0);

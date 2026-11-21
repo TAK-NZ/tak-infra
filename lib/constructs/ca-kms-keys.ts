@@ -30,6 +30,7 @@ import {
   aws_events_targets as targets,
   aws_iam as iam,
   aws_kms as kms,
+  aws_secretsmanager as secretsmanager,
   aws_sns as sns,
   aws_sns_subscriptions as subscriptions,
   CfnOutput,
@@ -49,6 +50,8 @@ export interface CaKmsKeysProps {
   intermediateCaNumbers?: number[];
   /** Email address subscribed to the Root CA signing alert topic. Optional. */
   alertEmail?: string;
+  /** Key that encrypts the Enrollment CA secret. Default: the AWS managed key for Secrets Manager. */
+  secretEncryptionKey?: kms.IKey;
 }
 
 export interface CaKmsKey {
@@ -65,6 +68,12 @@ export class CaKmsKeys extends Construct {
   public readonly keys: CaKmsKey[];
   /** SNS topic that receives an alert on every Root CA signature. */
   public readonly rootSignAlertTopic: sns.Topic;
+  /**
+   * Holds the Enrollment CA keystore (PKCS#12 with the key and the chain [Cl, S, R]). `pki-bootstrap.sh`
+   * writes it on the first start and restores it into tmpfs on every later start, so the Enrollment CA
+   * key never sits on the EFS (#189). Retained: it is the only copy of that key.
+   */
+  public readonly enrollmentCaSecret: secretsmanager.Secret;
 
   constructor(scope: Construct, id: string, props: CaKmsKeysProps) {
     super(scope, id);
@@ -77,6 +86,14 @@ export class CaKmsKeys extends Construct {
       ...rootNumbers.map(n => this.createKey(props, 'root', n)),
       ...intermediateNumbers.map(n => this.createKey(props, 'intermediate', n)),
     ];
+
+    this.enrollmentCaSecret = new secretsmanager.Secret(this, 'EnrollmentCaSecret', {
+      description: `${props.environmentLabel} Enrollment CA keystore (key and chain), written by pki-bootstrap.sh`,
+      encryptionKey: props.secretEncryptionKey,
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
+    this.enrollmentCaSecret.grantRead(props.signerRole);
+    this.enrollmentCaSecret.grantWrite(props.signerRole);
 
     // Alert on every use of a Root CA key
     this.rootSignAlertTopic = new sns.Topic(this, 'RootCaSignAlertTopic', {
