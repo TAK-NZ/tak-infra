@@ -150,6 +150,15 @@ assert_eq "tmpfs directory is private" "$(stat -c %a "${TMPFS}")" "700"
 assert_eq "no work directory left behind" "$(ls "${TMPFS}" | grep -c '^work\.')" "0"
 assert_eq "the lock is released" "$([[ -d "${FILES}/.pki-bootstrap.lock" ]] && echo held || echo free)" "free"
 
+echo "-- file modes"
+mode() { stat -c %a "${FILES}/$1"; }
+for f in root-ca.pem intermediate-ca.pem enrollment-ca.pem ca.pem takserver.pem admin.pem takserver.jks truststore-intermediate-ca.jks truststore-phone.p12 fed-truststore.jks pki-state.json; do
+  assert_eq "${f} is world-readable" "$(mode "${f}")" "644"
+done
+for f in takserver.key admin.key admin.p12 takserver.p12; do
+  assert_eq "${f} is private" "$(mode "${f}")" "600"
+done
+
 echo "-- names and constraints"
 assert_eq "root subject" "$(subject "${FILES}/root-ca.pem")" "CN=TAK.NZ Try Root CA 01,O=TAK.NZ"
 assert_eq "intermediate subject" "$(subject "${FILES}/intermediate-ca.pem")" "CN=TAK.NZ Try Intermediate CA 01,O=TAK.NZ"

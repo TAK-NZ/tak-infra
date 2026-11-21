@@ -257,7 +257,14 @@ bootstrap() {
   cp intermediate-ca.pem "${FILES_DIR}/ca.pem"            # the issuing CA, as TAK's own flow names it (FederateCA secret)
   cp takserver.key "${FILES_DIR}/takserver.key"
   cp admin.key "${FILES_DIR}/admin.key"
-  chmod 600 "${FILES_DIR}/takserver.key" "${FILES_DIR}/admin.key"
+  # cp keeps the 600 of the work files, so set the modes explicitly: certificates and truststores are
+  # world-readable (as the TAK Server scripts leave them), keys and the p12 files with keys are not
+  local pub
+  for pub in root-ca.pem intermediate-ca.pem enrollment-ca.pem ca.pem takserver.pem admin.pem takserver.jks \
+             truststore-intermediate-ca.jks truststore-intermediate-ca.p12 truststore-phone.jks truststore-phone.p12 fed-truststore.jks; do
+    chmod 644 "${FILES_DIR}/${pub}"
+  done
+  chmod 600 "${FILES_DIR}/takserver.key" "${FILES_DIR}/admin.key" "${FILES_DIR}/admin.p12" "${FILES_DIR}/takserver.p12"
   # Signing keystore: tmpfs only, the EFS name is a symlink
   umask 077
   cp intermediate-ca-signing.p12 "${TMPFS_DIR}/intermediate-ca-signing.p12"
@@ -278,6 +285,7 @@ bootstrap() {
       notAfter: {root: $rootEnd, intermediate: $interEnd, enrollment: $enrEnd, server: $serverEnd, admin: $adminEnd}}' \
     > "${STATE_FILE}.new"
   mv "${STATE_FILE}.new" "${STATE_FILE}"
+  chmod 644 "${STATE_FILE}"
   log "bootstrap done"
 }
 
