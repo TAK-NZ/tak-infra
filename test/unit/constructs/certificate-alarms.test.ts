@@ -116,4 +116,20 @@ describe('CertificateAlarms construct', () => {
     expect(subs.filter(s => s.Properties.Endpoint === 'pki-alerts@example.org')).toHaveLength(2);
     expect(subs.filter(s => s.Properties.Endpoint === 'pki-info@example.org')).toHaveLength(1);
   });
+  test('every topic lets CloudWatch alarms publish (SnsAction adds no policy itself)', () => {
+    create();
+    const template = Template.fromStack(stack);
+    template.resourceCountIs('AWS::SNS::TopicPolicy', 3);
+    template.allResourcesProperties('AWS::SNS::TopicPolicy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([Match.objectLike({
+          Sid: 'AllowCloudWatchAlarms',
+          Effect: 'Allow',
+          Action: 'sns:Publish',
+          Principal: { Service: 'cloudwatch.amazonaws.com' },
+          Condition: Match.objectLike({ StringEquals: Match.anyValue(), ArnLike: Match.anyValue() }),
+        })]),
+      },
+    });
+  });
 });

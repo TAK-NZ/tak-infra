@@ -19,6 +19,8 @@ import {
   Duration,
   aws_cloudwatch as cloudwatch,
   aws_cloudwatch_actions as cwActions,
+  aws_iam as iam,
+  Stack,
   aws_sns as sns,
   aws_sns_subscriptions as subscriptions,
 } from 'aws-cdk-lib';
@@ -80,11 +82,24 @@ export class CertificateAlarms extends Construct {
   constructor(scope: Construct, id: string, props: CertificateAlarmsProps) {
     super(scope, id);
 
-    const topic = (name: string, severity: string): sns.Topic =>
-      new sns.Topic(this, `${name}Topic`, {
+    const topic = (name: string, severity: string): sns.Topic => {
+      const t = new sns.Topic(this, `${name}Topic`, {
         displayName: `TAK.NZ ${props.environmentLabel} certificate ${severity}`,
         enforceSSL: true,
       });
+      // CloudWatch alarms need an explicit statement to publish. SnsAction does not add one.
+      t.addToResourcePolicy(new iam.PolicyStatement({
+        sid: 'AllowCloudWatchAlarms',
+        actions: ['sns:Publish'],
+        principals: [new iam.ServicePrincipal('cloudwatch.amazonaws.com')],
+        resources: [t.topicArn],
+        conditions: {
+          StringEquals: { 'aws:SourceAccount': Stack.of(this).account },
+          ArnLike: { 'aws:SourceArn': `arn:${Stack.of(this).partition}:cloudwatch:${Stack.of(this).region}:${Stack.of(this).account}:alarm:*` },
+        },
+      }));
+      return t;
+    };
     this.alertTopic = topic('Alert', 'alert');
     this.criticalTopic = topic('Critical', 'critical');
     this.infoTopic = topic('Info', 'info');
