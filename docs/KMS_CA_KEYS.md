@@ -38,7 +38,7 @@ The task role is the only signer. The Root CA and Intermediate CA steps run in t
 
 ### Root CA signing alert needs a CloudTrail trail
 
-`kms:Sign` is a **read-only management event**. EventBridge only sees it when the account has a CloudTrail trail that logs management events (read and write) in the Region of the stack, and the rule has state `ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS` (the construct sets this). The stack does not create the trail. Check with `aws cloudtrail get-event-selectors --trail-name <trail>` that `ReadWriteType` is `All`. Without a trail the keys and the signing still work, but no alert is sent. Every call is also visible in CloudTrail event history within seconds.
+`kms:Sign` is a **read-only management event**. EventBridge only sees it when the account has a CloudTrail trail that logs management events (read and write) in the Region of the stack, and the rule has state `ENABLED_WITH_ALL_CLOUDTRAIL_MANAGEMENT_EVENTS` (the construct sets this). This stack does not create the trail: BaseInfra does (setting `cloudTrail.enabled`, default `true`, [base-infra#101](https://github.com/TAK-NZ/base-infra/issues/101)). An account that already has a trail that logs read events in this Region (for example 814704514736 and 453572736517) deploys BaseInfra with `--context createCloudTrail=false`. Check with `aws cloudtrail get-event-selectors --trail-name <trail>` that `ReadWriteType` is `All`. Without such a trail the keys and the signing still work, but no alert is sent. Every call is also visible in CloudTrail event history within seconds.
 
 ## Names
 

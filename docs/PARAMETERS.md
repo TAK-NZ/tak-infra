@@ -214,7 +214,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `pki.kmsCa.intermediateCaNumbers` | Intermediate CA key generations to create. Add the next number to start an Intermediate CA rotation | `[1]` |
 | `pki.kmsCa.alertEmail` | Email address that receives an alert on every Root CA signature | none |
 - Command line: `--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=Try`, plus `pkiRootCaNumbers=1,2`, `pkiIntermediateCaNumbers=1,2` and `pkiAlertEmail=...`.
-- The keys are never deleted by CloudFormation. The Root CA signing alert needs a CloudTrail trail that logs read and write management events. See [KMS_CA_KEYS.md](KMS_CA_KEYS.md).
+- The keys are never deleted by CloudFormation. The Root CA signing alert needs a CloudTrail trail that logs read and write management events; BaseInfra creates one by default (`cloudTrail.enabled`). See [KMS_CA_KEYS.md](KMS_CA_KEYS.md).
 
 ### **WebTAK OIDC Configuration**
 | Parameter | Description | dev-test | prod |
