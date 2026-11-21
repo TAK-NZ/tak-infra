@@ -34,6 +34,14 @@ assert_eq "run: an unknown subcommand is refused" "$?" "64"
 CLUSTER_LOCK_TTL=abc "${LIB}" run basic -- true 2> /dev/null
 assert_eq "run: a TTL that is not a number is refused" "$?" "64"
 
+echo "== a caller that reads the output through a pipe is not held up by the heartbeat"
+# Default TTL 90 s means a 22 s heartbeat sleep. A sleep that outlived the command kept the pipe open.
+start=$(date +%s)
+out="$(CLUSTER_LOCK_TTL=90 "${LIB}" run pipe -- echo piped 2>&1)"
+elapsed=$(($(date +%s) - start))
+assert_contains "the output reaches the caller" "${out}" "piped"
+assert_eq "...and it comes back at once (${elapsed} s)" "$((elapsed <= 3))" "1"
+
 echo "== sourced function"
 # shellcheck disable=SC1090
 source "${LIB}"
@@ -81,6 +89,29 @@ for i in 1 2 3 4; do
 done
 wait
 assert_eq "four fresh nodes: the work was done once" "$(wc -l < "${RUNS}")" "1"
+
+echo "== a lock directory that vanishes under a waiter never looks expired"
+# The holder releases between the waiter's "does it exist" and "when does it expire". A fresh lock that the
+# next node creates right after must not be broken because of that.
+now=$(date +%s)
+exp="$(_cl_expiry_of "${WORK}/gone.lock")"
+assert_eq "the expiry of a missing lock is not in the past" "$((exp >= now))" "1"
+mt="$(_cl_mtime "${WORK}/gone.lock.breaker")"
+assert_eq "the age of a missing breaker is not old" "$((now - mt <= 1))" "1"
+# A stress run of the first-boot pattern: eight contenders, tight polling, many rounds
+RUNS="${WORK}/stress.runs"
+bad=0
+for round in $(seq 1 15); do
+  STATE="${WORK}/stress.done.${round}"
+  : > "${RUNS}"
+  export STATE RUNS
+  for i in 1 2 3 4 5 6 7 8; do
+    CLUSTER_LOCK_POLL=0.01 "${LIB}" run --wait 60 "stress${round}" -- bash -c "$(declare -f bootstrap_once); bootstrap_once" 2> /dev/null &
+  done
+  wait
+  [[ "$(wc -l < "${RUNS}")" == 1 ]] || bad=$((bad + 1))
+done
+assert_eq "15 rounds of eight contenders: the work ran once each time" "${bad}" "0"
 
 echo "== not getting the lock"
 "${LIB}" run --wait 30 held -- sleep 4 2> /dev/null &

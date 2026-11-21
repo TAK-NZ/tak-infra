@@ -35,7 +35,9 @@
 
 _cl_log() { echo "cluster-lock: $*" >&2; }
 _cl_now() { date +%s; }
-_cl_mtime() { stat -c %Y "$1" 2> /dev/null || echo 0; }
+# A directory that vanished between the test and this call (its holder released it) counts as just
+# touched, never as old: "old" would make a fresh lock of the next node look expired.
+_cl_mtime() { stat -c %Y "$1" 2> /dev/null || _cl_now; }
 _cl_token_of() { cut -d' ' -f1 "$1/owner" 2> /dev/null || true; }
 _cl_host_of() { cut -d' ' -f3 "$1/owner" 2> /dev/null || true; }
 # Epoch second after which the lock directory counts as abandoned. A directory without an owner file
@@ -69,9 +71,16 @@ _cl_break_if_expired() { # lockdir
     rmdir "${breaker}" 2> /dev/null || true # a breaker that died halfway
   fi
   mkdir "${breaker}" 2> /dev/null || return 1
-  if [[ -d "${lock}" ]] && (($(_cl_now) > $(_cl_expiry_of "${lock}"))); then
-    _cl_log "breaking the expired lock ${lock##*/} (holder $(_cl_host_of "${lock}"))"
-    _cl_remove "${lock}" && broke=0
+  if [[ -d "${lock}" ]]; then
+    local seen host expiry
+    seen="$(_cl_token_of "${lock}")"
+    host="$(_cl_host_of "${lock}")"
+    expiry="$(_cl_expiry_of "${lock}")"
+    # Look once more right before removing: the owner must still be the one that was expired
+    if (($(_cl_now) > expiry)) && [[ "$(_cl_token_of "${lock}")" == "${seen}" ]]; then
+      _cl_log "breaking the expired lock ${lock##*/} (holder ${host})"
+      _cl_remove "${lock}" && broke=0
+    fi
   fi
   rmdir "${breaker}" 2> /dev/null || true
   return "${broke}"
@@ -106,10 +115,16 @@ _cl_acquire() { # lockdir ttl wait
 }
 # Runs in the background while the command runs.
 _cl_heartbeat() { # lockdir token ttl parent_pid
-  local lock="$1" token="$2" ttl="$3" parent="$4" interval=$(($3 / 4))
+  local lock="$1" token="$2" ttl="$3" parent="$4" interval=$(($3 / 4)) sleeper=""
   ((interval < 1)) && interval=1
+  # Stopped by the holder with SIGTERM. The sleep must not outlive it: as a child it would keep the
+  # holder's stdout and stderr open, and a caller that reads them through a pipe would wait for it.
+  trap '[[ -n "${sleeper}" ]] && kill "${sleeper}" 2> /dev/null; exit 0' TERM
   while kill -0 "${parent}" 2> /dev/null; do
-    sleep "${interval}"
+    sleep "${interval}" &
+    sleeper=$!
+    wait "${sleeper}"
+    sleeper=""
     kill -0 "${parent}" 2> /dev/null || break
     if [[ "$(_cl_token_of "${lock}")" != "${token}" ]]; then
       _cl_log "WARNING: ${lock##*/} is no longer ours (the heartbeat was late for more than ${ttl} s)"
