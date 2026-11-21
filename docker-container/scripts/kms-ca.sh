@@ -73,14 +73,24 @@ validate_env_label() {
 
 tier_of() { [[ "$1" == root-* ]] && echo root || echo intermediate; }
 
-# CN for a key label, e.g. root-ca-01 -> "TAK.NZ Try Root CA 01"
+# Names only (no KMS key behind them): the Enrollment Signing CA has a software key, so it has a name
+# but never a PKCS#11 token.
+validate_name_label() {
+  [[ "$1" =~ ^(root|intermediate|enrollment)-ca-[0-9]{2}$ ]] || die "invalid CA label '$1' (expected root-ca-NN, intermediate-ca-NN or enrollment-ca-NN)"
+  [[ "${1: -2}" != "00" ]] || die "invalid CA label '$1': the number starts at 01"
+}
+
+# CN for a CA label, e.g. root-ca-01 -> "TAK.NZ Try Root CA 01", enrollment-ca-01 -> "TAK.NZ Try Enrollment CA 01"
 common_name() {
-  local label="$1" tier number name
-  validate_label "${label}"
+  local label="$1" number name
+  validate_name_label "${label}"
   validate_env_label
-  tier="$(tier_of "${label}")"
   number="${label: -2}"
-  if [[ "${tier}" == root ]]; then name="Root CA"; else name="Intermediate CA"; fi
+  case "${label}" in
+    root-*)         name="Root CA" ;;
+    intermediate-*) name="Intermediate CA" ;;
+    *)              name="Enrollment CA" ;;
+  esac
   local cn="TAK.NZ ${PKI_ENV_LABEL} ${name} ${number}"
   (( ${#cn} <= 64 )) || die "common name '${cn}' is longer than 64 characters"
   echo "${cn}"
@@ -135,6 +145,7 @@ ensure_config() {
 cmd_csr() {
   [[ $# -eq 2 ]] || usage
   local label="$1" out="$2"
+  validate_label "${label}"
   ensure_config
   openssl req -new "${ENGINE_OPTS[@]}" -key "pkcs11:token=${label}" -sha256 \
     -subj "$(subject_for "${label}")" -out "${out}" || { rm -f "${out}"; die "could not create a CSR with '${label}'"; }

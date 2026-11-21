@@ -147,6 +147,39 @@ describe('TakInfraStack', () => {
       expect(slots).toContain('intermediate-ca-01=');
     });
 
+    test('passes the first-boot PKI settings to the container', () => {
+      const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
+      const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];
+      const env = defs[0].Properties.ContainerDefinitions[0].Environment as any[];
+      const byName = Object.fromEntries(env.map(e => [e.Name, e.Value]));
+      expect(byName.P12_PROFILE).toBe('compat3des');
+      expect(byName.PKI_ROOT_DAYS).toBe('7300');
+      expect(byName.PKI_INTERMEDIATE_DAYS).toBe('3650');
+      expect(byName.PKI_ENROLLMENT_CA_DAYS).toBe('1095');
+      expect(byName.PKI_SERVER_CERT_DAYS).toBe('365');
+      expect(byName.PKI_ADMIN_CERT_DAYS).toBe('365');
+      // the Enrollment CA secret (Ref to the secret)
+      expect(JSON.stringify(byName.PKI_ENROLLMENT_CA_SECRET)).toContain('EnrollmentCaSecret');
+      // CN first: service name, then host name, both under the hosted zone from BaseInfra (never literal)
+      const names = JSON.stringify(byName.PKI_SERVER_NAMES);
+      expect(names).toContain(`${MOCK_CONFIGS.DEV_TEST.takserver.servicename}.`);
+      expect(names).toContain(`${MOCK_CONFIGS.DEV_TEST.takserver.hostname}.`);
+      expect(names.indexOf(`${MOCK_CONFIGS.DEV_TEST.takserver.servicename}.`)).toBeLessThan(names.indexOf(`${MOCK_CONFIGS.DEV_TEST.takserver.hostname}.`));
+    });
+
+    test('custom validities and the aes256 profile reach the container', () => {
+      const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try', p12Profile: 'aes256', validity: { serverCertDays: 200 } } });
+      const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];
+      const byName = Object.fromEntries((defs[0].Properties.ContainerDefinitions[0].Environment as any[]).map(e => [e.Name, e.Value]));
+      expect(byName.P12_PROFILE).toBe('aes256');
+      expect(byName.PKI_SERVER_CERT_DAYS).toBe('200');
+      expect(byName.PKI_ROOT_DAYS).toBe('7300');
+    });
+
+    test('a validity that outlives its issuer fails the synth', () => {
+      expect(() => build({ kmsCa: { enabled: true, environmentLabel: 'Try', validity: { serverCertDays: 5000 } } })).toThrow(/must not outlive its issuer/);
+    });
+
     test('the signer in the key policy is the task role of the TAK Server task', () => {
       const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
       const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];

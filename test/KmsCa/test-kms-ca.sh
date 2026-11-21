@@ -81,12 +81,14 @@ pubkey_hash() { openssl x509 -in "$1" -noout -pubkey | sha256sum | cut -d' ' -f1
 # --- naming ------------------------------------------------------------------------------
 echo "naming"
 assert_eq "root CN" "$("${SCRIPT}" common-name root-ca-01)" "TAK.NZ Try Root CA 01"
+assert_eq "enrollment CA CN (a name only: its key is not in KMS)" "$("${SCRIPT}" common-name enrollment-ca-03)" "TAK.NZ Try Enrollment CA 03"
+assert_fails "an enrollment label is not a KMS key" "invalid key label" "${SCRIPT}" csr enrollment-ca-01 x.csr
 assert_eq "intermediate CN" "$("${SCRIPT}" common-name intermediate-ca-12)" "TAK.NZ Try Intermediate CA 12"
 assert_eq "environment label with a space" "$(PKI_ENV_LABEL='Dev Test' "${SCRIPT}" common-name root-ca-02)" "TAK.NZ Dev Test Root CA 02"
-assert_fails "rejects label root-ca-00" "invalid key label" "${SCRIPT}" common-name root-ca-00
-assert_fails "rejects label without number" "invalid key label" "${SCRIPT}" common-name root-ca
-assert_fails "rejects label with path characters" "invalid key label" "${SCRIPT}" common-name '../root-ca-01'
-assert_fails "rejects other tiers" "invalid key label" "${SCRIPT}" common-name enrollment-ca-01
+assert_fails "rejects label root-ca-00" "invalid CA label" "${SCRIPT}" common-name root-ca-00
+assert_fails "rejects label without number" "invalid CA label" "${SCRIPT}" common-name root-ca
+assert_fails "rejects label with path characters" "invalid CA label" "${SCRIPT}" common-name '../root-ca-01'
+assert_fails "rejects other tiers" "invalid CA label" "${SCRIPT}" common-name server-ca-01
 assert_fails "rejects environment label with a slash" "invalid PKI_ENV_LABEL" env PKI_ENV_LABEL='a/b' "${SCRIPT}" common-name root-ca-01
 assert_fails "rejects environment label with an injected DN" "invalid PKI_ENV_LABEL" env PKI_ENV_LABEL='x,CN=evil' "${SCRIPT}" common-name root-ca-01
 assert_fails "requires PKI_ENV_LABEL" "PKI_ENV_LABEL is not set" env -u PKI_ENV_LABEL "${SCRIPT}" common-name root-ca-01

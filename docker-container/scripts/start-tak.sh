@@ -62,8 +62,19 @@ if [ ! -e "/etc/cron.d/certbot" ]; then
     cp /etc/letsencrypt/certbot.cron /etc/cron.d/certbot || true
 fi
 
-# Check if TAK certs exist, otherwise generate them
+# New stacks with the Root CA and Intermediate CA keys in KMS (pki.kmsCa, #189) build their PKI with
+# pki-bootstrap.sh on the first start, and restore the Enrollment CA keystore into tmpfs on every later
+# start. Exit code 2 means "not applicable": the stack is not configured for it, or it already has a PKI
+# from the TAK Server scripts, and the flow below stays as it was.
 cd /opt/tak/certs
+PKI_BOOTSTRAP_RC=0
+/opt/tak/scripts/pki-bootstrap.sh || PKI_BOOTSTRAP_RC=$?
+if [ "${PKI_BOOTSTRAP_RC}" -ne 0 ] && [ "${PKI_BOOTSTRAP_RC}" -ne 2 ]; then
+    echo "Error: PKI bootstrap failed (exit code ${PKI_BOOTSTRAP_RC})"
+    exit 1
+fi
+mkdir -p "/opt/tak/certs/files/${TAKSERVER_QuickConnect_LetsEncrypt_Domain:-nodomainset}/"
+# Check if TAK certs exist, otherwise generate them
 if [ ! -f "/opt/tak/certs/files/ca.pem" ]; then
     echo "TAK Server - Generating new certificates..."
     echo "TAK Server - CA Country: ${TAKSERVER_CACert_Country:-NZ}"

@@ -7,11 +7,12 @@
  * - File names, aliases and PKCS#11 labels use a slug, never the CN with spaces.
  */
 
-export type CaTier = 'root' | 'intermediate';
+export type CaTier = 'root' | 'intermediate' | 'enrollment';
 
 const TIER_DISPLAY: Record<CaTier, string> = {
   root: 'Root CA',
   intermediate: 'Intermediate CA',
+  enrollment: 'Enrollment CA',
 };
 
 /** Longest value allowed for a CN (RFC 5280 upper bound, also `commonName_max` in TAK's config.cfg). */
@@ -59,7 +60,7 @@ export function caCommonName(label: string, tier: CaTier, n: number): string {
 
 /** Slug without the environment, e.g. `root-ca-01`. Used as the PKCS#11 token label. */
 export function caKeyLabel(tier: CaTier, n: number): string {
-  const label = `${tier === 'root' ? 'root-ca' : 'intermediate-ca'}-${pad(n)}`;
+  const label = `${tier}-ca-${pad(n)}`;
   if (label.length > MAX_PKCS11_LABEL_LENGTH) {
     throw new Error(`PKCS#11 label "${label}" is longer than ${MAX_PKCS11_LABEL_LENGTH} characters`);
   }
