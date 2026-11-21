@@ -147,6 +147,22 @@ describe('TakInfraStack', () => {
       expect(slots).toContain('intermediate-ca-01=');
     });
 
+    test('creates the certificate alarms and sends the Root CA signing alert to their alert topic', () => {
+      const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
+      template.resourceCountIs('AWS::CloudWatch::Alarm', 13);
+      template.resourceCountIs('AWS::SNS::Topic', 3);
+      template.hasResourceProperties('AWS::CloudWatch::Alarm', { Namespace: 'TAK/Certificates', MetricName: 'RootCAExpiryWarning',
+        Dimensions: [{ Name: 'Stack', Value: 'TAK-Try-TakInfra' }] });
+      const rule = Object.values(template.findResources('AWS::Events::Rule'))[0] as any;
+      const target = JSON.stringify(rule.Properties.Targets[0].Arn);
+      expect(target).toContain('AlertTopic');
+    });
+
+    test('creates no alarms when the PKI keys are off', () => {
+      const template = build();
+      template.resourceCountIs('AWS::CloudWatch::Alarm', 0);
+    });
+
     test('passes the first-boot PKI settings to the container', () => {
       const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
       const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];

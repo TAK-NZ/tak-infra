@@ -60,6 +60,7 @@ RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/download-plugin-config.sh \
     && chmod +x /opt/tak/scripts/kms-ca.sh \
     && chmod +x /opt/tak/scripts/pki-bootstrap.sh \
+    && chmod +x /opt/tak/scripts/cert-metrics.sh \
     && if [ -d "branding" ]; then \
         cd branding \
         && zip -u ../takserver.war index.html \

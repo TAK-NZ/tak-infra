@@ -23,6 +23,7 @@ import type {
 } from '../construct-configs';
 import { TAK_SERVER_PORTS } from '../utils/constants';
 import { CaKmsKeys } from './ca-kms-keys';
+import { CertificateAlarms } from './certificate-alarms';
 import { resolvePkiValidity, validateP12Profile } from '../utils/pki-settings';
 import { createAuthImportValue, AUTH_EXPORT_NAMES } from '../cloudformation-imports';
 import { Fn } from 'aws-cdk-lib';
@@ -103,6 +104,10 @@ export class TakServer extends Construct {
    * Root CA and Intermediate CA signing keys in KMS. Only set when `pki.kmsCa.enabled` (#136).
    */
   public caKmsKeys?: CaKmsKeys;
+  /**
+   * CloudWatch alarms and SNS topics for the certificate rotation work. Only set when `pki.kmsCa.enabled` (#129).
+   */
+  public certificateAlarms?: CertificateAlarms;
   /**
    * The ECS task definition for the TAK Server
    */
@@ -323,12 +328,19 @@ export class TakServer extends Construct {
     // the key policy names the role as the only principal allowed to sign.
     const kmsCa = props.contextConfig.pki?.kmsCa;
     if (kmsCa?.enabled) {
+      // Metrics and alarms for the certificate work (#129); the Root CA signing alert uses its alert topic
+      this.certificateAlarms = new CertificateAlarms(this, 'CertificateAlarms', {
+        environmentLabel: kmsCa.environmentLabel,
+        stackName: Stack.of(this).stackName,
+        alertEmail: kmsCa.alertEmail,
+        infoEmail: kmsCa.infoEmail,
+      });
       this.caKmsKeys = new CaKmsKeys(this, 'CaKmsKeys', {
         environmentLabel: kmsCa.environmentLabel,
         signerRole: taskRole,
         rootCaNumbers: kmsCa.rootCaNumbers,
         intermediateCaNumbers: kmsCa.intermediateCaNumbers,
-        alertEmail: kmsCa.alertEmail,
+        alertTopic: this.certificateAlarms.alertTopic,
         secretEncryptionKey: props.infrastructure.kmsKey,
       });
     }

@@ -70,5 +70,8 @@ jobs:
       - name: Test pki-bootstrap.sh (first-boot PKI)
         run: test/KmsCa/test-pki-bootstrap.sh
 
+      - name: Test cert-metrics.sh (certificate metrics)
+        run: test/KmsCa/test-cert-metrics.sh
+
       - name: Run tests with coverage report
         run: npm run test:coverage

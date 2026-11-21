@@ -85,8 +85,10 @@ export interface ContextEnvironmentConfig {
       rootCaNumbers?: number[];
       /** Intermediate CA key generations to create. Default `[1]`. */
       intermediateCaNumbers?: number[];
-      /** Email address that receives an alert on every Root CA signature. */
+      /** Email address that receives the alert and critical certificate messages (including every Root CA signature). */
       alertEmail?: string;
+      /** Email address that receives the informational certificate messages (a rotation step happened). */
+      infoEmail?: string;
       /** Validity of the first-boot PKI, in days (#189). Defaults: 7300 / 3650 / 1095 / 365 / 365. */
       validity?: {
         rootDays?: number;

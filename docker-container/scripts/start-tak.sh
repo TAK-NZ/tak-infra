@@ -361,6 +361,16 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */5 * * * * root mkdir -p /opt/tak/persistent-config/retention && cp -ru /opt/tak/conf/retention/* /opt/tak/persistent-config/retention/ 2>/dev/null || true
 EOF
 
+# Daily expiry check of the CA certificates for the alarms in #129 (only on stacks with the first-boot PKI,
+# the script itself does nothing otherwise). A loop in the container rather than a cron job: the loop keeps
+# the task's environment and credentials, which cron jobs do not get.
+(
+    sleep 60
+    while true; do
+        /opt/tak/scripts/cert-metrics.sh check-expiry || true
+        sleep 86400
+    done
+) &
 # Start cron in background
 echo "Certbot - Starting cron for certbot renewals"
 /usr/sbin/cron &
