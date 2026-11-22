@@ -50,8 +50,8 @@ die() { echo "TAK Server - PKI: ERROR: $*" >&2; exit 1; }
 
 WORK=""
 cleanup() {
-  # the work directory holds only files
-  [[ -n "${WORK}" && -d "${WORK}" ]] && { find "${WORK}" -type f -delete 2> /dev/null; rmdir "${WORK}" 2> /dev/null; }
+  # the work directory holds files and the CRL directory tree (find -delete removes the directories after their files)
+  [[ -n "${WORK}" && -d "${WORK}" ]] && { find "${WORK}" -delete 2> /dev/null || true; }
   return 0
 }
 trap cleanup EXIT
@@ -146,6 +146,8 @@ link_signing_keystore() { # dir with intermediate-ca-signing.{jks,p12}
 
 # shellcheck source=pki-trust-lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/pki-trust-lib.sh"
+# shellcheck source=pki-crl-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/pki-crl-lib.sh"
 # ---------------------------------------------------------------------------------------------
 # Restore: the Enrollment CA keystore from Secrets Manager into tmpfs
 # ---------------------------------------------------------------------------------------------
@@ -225,6 +227,8 @@ bootstrap() {
   # not in their store, #171, known limit)
   trust_default_manifest > trust-manifest.json
   trust_build trust-manifest.json "$(pwd)" "$(pwd)" || die "could not build the truststores"
+  # An empty CRL for Enrollment CA 01 (#204): CoreConfig.xml lists it, and a revocation only has to add to it
+  crl_create "$(pwd)/crl" enrollment-ca-01 "$(pwd)/enrollment-ca.pem" "$(pwd)/enrollment-ca.key" || die "could not create the CRL of Enrollment CA 01"
   log "storing the Enrollment CA keystore in Secrets Manager"
   aws secretsmanager put-secret-value --secret-id "${PKI_ENROLLMENT_CA_SECRET}" --secret-binary fileb://intermediate-ca-signing.p12 > /dev/null \
     || die "cannot write secret ${PKI_ENROLLMENT_CA_SECRET}; nothing was installed"
@@ -236,6 +240,7 @@ bootstrap() {
            truststore-intermediate-ca.jks truststore-intermediate-ca.p12 truststore-phone.jks truststore-phone.p12 fed-truststore.jks; do
     cp "${f}" "${FILES_DIR}/${f}"
   done
+  mkdir -p "${FILES_DIR}/crl" && cp -R crl/. "${FILES_DIR}/crl/" && chmod -R a+rX "${FILES_DIR}/crl" || die "could not install the CRL"
   cp intermediate-ca.pem "${FILES_DIR}/ca.pem"            # the issuing CA, as TAK's own flow names it (FederateCA secret)
   cp takserver.key "${FILES_DIR}/takserver.key"
   cp admin.key "${FILES_DIR}/admin.key"
@@ -290,6 +295,12 @@ run_locked() {
       [[ -s "${FILES_DIR}/${f}" ]] || die "${FILES_DIR}/${f} is missing although ${STATE_FILE} exists; not generating a second PKI"
     done
     restore_signing_keystore
+    # A PKI from before the CRLs gets an empty one for every Enrollment CA, before CoreConfig.xml is generated
+    trust_ensure_manifest || die "cannot write the trust manifest"
+    local crc=0
+    crl_ensure_all || crc=$?
+    # a missing CRL does not stop the start: revocation is not available for that CA until it is fixed
+    (( crc == 0 || crc == 10 )) || log "WARNING: not every Enrollment CA has a CRL (see above); revoke-cert.sh cannot revoke for the others"
     log "PKI ready (restored)"
   else
     bootstrap

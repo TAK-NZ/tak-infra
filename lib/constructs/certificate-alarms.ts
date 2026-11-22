@@ -64,6 +64,7 @@ export const CERTIFICATE_ALARMS: readonly CertificateMetricAlarm[] = [
   { metric: 'RotationWaiting', severity: 'alert', ...DAILY, description: 'A CA rotation waits for an approval or for the coverage check after its window has passed (#171)' },
   { metric: 'RotationSpareKeyMissing', dimensions: { Tier: 'root' }, severity: 'alert', ...DAILY, description: 'No spare Root CA key generation is left: add the next number to pki.kmsCa.rootCaNumbers (#171)' },
   { metric: 'RotationSpareKeyMissing', dimensions: { Tier: 'intermediate' }, severity: 'alert', ...DAILY, description: 'No spare Intermediate CA key generation is left: add the next number to pki.kmsCa.intermediateCaNumbers (#171)' },
+  { metric: 'CertificateRevoked', severity: 'alert', ...EVENT, description: 'A client certificate was revoked: it is in force after the next start of TAK Server (#204)' },
   { metric: 'CAExpired', severity: 'critical', ...DAILY, description: 'A CA certificate has expired' },
 ];
 

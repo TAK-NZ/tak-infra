@@ -223,6 +223,11 @@ run_locked() {
     done
   fi
   advance || failed=1
+  # every Enrollment CA has a CRL (a new generation gets an empty one); TAK Server loads it at its next start
+  local crc=0
+  trust_ensure_manifest && { crl_ensure_all || crc=$?; }
+  (( crc == 10 )) && RESTART_PENDING=1
+  (( crc == 1 )) && { log "WARNING: not every Enrollment CA has a CRL (see above)"; "${METRICS}" emit RotationStepFailed 1 || true; }
   if (( RESTART_PENDING )); then
     trigger_deployment || { log "ERROR: the rolling deployment could not be started: TAK Server loads the new trust only at its next restart"; "${METRICS}" emit RotationStepFailed 1 || true; failed=1; }
   fi

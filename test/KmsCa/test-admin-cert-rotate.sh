@@ -12,7 +12,7 @@ set -uo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/pki-harness.sh"
 BOOTSTRAP="${REPO_ROOT}/docker-container/scripts/pki-bootstrap.sh"
 ROTATE="${REPO_ROOT}/docker-container/scripts/admin-cert-rotate.sh"
-export StackName=TAK-Test CLUSTER_LOCK_POLL=0.2 PKI_ADMIN_CERT_RENEW_DAYS=60
+export StackName=TAK-Test CLUSTER_LOCK_POLL=0.2 PKI_ADMIN_CERT_RENEW_DAYS=60 ECS_Cluster_Name=test-cluster ECS_Service_Name=test-service PKI_ROTATE_RETRY_DELAY=0
 
 # --- TAK Server stubs ------------------------------------------------------------------------
 cat > "${WORK}/bin/java-stub" <<'EOF'
@@ -139,12 +139,23 @@ sum_after="$(sums ${CERT_SET})"
 assert_eq "check again: exit 0" "$(rotate check)" "0"
 assert_eq "check again: nothing rotated, the .prev copies are still there" "$(sums ${CERT_SET})/$(ls "${FILES}" | grep -c '^admin\..*\.prev$')" "${sum_after}/3"
 assert_eq "check again: no metric, no TAK Server call" "$(wc -l < "${STUB_LOG}/metrics.log")/$(wc -l < "${STUB_LOG}/java.log")" "0/0"
-echo "after the grace period the copies of the old key are deleted"
+echo "after the grace period the previous certificate is revoked and the copies of the old key are deleted"
+crl="${FILES}/crl/enrollment-ca-01.crl"
+reset_log
+assert_eq "before: the CRL of Enrollment CA 01 is empty" "$(openssl crl -in "${crl}" -noout -text | grep -c 'Serial Number:')" "0"
 jq '.adminPreviousRemoveAfter = "2020-01-01T00:00:00Z"' "${FILES}/pki-state.json" > "${WORK}/state.tmp" && cp "${WORK}/state.tmp" "${FILES}/pki-state.json"
 assert_eq "check: exit 0" "$(rotate check)" "0"
 assert_eq "the three .prev files are gone" "$(ls "${FILES}" | grep -c '^admin\..*\.prev$')" "0"
 assert_eq "the field is gone from the state file" "$(jq -r 'has("adminPreviousRemoveAfter")' "${FILES}/pki-state.json")" "false"
 assert_eq "the certificate itself was not rotated" "$(sums ${CERT_SET})" "${sum_after}"
+assert_eq "the CRL lists the previous admin certificate (serial ${old_serial}), and only that" "$(openssl crl -in "${crl}" -noout -text | grep 'Serial Number:' | sed 's/.*: //' | tr '\n' ' ')" "${old_serial} "
+assert_contains "...with the reason superseded" "$(openssl crl -in "${crl}" -noout -text)" "Superseded"
+assert_eq "...signed by Enrollment CA 01" "$(openssl crl -in "${crl}" -CAfile "${FILES}/enrollment-ca.pem" -noout -verify 2>&1 | tail -1)" "verify OK"
+assert_eq "the state file records the revocation" "$(jq -r '.adminPrevious[0].revokedAt | length > 0' "${FILES}/pki-state.json")" "true"
+assert_eq "TAK Server reads the CRL at start: one rolling deployment, CertificateRevoked emitted" "$(grep -c 'ecs update-service' "${STUB_LOG}/aws.log")/$(metric_count CertificateRevoked)/$(metric_count AdminCertRotationFailed)" "1/1/0"
+assert_eq "the current admin certificate is not in the CRL" "$(openssl crl -in "${crl}" -noout -text | grep -c "$(openssl x509 -in "${FILES}/admin.pem" -noout -serial | cut -d= -f2)")" "0"
+reset_log
+assert_eq "check again: exit 0, nothing more happens" "$(rotate check)/$(grep -c 'ecs update-service' "${STUB_LOG}/aws.log")/$(metric_count CertificateRevoked)" "0/0/0"
 echo "forced rotation"
 reset_log
 assert_eq "rotate although not due: exit 0" "$(rotate rotate)" "0"
@@ -268,6 +279,38 @@ printf 'other:1:1:1 60 othernode\n' > "${FILES}/.locks/admin-cert-rotation.lock"
 before="$(sums ${CERT_SET})"
 assert_eq "exit 75 after the wait" "$(rotate check CLUSTER_LOCK_WAIT=1)" "75"
 assert_eq "nothing changed" "$(sums ${CERT_SET})" "${before}"
+
+echo "a previous certificate that expired anyway is not revoked"
+new_stack expired 50
+rotate check > /dev/null
+reset_log
+jq '.adminPreviousRemoveAfter = "2020-01-01T00:00:00Z" | .adminPrevious[0].notAfter = "Jan  1 00:00:00 2020 GMT"' "${FILES}/pki-state.json" > "${WORK}/state.tmp" && cp "${WORK}/state.tmp" "${FILES}/pki-state.json"
+assert_eq "check: exit 0" "$(rotate check)" "0"
+assert_eq "no CRL entry, no deployment, marked expired, the copies are deleted" "$(openssl crl -in "${FILES}/crl/enrollment-ca-01.crl" -noout -text | grep -c 'Serial Number:')/$(grep -c 'ecs update-service' "${STUB_LOG}/aws.log")/$(jq -r '.adminPrevious[0].revokedAt' "${FILES}/pki-state.json")/$(ls "${FILES}" | grep -c '^admin\..*\.prev$')" "0/0/expired/0"
+
+echo "the revocation fails: the copies stay and the next run tries again"
+new_stack revfail 50
+rotate check > /dev/null
+reset_log
+old_serial2="$(openssl x509 -in "${FILES}/admin.pem.prev" -noout -serial | cut -d= -f2)"
+jq '.adminPreviousRemoveAfter = "2020-01-01T00:00:00Z"' "${FILES}/pki-state.json" > "${WORK}/state.tmp" && cp "${WORK}/state.tmp" "${FILES}/pki-state.json"
+cp -p "${FILES}/crl/db/enrollment-ca-01/crlnumber" "${WORK}/crlnumber.good"
+echo "zz" > "${FILES}/crl/db/enrollment-ca-01/crlnumber"
+assert_eq "check: exit 0 (the rotation itself is fine)" "$(rotate check)" "0"
+assert_contains "the log says the revocation failed" "$(cat "${WORK}/run.log")" "could not be revoked"
+assert_eq "the copies of the old key stay" "$(ls "${FILES}" | grep -c '^admin\..*\.prev$')" "3"
+assert_eq "AdminCertRotationFailed emitted, no deployment" "$(metric_count AdminCertRotationFailed)/$(grep -c 'ecs update-service' "${STUB_LOG}/aws.log")" "1/0"
+assert_eq "the state file does not say revoked" "$(jq -r '.adminPrevious[0].revokedAt // "no"' "${FILES}/pki-state.json")" "no"
+cp -p "${WORK}/crlnumber.good" "${FILES}/crl/db/enrollment-ca-01/crlnumber"
+reset_log
+assert_eq "after the fault is gone the next check revokes it" "$(rotate check)" "0"
+assert_eq "the CRL lists serial ${old_serial2}, the copies are deleted, one deployment" "$(openssl crl -in "${FILES}/crl/enrollment-ca-01.crl" -noout -text | grep 'Serial Number:' | sed 's/.*: //' | tr '\n' ' ')/$(ls "${FILES}" | grep -c '^admin\..*\.prev$')/$(grep -c 'ecs update-service' "${STUB_LOG}/aws.log")" "${old_serial2} /0/1"
+echo "a state file of an earlier version (no issuerAlias) still finds the Enrollment CA"
+new_stack noalias 50
+rotate check > /dev/null
+jq '.adminPreviousRemoveAfter = "2020-01-01T00:00:00Z" | del(.adminPrevious[0].issuerAlias)' "${FILES}/pki-state.json" > "${WORK}/state.tmp" && cp "${WORK}/state.tmp" "${FILES}/pki-state.json"
+reset_log
+assert_eq "check: exit 0 and the previous certificate is revoked" "$(rotate check)/$(openssl crl -in "${FILES}/crl/enrollment-ca-01.crl" -noout -text | grep -c 'Serial Number:')" "0/1"
 
 echo "settings"
 new_stack aes 50 P12_PROFILE=aes256

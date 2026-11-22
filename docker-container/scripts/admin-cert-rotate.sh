@@ -196,6 +196,48 @@ update_secret() {
   return 1
 }
 
+# The Enrollment CA (alias) that issued a recorded certificate: the recorded alias, else the one whose subject is the
+# recorded issuer
+previous_alias() { # entry json
+  local a ca issuer
+  a="$(jq -r '.issuerAlias // empty' <<< "$1")"
+  [[ -n "${a}" ]] && { echo "${a}"; return 0; }
+  issuer="$(jq -r '.issuer // empty' <<< "$1")"
+  while IFS= read -r a; do
+    ca="$(crl_ca_cert "${a}")"
+    [[ -s "${ca}" && "$(openssl x509 -in "${ca}" -noout -subject -nameopt RFC2253 | sed 's/^subject=//')" == "${issuer}" ]] && { echo "${a}"; return 0; }
+  done < <(crl_aliases)
+  return 1
+}
+# After the grace period the previous admin certificates are revoked in the CRL of their Enrollment CA (#204): until
+# then both certificates work, which is what lets the services pick up the new secret. A certificate that has expired
+# anyway is not revoked. Sets REVOKED_RESTART=1 when a CRL changed (TAK Server reads it at its next start).
+# Returns 1 if a revocation failed.
+REVOKED_RESTART=0
+revoke_previous() {
+  local n i entry alias rc failed=0 notafter
+  n="$(jq -r '.adminPrevious // [] | length' "${STATE_FILE}")"
+  for (( i = 0; i < n; i++ )); do
+    entry="$(jq -c ".adminPrevious[${i}]" "${STATE_FILE}")"
+    [[ "$(jq -r '.revokedAt // empty' <<< "${entry}")" == "" ]] || continue
+    notafter="$(jq -r '.notAfter' <<< "${entry}")"
+    if (( $(date -d "${notafter}" +%s 2> /dev/null || echo 0) <= $(date +%s) )); then
+      state_set --argjson i "${i}" '.adminPrevious[$i].revokedAt = "expired"' || true
+      continue
+    fi
+    alias="$(previous_alias "${entry}")" || { log "ERROR: cannot tell which Enrollment CA issued the previous admin certificate $(jq -r .serial <<< "${entry}")"; failed=1; continue; }
+    rc=0
+    crl_revoke_serial "${alias}" "$(jq -r .serial <<< "${entry}")" "${notafter}" "/O=TAK.NZ/CN=admin" superseded || rc=$?
+    if (( rc == 0 || rc == 10 )); then
+      (( rc == 10 )) && REVOKED_RESTART=1
+      state_set --argjson i "${i}" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '.adminPrevious[$i].revokedAt = $at' || log "WARNING: could not update ${STATE_FILE}"
+    else
+      failed=1
+    fi
+  done
+  return "${failed}"
+}
+
 # Work that does not depend on the expiry: a secret that could not be updated, and the old key copies.
 maintenance() {
   if [[ "$(jq -r '.adminSecretPending // false' "${STATE_FILE}")" == "true" ]]; then
@@ -210,9 +252,19 @@ maintenance() {
   after="$(jq -r '.adminPreviousRemoveAfter // empty' "${STATE_FILE}")"
   if [[ -n "${after}" ]] && (( $(date +%s) >= $(date -d "${after}" +%s 2> /dev/null || echo 0) )); then
     local f
-    for f in "${CERT_FILES[@]}"; do rm -f "${FILES_DIR}/${f}.prev"; done
-    state_set 'del(.adminPreviousRemoveAfter)' || log "WARNING: could not update ${STATE_FILE}"
-    log "the copies of the previous admin certificate (grace period over) are deleted"
+    REVOKED_RESTART=0
+    if revoke_previous; then
+      for f in "${CERT_FILES[@]}"; do rm -f "${FILES_DIR}/${f}.prev"; done
+      state_set 'del(.adminPreviousRemoveAfter)' || log "WARNING: could not update ${STATE_FILE}"
+      log "the previous admin certificates are revoked and their copies (grace period over) are deleted"
+      if (( REVOKED_RESTART )); then
+        "${METRICS}" emit CertificateRevoked 1 || true
+        trigger_deployment || { log "ERROR: the rolling deployment could not be started: the revocation is in force after the next start of TAK Server"; emit_failed; }
+      fi
+    else
+      log "ERROR: the previous admin certificate could not be revoked; the copies stay and the next run tries again"
+      emit_failed
+    fi
   fi
   return 0
 }
@@ -247,7 +299,8 @@ rotate_locked() { # [force]
     --arg fingerprint "$(openssl x509 -in "${FILES_DIR}/admin.pem" -noout -fingerprint -sha256 | cut -d= -f2)" \
     --arg notAfter "$(openssl x509 -in "${FILES_DIR}/admin.pem" -noout -enddate | cut -d= -f2)" \
     --arg issuer "$(openssl x509 -in "${FILES_DIR}/admin.pem" -noout -issuer -nameopt RFC2253 | sed 's/^issuer=//')" \
-    '{serial: $serial, fingerprint: $fingerprint, notAfter: $notAfter, issuer: $issuer}')" || previous="{}"
+    --arg issuerAlias "$(crl_alias_of_cert "${FILES_DIR}/admin.pem" 2> /dev/null || true)" \
+    '{serial: $serial, fingerprint: $fingerprint, notAfter: $notAfter, issuer: $issuer, issuerAlias: $issuerAlias}')" || previous="{}"
   # 4: swap
   if ! install_new; then
     log "ERROR: installing the new certificate failed; restoring the previous files"

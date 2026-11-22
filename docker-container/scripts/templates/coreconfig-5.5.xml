@@ -64,7 +64,7 @@
         <TAKServerCAConfig keystore="JKS" keystoreFile="/opt/tak/certs/files/intermediate-ca-signing.jks" keystorePass="atakatak" validityDays="365" signatureAlg="SHA256WithRSA" CAkey="/opt/tak/certs/files/intermediate-ca-signing" CAcertificate="/opt/tak/certs/files/intermediate-ca-signing"/>
     </certificateSigning>
     <security>
-        <tls keystore="JKS" keystoreFile="/opt/tak/certs/files/takserver.jks" keystorePass="atakatak" truststore="JKS" truststoreFile="/opt/tak/certs/files/truststore-intermediate-ca.jks" truststorePass="atakatak" keymanager="SunX509"/>
+        <tls keystore="JKS" keystoreFile="/opt/tak/certs/files/takserver.jks" keystorePass="atakatak" truststore="JKS" truststoreFile="/opt/tak/certs/files/truststore-intermediate-ca.jks" truststorePass="atakatak" keymanager="SunX509">{{CRL_ELEMENTS}}</tls>
     </security>
     <federation allowFederatedDelete="false" allowMissionFederation="true" allowDataFeedFederation="true" enableMissionFederationDisruptionTolerance="true" missionFederationDisruptionToleranceRecencySeconds="43200" enableFederation="{{FEDERATION_ENABLED}}">
         {{FEDERATION_SERVER_SECTION}}

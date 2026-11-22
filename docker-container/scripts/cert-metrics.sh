@@ -27,7 +27,7 @@ CERT_METRICS_NAMESPACE="TAK/Certificates"
 CERT_METRICS_KNOWN=(
   CertbotRenewalFailure TakServerCertRotated TakServerCertRotationFailed AdminCertRotated AdminCertRotationFailed SigningCARotated
   IntermediateCAExpiryWarning IntermediateCARotationPhase RootCAExpiryWarning RootCARotated
-  RotationCoverageStragglers CAExpired RotationStepFailed RotationWaiting RotationSpareKeyMissing
+  RotationCoverageStragglers CAExpired RotationStepFailed RotationWaiting RotationSpareKeyMissing CertificateRevoked
 )
 
 cm_log() { echo "Cert metrics - $*" >&2; }
