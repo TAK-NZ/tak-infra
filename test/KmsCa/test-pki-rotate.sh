@@ -81,6 +81,14 @@ assert_eq "...and the second one still ran" "$(tr '\n' ',' < "${STUB_LOG}/leaf.l
 assert_contains "...and it is logged" "$(cat "${WORK}/run.log")" "leaf1.sh check failed"
 rm -f "${STUB_LOG}/leaf-fails"
 
+echo "the default leaf scripts (the real admin and server certificate checks)"
+reset_log
+assert_eq "run without PKI_ROTATE_LEAF_SCRIPTS: exit 0" "$(env -u PKI_ROTATE_LEAF_SCRIPTS PKI_ROTATION_NOW=${T0} "${ROT}" run > "${WORK}/run.log" 2>&1; echo $?)" "0"
+assert_contains "the admin certificate check ran" "$(cat "${WORK}/run.log")" "admin certificate: 3"
+assert_contains "the server certificate check ran, after it" "$(cat "${WORK}/run.log")" "server certificate: 3"
+assert_eq "admin before server" "$(grep -o -e 'admin certificate:' -e 'server certificate:' "${WORK}/run.log" | tr '\n' ' ')" "admin certificate: server certificate: "
+assert_eq "no leaf script failed" "$(grep -c 'check failed' "${WORK}/run.log")" "0"
+
 echo "a rotation through its gates, with the clock moved by the test"
 reset_log
 touch "${STUB_LOG}/demo-due"

@@ -333,8 +333,14 @@ main() {
   load_scenarios
   case "${cmd}" in
     run)
-      local leaf rc=0 failed=0
-      for leaf in ${PKI_ROTATE_LEAF_SCRIPTS:-"${SCRIPT_DIR}/admin-cert-rotate.sh ${SCRIPT_DIR}/server-cert-rotate.sh"}; do
+      local leaf rc=0 failed=0 leaves
+      # the server certificate last: its rotation ends in a rolling deployment that replaces this task
+      if [[ -n "${PKI_ROTATE_LEAF_SCRIPTS:-}" ]]; then
+        read -ra leaves <<< "${PKI_ROTATE_LEAF_SCRIPTS}"
+      else
+        leaves=("${SCRIPT_DIR}/admin-cert-rotate.sh" "${SCRIPT_DIR}/server-cert-rotate.sh")
+      fi
+      for leaf in "${leaves[@]}"; do
         # a failing leaf rotation is reported by that script (its own metric); the rest still runs
         "${leaf}" check || log "WARNING: ${leaf##*/} check failed (status $?)"
       done
