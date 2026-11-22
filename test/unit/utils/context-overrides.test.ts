@@ -132,6 +132,14 @@ describe('Context Overrides', () => {
       const result = applyContextOverrides(appWith({ pkiAdminCertRenewDays: '45', pkiAdminCertGraceDays: '3' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
       expect(result.pki?.kmsCa?.validity).toEqual({ adminCertRenewDays: 45, adminCertGraceDays: 3 });
     });
+    test('the command line can set the rotation settings', () => {
+      const result = applyContextOverrides(appWith({ pkiRotationBufferDays: '30', pkiEnrollmentCaRotationDays: '300', pkiRotationRequireApproval: 'cut, retire' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.rotation).toEqual({ bufferDays: 30, enrollmentCaRotationDays: 300, requireApproval: ['cut', 'retire'] });
+    });
+    test('an empty approval list switches the approval off', () => {
+      const result = applyContextOverrides(appWith({ pkiRotationRequireApproval: '' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.rotation?.requireApproval).toEqual([]);
+    });
     test('the command line can set the info email', () => {
       const result = applyContextOverrides(appWith({ pkiInfoEmail: 'info@example.org' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
       expect(result.pki?.kmsCa?.infoEmail).toBe('info@example.org');

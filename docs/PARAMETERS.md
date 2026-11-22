@@ -210,15 +210,18 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 |-----------|-------------|---------|
 | `pki.kmsCa.enabled` | Create the Root CA and Intermediate CA signing keys in AWS KMS (#136). Off keeps today's behaviour and creates nothing | unset (off) |
 | `pki.kmsCa.environmentLabel` | Environment label in CA names and key aliases, for example `Try` gives `TAK.NZ Try Root CA 01` and `alias/tak-nz-try-root-ca-01`. 1 to 24 letters, digits, spaces or hyphens. Required when enabled | none |
-| `pki.kmsCa.rootCaNumbers` | Root CA key generations to create. Add the next number to start a Root CA rotation | `[1]` |
-| `pki.kmsCa.intermediateCaNumbers` | Intermediate CA key generations to create. Add the next number to start an Intermediate CA rotation | `[1]` |
+| `pki.kmsCa.rootCaNumbers` | Root CA key generations to create. Generation 2 exists from the start as the spare for the next rotation; after a rotation uses it, add the next number (the alarm `RotationSpareKeyMissing` says so) | `[1, 2]` |
+| `pki.kmsCa.intermediateCaNumbers` | Intermediate CA key generations to create (spare generation 2 from the start, as for the Root CA) | `[1, 2]` |
 | `pki.kmsCa.alertEmail` | Email address for the certificate alert and critical topics (every Root CA signature, expiry warnings, failed rotations) | none |
 | `pki.kmsCa.infoEmail` | Email address for the certificate info topic (a rotation step happened) | none |
 | `pki.kmsCa.validity.rootDays` / `intermediateDays` / `enrollmentCaDays` / `serverCertDays` / `adminCertDays` | Validity of the first-boot PKI in days (#189). A certificate must not outlive its issuer | 7300 / 3650 / 1095 / 365 / 365 |
 | `pki.kmsCa.validity.adminCertRenewDays` / `adminCertGraceDays` | The admin certificate is rotated when this many days or fewer are left (must be smaller than `adminCertDays`), and the copies of the previous admin key are deleted this many days after a rotation (#132) | 60 / 7 |
+| `pki.kmsCa.rotation.clientCertDays` / `bufferDays` | Validity of client certificates (the `validityDays` of TAK Server's CA configuration) and the safety buffer. W = both added is the window that every phone gets to receive a certificate from a new chain (#171) | 365 / 90 |
+| `pki.kmsCa.rotation.enrollmentCaRotationDays` | The Enrollment CA is replaced when it is this many days old. Its validity must cover this plus W (checked at synth) | 365 |
+| `pki.kmsCa.rotation.requireApproval` | Steps that wait for `pki-rotate.sh approve <scenario> <step>` (`bridge`, `cut`, `retire`, `switch`); an empty list switches approvals off | `["retire"]` |
 | `pki.kmsCa.validity.serverCertRenewDays` | The server certificate is rotated when this many days or fewer are left (#131). Must be smaller than `serverCertDays` | 60 |
 | `pki.kmsCa.p12Profile` | PKCS#12 profile of the user-facing p12 files: `compat3des` (3DES, SHA-1 MAC) or `aes256` | `compat3des` |
-- Command line: `--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=Try`, plus `pkiRootCaNumbers=1,2`, `pkiIntermediateCaNumbers=1,2`, `pkiAlertEmail=...`, `pkiInfoEmail=...`, `pkiP12Profile=aes256` and `pkiRootDays`, `pkiIntermediateDays`, `pkiEnrollmentCaDays`, `pkiServerCertDays`, `pkiAdminCertDays`, `pkiServerCertRenewDays`, `pkiAdminCertRenewDays`, `pkiAdminCertGraceDays`.
+- Command line: `--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=Try`, plus `pkiRootCaNumbers=1,2`, `pkiIntermediateCaNumbers=1,2`, `pkiAlertEmail=...`, `pkiInfoEmail=...`, `pkiP12Profile=aes256` and `pkiRootDays`, `pkiIntermediateDays`, `pkiEnrollmentCaDays`, `pkiServerCertDays`, `pkiAdminCertDays`, `pkiServerCertRenewDays`, `pkiAdminCertRenewDays`, `pkiAdminCertGraceDays`, `pkiClientCertDays`, `pkiRotationBufferDays`, `pkiEnrollmentCaRotationDays`, `pkiRotationRequireApproval` (comma separated).
 - The keys are never deleted by CloudFormation. The Root CA signing alert needs a CloudTrail trail that logs read and write management events; BaseInfra creates one by default (`cloudTrail.enabled`). See [KMS_CA_KEYS.md](KMS_CA_KEYS.md).
 
 ### **WebTAK OIDC Configuration**

@@ -44,9 +44,13 @@ export interface CaKmsKeysProps {
   environmentLabel: string;
   /** Role that signs with the keys (the TAK Server task role). */
   signerRole: iam.IRole;
-  /** Root CA generations to create keys for. Default `[1]`. */
+  /**
+   * Root CA generations to create keys for. Default `[1, 2]`: generation 2 is created from the start as the
+   * spare for the next rotation, so that the orchestrator (#171) never waits for an operator deploy. A key costs
+   * about US$1 a month and cannot be used by anyone but the signer role.
+   */
   rootCaNumbers?: number[];
-  /** Intermediate CA generations to create keys for. Default `[1]`. */
+  /** Intermediate CA generations to create keys for. Default `[1, 2]` (see `rootCaNumbers`). */
   intermediateCaNumbers?: number[];
   /**
    * Topic that receives the alert on every Root CA signature. Default: the construct creates its own
@@ -85,8 +89,8 @@ export class CaKmsKeys extends Construct {
     super(scope, id);
 
     validateEnvironmentLabel(props.environmentLabel);
-    const rootNumbers = this.uniqueNumbers(props.rootCaNumbers ?? [1], 'rootCaNumbers');
-    const intermediateNumbers = this.uniqueNumbers(props.intermediateCaNumbers ?? [1], 'intermediateCaNumbers');
+    const rootNumbers = this.uniqueNumbers(props.rootCaNumbers ?? [1, 2], 'rootCaNumbers');
+    const intermediateNumbers = this.uniqueNumbers(props.intermediateCaNumbers ?? [1, 2], 'intermediateCaNumbers');
 
     this.keys = [
       ...rootNumbers.map(n => this.createKey(props, 'root', n)),

@@ -20,10 +20,13 @@ describe('CaKmsKeys construct', () => {
     role = new iam.Role(stack, 'TaskRole', { assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com') });
   });
 
-  test('creates one RSA-4096 sign/verify key for the root and one for the intermediate by default', () => {
+  test('creates two RSA-4096 sign/verify keys for the root and two for the intermediate by default (generation 2 is the spare, #171)', () => {
     create();
     const template = Template.fromStack(stack);
-    template.resourceCountIs('AWS::KMS::Key', 2);
+    template.resourceCountIs('AWS::KMS::Key', 4);
+    for (const alias of ['root-ca-01', 'root-ca-02', 'intermediate-ca-01', 'intermediate-ca-02']) {
+      template.hasResourceProperties('AWS::KMS::Alias', { AliasName: `alias/tak-nz-try-${alias}` });
+    }
     template.allResourcesProperties('AWS::KMS::Key', {
       KeySpec: 'RSA_4096',
       KeyUsage: 'SIGN_VERIFY',

@@ -1,7 +1,7 @@
 /**
  * Test suite for the first-boot PKI settings (#189)
  */
-import { PKI_DEFAULT_VALIDITY_DAYS, resolvePkiValidity, validateP12Profile } from '../../../lib/utils/pki-settings';
+import { PKI_DEFAULT_ROTATION, PKI_DEFAULT_VALIDITY_DAYS, resolvePkiRotation, resolvePkiValidity, validateP12Profile } from '../../../lib/utils/pki-settings';
 
 describe('pki-settings', () => {
   test('defaults follow #171: root 20 y, intermediate 10 y, enrollment CA 3 y, server and admin 1 y', () => {
@@ -45,5 +45,26 @@ describe('pki-settings', () => {
     expect(validateP12Profile(undefined)).toBe('compat3des');
     expect(validateP12Profile('aes256')).toBe('aes256');
     expect(() => validateP12Profile('legacy-rc2')).toThrow(/Invalid pki.kmsCa.p12Profile/);
+  });
+});
+
+describe('resolvePkiRotation (#171)', () => {
+  test('defaults: C 365, B 90, W 455, Enrollment CA rotated at 365 days, approval for retire', () => {
+    expect(resolvePkiRotation()).toEqual({ clientCertDays: 365, bufferDays: 90, enrollmentCaRotationDays: 365, requireApproval: ['retire'], windowDays: 455 });
+    expect(PKI_DEFAULT_ROTATION.bufferDays).toBe(90);
+  });
+  test('W follows the client certificate validity and the buffer', () => {
+    expect(resolvePkiRotation({ clientCertDays: 180, bufferDays: 30 }).windowDays).toBe(210);
+  });
+  test('an Enrollment CA that cannot cover its rotation period plus W is refused', () => {
+    expect(() => resolvePkiRotation({ enrollmentCaRotationDays: 700 })).toThrow(/Enrollment CA validity/);
+    expect(() => resolvePkiRotation({}, resolvePkiValidity({ enrollmentCaDays: 800, serverCertDays: 365, adminCertDays: 365 }))).toThrow(/Enrollment CA validity \(800 days\)/);
+  });
+  test('an Intermediate CA that cannot fit a two-phase rotation is refused', () => {
+    expect(() => resolvePkiRotation({}, resolvePkiValidity({ intermediateDays: 1200 }))).toThrow(/Intermediate CA validity/);
+  });
+  test('an unknown approval step and a bad number are refused', () => {
+    expect(() => resolvePkiRotation({ requireApproval: ['explode'] })).toThrow(/requireApproval/);
+    expect(() => resolvePkiRotation({ bufferDays: 0 })).toThrow(/whole number of days/);
   });
 });

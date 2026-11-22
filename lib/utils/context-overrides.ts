@@ -86,6 +86,13 @@ function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']):
   const alertEmail = app.node.tryGetContext('pkiAlertEmail');
   const infoEmail = app.node.tryGetContext('pkiInfoEmail');
   const p12Profile = app.node.tryGetContext('pkiP12Profile');
+  const rotationDays = {
+    clientCertDays: parseContextNumber(app.node.tryGetContext('pkiClientCertDays')),
+    bufferDays: parseContextNumber(app.node.tryGetContext('pkiRotationBufferDays')),
+    enrollmentCaRotationDays: parseContextNumber(app.node.tryGetContext('pkiEnrollmentCaRotationDays')),
+  };
+  const rotationApproval = parseContextList(app.node.tryGetContext('pkiRotationRequireApproval'));
+  const rotationOverridden = Object.values(rotationDays).some(v => v !== undefined) || rotationApproval !== undefined;
   const days = {
     rootDays: parseContextNumber(app.node.tryGetContext('pkiRootDays')),
     intermediateDays: parseContextNumber(app.node.tryGetContext('pkiIntermediateDays')),
@@ -97,7 +104,7 @@ function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']):
     adminCertGraceDays: parseContextNumber(app.node.tryGetContext('pkiAdminCertGraceDays')),
   };
   const daysOverridden = Object.values(days).some(v => v !== undefined);
-  const overridden = [enabled, environmentLabel, rootCaNumbers, intermediateCaNumbers, alertEmail, infoEmail, p12Profile].some(v => v !== undefined) || daysOverridden;
+  const overridden = [enabled, environmentLabel, rootCaNumbers, intermediateCaNumbers, alertEmail, infoEmail, p12Profile].some(v => v !== undefined) || daysOverridden || rotationOverridden;
   if (!base?.kmsCa && !overridden) return base;
   const kmsCa = base?.kmsCa;
   const merged = {
@@ -108,6 +115,13 @@ function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']):
     alertEmail: alertEmail ?? kmsCa?.alertEmail,
     infoEmail: infoEmail ?? kmsCa?.infoEmail,
     p12Profile: p12Profile ?? kmsCa?.p12Profile,
+    rotation: rotationOverridden || kmsCa?.rotation
+      ? {
+        ...kmsCa?.rotation,
+        ...Object.fromEntries(Object.entries(rotationDays).filter(([, v]) => v !== undefined)),
+        ...(rotationApproval !== undefined ? { requireApproval: rotationApproval } : {}),
+      }
+      : undefined,
     validity: daysOverridden || kmsCa?.validity
       ? { ...kmsCa?.validity, ...Object.fromEntries(Object.entries(days).filter(([, v]) => v !== undefined)) }
       : undefined,

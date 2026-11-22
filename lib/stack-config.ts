@@ -81,9 +81,13 @@ export interface ContextEnvironmentConfig {
       enabled: boolean;
       /** Environment label in CA names and aliases, e.g. `Try` -> `TAK.NZ Try Root CA 01`. */
       environmentLabel: string;
-      /** Root CA key generations to create. Default `[1]`. Add the next number to start a rotation. */
+      /**
+       * Root CA key generations to create. Default `[1, 2]`: the next generation exists from the start as the spare
+       * for the next rotation. After a rotation uses the spare, add the next number (the orchestrator raises
+       * `RotationSpareKeyMissing` years before it is needed).
+       */
       rootCaNumbers?: number[];
-      /** Intermediate CA key generations to create. Default `[1]`. */
+      /** Intermediate CA key generations to create. Default `[1, 2]` (see `rootCaNumbers`). */
       intermediateCaNumbers?: number[];
       /** Email address that receives the alert and critical certificate messages (including every Root CA signature). */
       alertEmail?: string;
@@ -102,6 +106,17 @@ export interface ContextEnvironmentConfig {
         adminCertRenewDays?: number;
         /** Days until the copies of the previous admin key are deleted after a rotation (#132). Default 7. */
         adminCertGraceDays?: number;
+      };
+      /** Rotation orchestrator settings (#171). */
+      rotation?: {
+        /** Validity of client certificates in days: the `validityDays` of TAK Server's CA config. Default 365. */
+        clientCertDays?: number;
+        /** Safety buffer B in days; the overlap window W is `clientCertDays + bufferDays`. Default 90. */
+        bufferDays?: number;
+        /** The Enrollment CA is replaced when it is this many days old. Default 365. */
+        enrollmentCaRotationDays?: number;
+        /** Steps that wait for `pki-rotate.sh approve <scenario> <step>` before they run. Default: the destructive steps `retire`. */
+        requireApproval?: string[];
       };
       /** PKCS#12 profile of the user-facing p12 files: `compat3des` (default) or `aes256` (#133). */
       p12Profile?: 'compat3des' | 'aes256';

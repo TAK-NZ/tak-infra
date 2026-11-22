@@ -19,10 +19,11 @@ describe('CertificateAlarms construct', () => {
     create();
     const template = Template.fromStack(stack);
     template.resourceCountIs('AWS::CloudWatch::Alarm', CERTIFICATE_ALARMS.length);
-    expect(CERTIFICATE_ALARMS.length).toBe(14);
+    expect(CERTIFICATE_ALARMS.length).toBe(18);
     const names = CERTIFICATE_ALARMS.map(a => a.metric);
     for (const m of ['CertbotRenewalFailure', 'TakServerCertRotated', 'TakServerCertRotationFailed', 'AdminCertRotated', 'AdminCertRotationFailed', 'SigningCARotated',
-      'IntermediateCAExpiryWarning', 'IntermediateCARotationPhase', 'RootCAExpiryWarning', 'RootCARotated', 'RotationCoverageStragglers', 'CAExpired']) {
+      'IntermediateCAExpiryWarning', 'IntermediateCARotationPhase', 'RootCAExpiryWarning', 'RootCARotated', 'RotationCoverageStragglers', 'CAExpired',
+      'RotationStepFailed', 'RotationWaiting', 'RotationSpareKeyMissing']) {
       expect(names).toContain(m);
     }
     expect(names.filter(m => m === 'IntermediateCARotationPhase')).toHaveLength(3);
@@ -42,6 +43,16 @@ describe('CertificateAlarms construct', () => {
     });
   });
 
+  test('the spare key alarm exists for the Root CA and the Intermediate CA and carries the Tier dimension', () => {
+    create();
+    const template = Template.fromStack(stack);
+    for (const tier of ['root', 'intermediate']) {
+      template.hasResourceProperties('AWS::CloudWatch::Alarm', {
+        MetricName: 'RotationSpareKeyMissing',
+        Dimensions: [{ Name: 'Stack', Value: 'TAK-Try-TakInfra' }, { Name: 'Tier', Value: tier }],
+      });
+    }
+  });
   test('the rotation phase alarms carry the Phase dimension', () => {
     create();
     const template = Template.fromStack(stack);

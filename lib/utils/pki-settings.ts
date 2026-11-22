@@ -69,3 +69,58 @@ export function validateP12Profile(profile: string | undefined): P12Profile {
   }
   return p as P12Profile;
 }
+
+/**
+ * Settings of the rotation orchestrator (#171, `pki-rotate.sh`). W, the window in which every phone must get a
+ * new certificate before trust is removed, is `clientCertDays + bufferDays` (455 days by default).
+ */
+export interface PkiRotationConfig {
+  clientCertDays?: number;
+  bufferDays?: number;
+  enrollmentCaRotationDays?: number;
+  requireApproval?: string[];
+}
+export const PKI_DEFAULT_ROTATION: Required<PkiRotationConfig> = {
+  clientCertDays: 365,
+  bufferDays: 90,
+  enrollmentCaRotationDays: 365,
+  requireApproval: ['retire'],
+};
+/** Steps that exist in the rotation scenarios; an approval can only be required for one of these. */
+export const PKI_ROTATION_STEP_NAMES = ['bridge', 'cut', 'retire', 'switch'] as const;
+export function resolvePkiRotation(
+  config: PkiRotationConfig = {},
+  validity: Required<PkiValidityConfig> = resolvePkiValidity(),
+): Required<PkiRotationConfig> & { windowDays: number } {
+  const r = { ...PKI_DEFAULT_ROTATION, ...Object.fromEntries(Object.entries(config).filter(([, x]) => x !== undefined)) } as Required<PkiRotationConfig>;
+  for (const name of ['clientCertDays', 'bufferDays', 'enrollmentCaRotationDays'] as const) {
+    if (!Number.isInteger(r[name]) || r[name] < 1 || r[name] > 36500) {
+      throw new Error(`Invalid pki.kmsCa.rotation.${name} ${r[name]}: must be a whole number of days from 1 to 36500`);
+    }
+  }
+  for (const step of r.requireApproval) {
+    if (!(PKI_ROTATION_STEP_NAMES as readonly string[]).includes(step)) {
+      throw new Error(`Invalid pki.kmsCa.rotation.requireApproval '${step}': use ${PKI_ROTATION_STEP_NAMES.join(', ')}`);
+    }
+  }
+  const windowDays = r.clientCertDays + r.bufferDays;
+  // A client certificate is valid clientCertDays and may be issued on the last day before a rotation, so an
+  // Enrollment CA must live for its rotation period plus a whole client certificate lifetime plus the buffer
+  if (validity.enrollmentCaDays < r.enrollmentCaRotationDays + windowDays) {
+    throw new Error(
+      `pki.kmsCa: the Enrollment CA validity (${validity.enrollmentCaDays} days) must be at least its rotation period ` +
+      `(${r.enrollmentCaRotationDays}) plus the window W (${windowDays} = client certificate ${r.clientCertDays} + buffer ${r.bufferDays})`
+    );
+  }
+  // The Intermediate CA needs two windows (bridge and cut) plus a year of margin before it expires
+  if (validity.intermediateDays < 2 * windowDays + 365) {
+    throw new Error(
+      `pki.kmsCa: the Intermediate CA validity (${validity.intermediateDays} days) must be at least 2 x W + 365 (${2 * windowDays + 365}) ` +
+      'for a two-phase rotation to fit'
+    );
+  }
+  if (validity.rootDays < windowDays + 365) {
+    throw new Error(`pki.kmsCa: the Root CA validity (${validity.rootDays} days) must be at least W + 365 (${windowDays + 365})`);
+  }
+  return { ...r, windowDays };
+}

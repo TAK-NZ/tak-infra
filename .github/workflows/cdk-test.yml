@@ -64,6 +64,8 @@ jobs:
           fi
           ./scripts/github/check-breaking-changes.sh tak prod $OVERRIDE
 
+      - name: Type check (ts-node compiles the app at deploy time; Jest does not catch every error)
+        run: npx tsc --noEmit -p .
       - name: Test kms-ca.sh (CA signing through PKCS#11)
         run: test/KmsCa/test-kms-ca.sh
 
@@ -82,6 +84,8 @@ jobs:
           done
       - name: Test server-cert-rotate.sh (TAK Server certificate rotation)
         run: test/KmsCa/test-server-cert-rotate.sh
+      - name: Test pki-rotate.sh (rotation orchestrator)
+        run: test/KmsCa/test-pki-rotate.sh
       - name: Test admin-cert-rotate.sh (admin certificate rotation)
         run: test/KmsCa/test-admin-cert-rotate.sh
       - name: Test admin-p12-reexport.sh (admin.p12 readable by OpenSSL 3)

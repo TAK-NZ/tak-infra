@@ -24,7 +24,7 @@ import type {
 import { TAK_SERVER_PORTS } from '../utils/constants';
 import { CaKmsKeys } from './ca-kms-keys';
 import { CertificateAlarms } from './certificate-alarms';
-import { resolvePkiValidity, validateP12Profile } from '../utils/pki-settings';
+import { resolvePkiRotation, resolvePkiValidity, validateP12Profile } from '../utils/pki-settings';
 import { createAuthImportValue, AUTH_EXPORT_NAMES } from '../cloudformation-imports';
 import { Fn } from 'aws-cdk-lib';
 
@@ -478,7 +478,12 @@ export class TakServer extends Construct {
           P12_PROFILE: validateP12Profile(props.contextConfig.pki!.kmsCa!.p12Profile),
           ...(() => {
             const v = resolvePkiValidity(props.contextConfig.pki!.kmsCa!.validity);
+            const r = resolvePkiRotation(props.contextConfig.pki!.kmsCa!.rotation, v);
             return {
+              PKI_CLIENT_CERT_DAYS: String(r.clientCertDays),
+              PKI_ROTATION_BUFFER_DAYS: String(r.bufferDays),
+              PKI_ENROLLMENT_CA_ROTATION_DAYS: String(r.enrollmentCaRotationDays),
+              PKI_ROTATION_REQUIRE_APPROVAL: r.requireApproval.join(','),
               PKI_ROOT_DAYS: String(v.rootDays),
               PKI_INTERMEDIATE_DAYS: String(v.intermediateDays),
               PKI_ENROLLMENT_CA_DAYS: String(v.enrollmentCaDays),
