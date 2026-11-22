@@ -93,8 +93,14 @@ load_settings() {
   SAN="DNS:takserver"
   for n in "${NAMES[@]}"; do SAN="${SAN},DNS:${n}"; done
 
-  for slot in root-ca-01 intermediate-ca-01; do
-    [[ ",${PKI_KMS_CA_KEYS}," == *",${slot}="* ]] || die "PKI_KMS_CA_KEYS has no ${slot}: a new stack starts with generation 01"
+  # A new stack starts with generation 01. A stack with a PKI takes its generations from the state file: after a rotation
+  # (#171) an operator removes the old generation from the configuration, and every script must still start (#172).
+  local slots=(root-ca-01 intermediate-ca-01)
+  if [[ -f "${STATE_FILE}" ]]; then
+    slots=("$(printf 'root-ca-%02d' "$(jq -r '.numbers.root // 1' "${STATE_FILE}")")" "$(printf 'intermediate-ca-%02d' "$(jq -r '.numbers.intermediate // 1' "${STATE_FILE}")")")
+  fi
+  for slot in "${slots[@]}"; do
+    [[ ",${PKI_KMS_CA_KEYS}," == *",${slot}="* ]] || die "PKI_KMS_CA_KEYS has no ${slot}: $([[ -f "${STATE_FILE}" ]] && echo "it is the generation in use (${STATE_FILE})" || echo 'a new stack starts with generation 01')"
   done
   export PKI_ENV_LABEL
   ROOT_CN="$("${KMS_CA}" common-name root-ca-01)"
@@ -243,6 +249,7 @@ bootstrap() {
   mkdir -p "${FILES_DIR}/crl" && cp -R crl/. "${FILES_DIR}/crl/" || die "could not install the CRL"
   crl_combine > /dev/null || [[ $? == 10 ]] || die "could not write the combined CRL file"
   chmod -R a+rX "${FILES_DIR}/crl" || die "could not install the CRL"
+  cp s-r.pem "${FILES_DIR}/enrollment-chain.pem" && chmod 644 "${FILES_DIR}/enrollment-chain.pem"   # the chain above Enrollment CA 01 (#172)
   cp intermediate-ca.pem "${FILES_DIR}/ca.pem"            # the issuing CA, as TAK's own flow names it (FederateCA secret)
   cp takserver.key "${FILES_DIR}/takserver.key"
   cp admin.key "${FILES_DIR}/admin.key"
@@ -297,6 +304,7 @@ run_locked() {
       [[ -s "${FILES_DIR}/${f}" ]] || die "${FILES_DIR}/${f} is missing although ${STATE_FILE} exists; not generating a second PKI"
     done
     restore_signing_keystore
+    enrollment_chain_file > /dev/null || die "cannot write ${FILES_DIR}/enrollment-chain.pem"
     # A PKI from before the CRLs gets an empty one for every Enrollment CA, before CoreConfig.xml is generated
     trust_ensure_manifest || die "cannot write the trust manifest"
     local crc=0

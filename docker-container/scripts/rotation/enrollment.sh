@@ -107,7 +107,7 @@ enrollment_create_in() { # workdir new
     openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted "${FILES_DIR}/intermediate-ca.pem" "${w}/cl.pem" > /dev/null 2>&1 \
       || { log "ERROR: the new Enrollment CA does not chain to the Intermediate CA and the Root CA"; return 1; }
     [[ "$(pub_of_key "${w}/cl.key")" == "$(pub_of_cert "${w}/cl.pem")" ]] || { log "ERROR: the new certificate does not match its key"; return 1; }
-    signing_keystore_build "${w}/cl.pem" "${w}/cl.key" "${FILES_DIR}/intermediate-ca.pem" "${FILES_DIR}/root-ca.pem" "${p12}" || { log "ERROR: could not build the keystore"; return 1; }
+    signing_keystore_build "${w}/cl.pem" "${w}/cl.key" "$(enrollment_chain_file)" "${p12}" || { log "ERROR: could not build the keystore"; return 1; }
     signing_store "${new}" "${p12}" || return 1
   fi
   trust_add "${alias}" "${w}/cl.pem" server || return 1

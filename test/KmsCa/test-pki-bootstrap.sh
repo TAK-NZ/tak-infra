@@ -137,6 +137,20 @@ assert_eq "the certificates are unchanged" "$(sha256sum "${FILES}/takserver.pem"
 assert_eq "the signing keystore is back in tmpfs with its chain" "$(chain_len "${FILES}/intermediate-ca-signing.jks")" "3"
 assert_eq "tmpfs directory is private again" "$(stat -c %a "${TMPFS}")" "700"
 
+echo "the chain above the Enrollment CA (#172)"
+assert_eq "enrollment-chain.pem is [S, R] and public" "$(cmp "${FILES}/enrollment-chain.pem" <(cat "${FILES}/intermediate-ca.pem" "${FILES}/root-ca.pem") && echo same)/$(stat -c %a "${FILES}/enrollment-chain.pem")" "same/644"
+find "${FILES}/enrollment-chain.pem" -delete
+rc_is "a PKI from before the file: the start writes it" 0
+assert_eq "...[S, R] again" "$(cmp "${FILES}/enrollment-chain.pem" <(cat "${FILES}/intermediate-ca.pem" "${FILES}/root-ca.pem") && echo same)" "same"
+echo "the key generations in use come from the state file (#172)"
+KEYS_NOW="${PKI_KMS_CA_KEYS}"
+jq '.numbers.root = 2 | .numbers.intermediate = 2' "${FILES}/pki-state.json" > "${WORK}/s.json" && cp "${WORK}/s.json" "${FILES}/pki-state.json"
+( export PKI_KMS_CA_KEYS="root-ca-02=33333333-3333-4333-8333-333333333333,intermediate-ca-02=44444444-4444-4444-8444-444444444444"; rc="$("${SCRIPT}" > "${WORK}/run.log" 2>&1; echo $?)"; [[ "${rc}" == 0 ]] ) \
+  && pass "generation 1 removed from the configuration, generation 2 in use: the start works" || { fail "generation 1 removed, generation 2 in use: the start works"; tail -3 "${WORK}/run.log"; }
+( export PKI_KMS_CA_KEYS="root-ca-01=11111111-1111-4111-8111-111111111111,intermediate-ca-01=22222222-2222-4222-8222-222222222222"; rc="$("${SCRIPT}" > "${WORK}/run.log" 2>&1; echo $?)"; [[ "${rc}" == 1 ]] ) \
+  && pass "the generation in use is not in the configuration: exit 1" || fail "the generation in use is not in the configuration: exit 1"
+assert_contains "...the message names it" "$(cat "${WORK}/run.log")" "has no root-ca-02: it is the generation in use"
+jq '.numbers.root = 1 | .numbers.intermediate = 1' "${FILES}/pki-state.json" > "${WORK}/s.json" && cp "${WORK}/s.json" "${FILES}/pki-state.json"
 echo "fail closed"
 mv "${SECRET}" "${SECRET}.gone"
 find "${TMPFS}" -delete
