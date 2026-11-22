@@ -68,6 +68,7 @@ RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/pki-rotate.sh \
     && chmod +x /opt/tak/scripts/pki-trust.sh \
     && chmod +x /opt/tak/scripts/revoke-cert.sh \
+    && chmod +x /opt/tak/scripts/rotation-coverage.sh \
     && chmod +x /opt/tak/scripts/admin-p12-reexport.sh \
     && if [ -d "branding" ]; then \
         cd branding \

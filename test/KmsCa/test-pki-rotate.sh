@@ -22,7 +22,13 @@ EOF
 cp "${WORK}/leaf.sh" "${WORK}/leaf1.sh"; cp "${WORK}/leaf.sh" "${WORK}/leaf2.sh"; chmod +x "${WORK}/leaf1.sh" "${WORK}/leaf2.sh"
 cat > "${WORK}/coverage.sh" <<'EOF'
 #!/bin/bash
-cat "${STUB_LOG}/coverage.count" 2> /dev/null || echo 0
+# the coverage check: logs its arguments, prints the number, or the list/JSON of users from the files of the test
+echo "$*" >> "${STUB_LOG}/coverage-args.log"
+case "$*" in
+  *--json*) cat "${STUB_LOG}/coverage.json" 2> /dev/null || echo '{"stragglers":0,"unknown":0,"activeDays":30,"users":[]}' ;;
+  *--list*) cat "${STUB_LOG}/coverage.txt" 2> /dev/null || echo "(nobody)" ;;
+  *) cat "${STUB_LOG}/coverage.count" 2> /dev/null || echo 0 ;;
+esac
 EOF
 chmod +x "${WORK}/coverage.sh"
 mkdir -p "${WORK}/scenarios"
@@ -32,6 +38,7 @@ demo_summary() { echo "demo"; }
 demo_due() { [[ -e "${STUB_LOG}/demo-due" ]]; }
 demo_steps() { echo "start bridge cut retire"; }
 demo_gate() { case "$1" in start) echo none ;; bridge) echo window ;; cut) echo "window coverage" ;; retire) echo window ;; esac; }
+demo_coverage_args() { echo "--issued-before 12345"; }
 demo_deadline() { [[ -f "${STUB_LOG}/demo-deadline-$1" ]] && cat "${STUB_LOG}/demo-deadline-$1"; return 0; }
 demo_run() {
   echo "run $1 at $(now)" >> "${STUB_LOG}/demo.log"
@@ -49,10 +56,10 @@ orch() { # epoch [env assignments...] -> exit status; output in run.log
   local at="$1"
   shift
   env PKI_ROTATION_NOW="${at}" PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf1.sh ${WORK}/leaf2.sh" \
-    PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh" "$@" "${ROT}" run > "${WORK}/run.log" 2>&1
+    PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh" PKI_ALERT_TOPIC_ARN="arn:aws:sns:ap-southeast-6:1:alert" PKI_ENV_LABEL=Test "$@" "${ROT}" run > "${WORK}/run.log" 2>&1
   echo $?
 }
-reset_log() { : > "${STUB_LOG}/metrics.log"; : > "${STUB_LOG}/ecs.log"; : > "${STUB_LOG}/demo.log"; : > "${STUB_LOG}/leaf.log"; find "${STUB_LOG}" -maxdepth 1 -name 'demo-*' -delete; echo 0 > "${STUB_LOG}/coverage.count"; }
+reset_log() { : > "${STUB_LOG}/sns.log"; : > "${STUB_LOG}/coverage-args.log"; find "${STUB_LOG}" -maxdepth 1 -name 'coverage.*' -delete; : > "${STUB_LOG}/metrics.log"; : > "${STUB_LOG}/ecs.log"; : > "${STUB_LOG}/demo.log"; : > "${STUB_LOG}/leaf.log"; find "${STUB_LOG}" -maxdepth 1 -name 'demo-*' -delete; echo 0 > "${STUB_LOG}/coverage.count"; }
 metric_count() { grep -c -- "--metric-name $1 " "${STUB_LOG}/metrics.log"; }
 metric_last() { grep -- "--metric-name $1 " "${STUB_LOG}/metrics.log" | tail -1 | sed 's/.*--value \([^ ]*\).*/\1/'; }
 state() { jq -r "$1" "${FILES}/rotation-state.json"; }
@@ -127,6 +134,45 @@ assert_eq "no active rotation; one history entry: done, all four steps" "$(state
 assert_eq "the approval is used up" "$(ls "${FILES}/.rotation-approvals" 2> /dev/null | wc -l)" "0"
 assert_eq "RotationWaiting is back to 0" "$(metric_last RotationWaiting)" "0"
 assert_eq "exactly one restart in the whole rotation (the bridge step)" "$(wc -l < "${STUB_LOG}/ecs.log")" "1"
+
+echo "the report of the users who are still on the old side (SNS)"
+reset_log
+touch "${STUB_LOG}/demo-due"
+orch ${T0} > /dev/null
+rm -f "${STUB_LOG}/demo-due"
+orch $(( T0 + W )) > /dev/null
+set_cov() { # stragglers unknown user... : the answer of the coverage check
+  local n="$1" unknown="$2" users="" u
+  shift 2
+  for u in "$@"; do users+="{\"kind\":\"$([[ "${u}" == u-hand ]] && echo unknown || echo straggler)\",\"user\":\"${u}\"},"; done
+  echo "${n}" > "${STUB_LOG}/coverage.count"
+  echo "{\"stragglers\":${n},\"unknown\":${unknown},\"activeDays\":30,\"users\":[${users%,}]}" > "${STUB_LOG}/coverage.json"
+  { echo "kind user"; for u in "$@"; do echo "x ${u}"; done; } > "${STUB_LOG}/coverage.txt"
+}
+set_cov 2 1 u-one u-two u-hand
+echo $(( T0 + 2 * W + 3 * 86400 )) > "${STUB_LOG}/demo-deadline-cut"
+assert_eq "before the window of cut is over: waits for the window, no message" "$(orch $(( T0 + 2 * W - 10 )))/$(wc -l < "${STUB_LOG}/sns.log")" "0/0"
+assert_eq "T0 + 2W: waits for coverage" "$(orch $(( T0 + 2 * W )))/$(state '.active.waitingFor')" "0/coverage"
+assert_eq "the scenario's arguments reach the coverage check" "$(sed 's/ *--json//; s/ *--list//' "${STUB_LOG}/coverage-args.log" | sort -u | tr '\n' ',')" "--issued-before 12345,"
+assert_eq "one message to the alert topic" "$(cat "${STUB_LOG}/sns.log")" "topic=arn:aws:sns:ap-southeast-6:1:alert subject=TAK.NZ Test rotation demo: 2 user(s) must enroll again"
+msg="$(cat "${STUB_LOG}/sns-last.txt")"
+assert_contains "the message names the users" "${msg}" "x u-two"
+assert_contains "...and the unknown ones, saying that they do not hold the rotation back" "${msg}" "x u-hand"
+assert_contains "...says which step waits" "${msg}" "step 'cut'"
+assert_contains "...and when the step runs anyway (the deadline, with the day)" "${msg}" "on $(date -u -d "@$(( T0 + 2 * W + 3 * 86400 ))" +%Y-%m-%d) at the latest"
+assert_contains "the list is in the log too" "$(cat "${WORK}/run.log")" "2 active user(s) are still on the old side (1 unknown)"
+assert_eq "the state remembers it" "$(state '.active.coverageReport.count')/$(state '.active.coverageReport.at')" "2/$(( T0 + 2 * W ))"
+assert_eq "the next day, the same users: no second message" "$(orch $(( T0 + 2 * W + 86400 )))/$(wc -l < "${STUB_LOG}/sns.log")" "0/1"
+set_cov 3 1 u-one u-two u-three u-hand
+assert_eq "a different set of users: a new message" "$(orch $(( T0 + 2 * W + 2 * 86400 )))/$(wc -l < "${STUB_LOG}/sns.log")" "0/2"
+assert_contains "...with the new subject" "$(tail -1 "${STUB_LOG}/sns.log")" "3 user(s) must enroll again"
+echo $(( T0 + 2 * W + 20 * 86400 )) > "${STUB_LOG}/demo-deadline-cut"
+assert_eq "almost a week later, the same users: no reminder yet" "$(orch $(( T0 + 2 * W + 2 * 86400 + 7 * 86400 - 3600 )))/$(wc -l < "${STUB_LOG}/sns.log")" "0/2"
+assert_eq "a week later, the same users: a reminder" "$(orch $(( T0 + 2 * W + 2 * 86400 + 7 * 86400 )))/$(wc -l < "${STUB_LOG}/sns.log")" "0/3"
+assert_eq "without a topic nothing is published, but the list is logged" "$(orch $(( T0 + 2 * W + 16 * 86400 )) PKI_ALERT_TOPIC_ARN= > /dev/null; wc -l < "${STUB_LOG}/sns.log")/$(grep -c 'user(s) are still on the old side' "${WORK}/run.log")" "3/1"
+set_cov 0 1 u-hand
+assert_eq "everybody has enrolled: the step runs, no message" "$(orch $(( T0 + 2 * W + 17 * 86400 )))/$(wc -l < "${STUB_LOG}/sns.log")/$(grep -c 'run cut' "${STUB_LOG}/demo.log")" "0/3/1"
+"${ROT}" abort > /dev/null 2>&1
 
 echo "approval is optional"
 reset_log

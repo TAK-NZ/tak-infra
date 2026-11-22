@@ -68,6 +68,10 @@ cat > "${WORK}/bin/aws" <<'EOF'
 echo "$*" >> "${STUB_LOG}/aws.log"
 case "$1 $2" in
   "cloudwatch put-metric-data") echo "$*" >> "${STUB_LOG}/metrics.log"; exit 0 ;;
+  "sns publish")
+    shift 2; topic=""; subject=""; message=""
+    while [[ $# -gt 0 ]]; do case "$1" in --topic-arn) topic="$2"; shift 2 ;; --subject) subject="$2"; shift 2 ;; --message) message="$2"; shift 2 ;; *) shift ;; esac; done
+    echo "topic=${topic} subject=${subject}" >> "${STUB_LOG}/sns.log"; printf '%s\n' "${message}" > "${STUB_LOG}/sns-last.txt"; echo '{"MessageId":"x"}'; exit 0 ;;
   "ecs update-service") echo "$*" >> "${STUB_LOG}/ecs.log"; [[ -n "${STUB_ECS_FAILS:-}" ]] && exit 1; echo '{}'; exit 0 ;;
   "secretsmanager put-secret-value" | "secretsmanager get-secret-value") ;;
   "secretsmanager describe-secret"|"secretsmanager create-secret")
