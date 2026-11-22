@@ -235,8 +235,14 @@ signing_store() { # number p12
   else
     aws secretsmanager create-secret --name "${name}" --description "Enrollment CA ${n} keystore (key and chain), written by pki-rotate.sh" \
       --secret-binary "fileb://${p12}" > /dev/null || { log "ERROR: could not create the secret ${name}"; return 1; }
-    back="$(aws secretsmanager get-secret-value --secret-id "${name}" --query SecretBinary --output text 2> /dev/null)" || back=""
-    [[ "${back}" == "$(base64 -w0 "${p12}")" ]] || { log "ERROR: the secret ${name} does not read back as written"; return 1; }
+    # a new secret may not be readable for a moment (found on the dev-test stack: the first read after create-secret failed)
+    local try
+    for try in 1 2 3 4 5; do
+      back="$(aws secretsmanager get-secret-value --secret-id "${name}" --query SecretBinary --output text 2> /dev/null)" || back=""
+      [[ "${back}" == "$(base64 -w0 "${p12}")" ]] && break
+      sleep "${PKI_ROTATE_RETRY_DELAY:-2}"
+    done
+    [[ "${back}" == "$(base64 -w0 "${p12}")" ]] || { log "ERROR: the secret ${name} does not read back as written (it exists now: the next run continues with it)"; return 1; }
   fi
   # the highest number ever used: a secret that is deleted keeps its name for the recovery window, so a number is never reused
   trust_state_set --argjson n "${n}" '.enrollmentHighest = ([(.enrollmentHighest // 0), $n] | max)' || return 1

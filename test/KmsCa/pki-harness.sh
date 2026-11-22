@@ -117,6 +117,10 @@ if [[ "${sub}" == "put-secret-value" ]]; then
   [[ -n "${STUB_SECRET_WRITE_FAILS:-}" ]] && { echo "AccessDenied" >&2; exit 254; }
   cp "${file}" "${dest}"; echo '{}'
 else
+  # ${STUB_LOG}/read-fails holds a number: that many reads fail (a secret that is not readable yet), then it counts down
+  if [[ -s "${STUB_LOG}/read-fails" ]] && (( $(cat "${STUB_LOG}/read-fails") > 0 )); then
+    echo $(( $(cat "${STUB_LOG}/read-fails") - 1 )) > "${STUB_LOG}/read-fails"; echo "ResourceNotFoundException" >&2; exit 254
+  fi
   [[ -f "${dest}" ]] || { echo "ResourceNotFoundException" >&2; exit 254; }
   base64 -w0 "${dest}"; echo
 fi

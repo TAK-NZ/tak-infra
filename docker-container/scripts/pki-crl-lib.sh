@@ -13,12 +13,33 @@
 # database in ${FILES_DIR}/crl/db/<alias>/ (index, serial numbers; no key). createCoreConfig.sh puts a <crl> element
 # for every *.crl into CoreConfig.xml. **TAK Server reads the files only at start**, so a revocation is in force after
 # the next start: crl_revoke_* return 10, which tells the caller to start a rolling deployment (4 to 9 minutes).
+# **Found on the dev-test stack (#135): the API of TAK Server (port 8443) honours only the first <crl> element**; a
+# client certificate from an Enrollment CA with no CRL there is refused ("certificate unknown": revocation status
+# undetermined), while the messaging service (8089) uses every element. With a second Enrollment CA that refuses the
+# admin certificate of the new CA. So `crl/00-all.crl`, a file that holds the CRL of every Enrollment CA one after the
+# other (PEM), is kept up to date, and createCoreConfig.sh lists it first (a glob sorts it before enrollment-ca-NN.crl).
 # The CRL is signed with the key of the CA that issued the certificates: the current generation from tmpfs, an
 # older one from its secret. The key exists in a temporary file in tmpfs for the time of the signing only.
 CRL_DIR="${FILES_DIR}/crl"
 CRL_DAYS="${PKI_CRL_DAYS:-365}"
 CRL_REASONS="unspecified keyCompromise CACompromise affiliationChanged superseded cessationOfOperation certificateHold"
 crl_file() { echo "${CRL_DIR}/$1.crl"; }
+CRL_ALL_FILE="${CRL_DIR}/00-all.crl"
+# The combined CRL file: every Enrollment CA's CRL in one file (see above). 0 unchanged, 10 changed (TAK Server reads
+# it at its next start), 1 failed. Called after every change of a CRL, and at start.
+crl_combine() {
+  local f tmp files=()
+  for f in "${CRL_DIR}"/enrollment-ca-[0-9][0-9].crl; do [[ -f "${f}" ]] && files+=("${f}"); done
+  if (( ${#files[@]} == 0 )); then
+    [[ -e "${CRL_ALL_FILE}" ]] || return 0
+    find "${CRL_ALL_FILE}" -delete 2> /dev/null; return 10
+  fi
+  tmp="${CRL_ALL_FILE}.new"
+  cat "${files[@]}" > "${tmp}" || { log "crl: cannot write ${tmp}"; return 1; }
+  if [[ -f "${CRL_ALL_FILE}" ]] && cmp -s "${tmp}" "${CRL_ALL_FILE}"; then find "${tmp}" -delete 2> /dev/null; return 0; fi
+  chmod 644 "${tmp}" && mv -f "${tmp}" "${CRL_ALL_FILE}" || { log "crl: cannot write ${CRL_ALL_FILE}"; return 1; }
+  return 10
+}
 crl_prepare() { mkdir -p "${TMPFS_DIR}" && chmod 700 "${TMPFS_DIR}"; }
 crl_alias_ok() { [[ "$1" =~ ^enrollment-ca-[0-9]{2}$ ]]; }
 crl_number_of() { echo $(( 10#${1##*-} )); }
@@ -114,6 +135,7 @@ crl_ensure() { # alias
   find "${key}" -delete 2> /dev/null
   umask 022
   (( rc == 0 )) || return 1
+  crl_combine > /dev/null || true
   chmod -R a+rX "${CRL_DIR}" 2> /dev/null
   log "the CRL of ${alias} was created (empty): CoreConfig.xml gets it at the next start"
   return 10
@@ -164,6 +186,7 @@ crl_revoke_serial() { # alias serial(hex) notAfter(date) subject(/O=..) reason
   find "${key}" "${cnf}" "${backup}" -delete 2> /dev/null
   umask 022
   (( rc == 0 )) || return 1
+  crl_combine > /dev/null || log "WARNING: the combined CRL file could not be written"
   log "revoked serial ${serial} in the CRL of ${alias} (${reason}); it is in force after the next start of TAK Server"
   return 10
 }
@@ -174,6 +197,7 @@ crl_retire() { # alias
   crl_alias_ok "${alias}" || { log "crl: invalid alias '${alias}'"; return 1; }
   [[ -z "$(crl_ca_cert "${alias}")" ]] || { log "crl: ${alias} is still in the trust manifest: not deleting its CRL"; return 1; }
   find "${CRL_DIR}/${alias}.crl" "${CRL_DIR}/${alias}.crl.new" "${CRL_DIR}/db/${alias}" -delete 2> /dev/null
+  crl_combine > /dev/null || log "WARNING: the combined CRL file could not be written"
   log "the CRL of ${alias} is deleted: CoreConfig.xml loses it at the next start"
   return 0
 }
@@ -204,5 +228,9 @@ crl_ensure_all() {
     (( r == 10 )) && rc=10
     (( r == 1 )) && { rc=1; break; }
   done < <(crl_aliases)
+  (( rc == 1 )) && return 1
+  r=0; crl_combine || r=$?
+  (( r == 1 )) && return 1
+  (( r == 10 )) && rc=10
   return "${rc}"
 }
