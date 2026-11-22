@@ -393,6 +393,16 @@ EOF
         sleep 86400
     done
 ) &
+# Daily check of the TAK Server certificate: rotated when 60 days or fewer are left (#131, only on stacks
+# with the first-boot PKI). The first check comes 15 minutes after the start, so a rotation, which ends in a
+# rolling deployment, does not compete with the start of TAK Server.
+(
+    sleep 900
+    while true; do
+        /opt/tak/scripts/server-cert-rotate.sh check || true
+        sleep 86400
+    done
+) &
 # Start cron in background
 echo "Certbot - Starting cron for certbot renewals"
 /usr/sbin/cron &

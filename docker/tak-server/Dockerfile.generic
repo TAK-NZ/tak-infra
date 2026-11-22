@@ -63,6 +63,7 @@ RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/cert-metrics.sh \
     && chmod +x /opt/tak/scripts/cluster-lock.sh \
     && chmod +x /opt/tak/scripts/certbot-renew.sh \
+    && chmod +x /opt/tak/scripts/server-cert-rotate.sh \
     && python3 /tmp/patch-jvm-flags.py \
     && grep 'G1HeapRegionSize' /opt/tak/configureInDocker.sh \
     && rm /tmp/patch-jvm-flags.py

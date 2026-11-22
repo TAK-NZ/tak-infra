@@ -5,7 +5,7 @@ import { PKI_DEFAULT_VALIDITY_DAYS, resolvePkiValidity, validateP12Profile } fro
 
 describe('pki-settings', () => {
   test('defaults follow #171: root 20 y, intermediate 10 y, enrollment CA 3 y, server and admin 1 y', () => {
-    expect(resolvePkiValidity()).toEqual({ rootDays: 7300, intermediateDays: 3650, enrollmentCaDays: 1095, serverCertDays: 365, adminCertDays: 365 });
+    expect(resolvePkiValidity()).toEqual({ rootDays: 7300, intermediateDays: 3650, enrollmentCaDays: 1095, serverCertDays: 365, adminCertDays: 365, serverCertRenewDays: 60 });
     expect(PKI_DEFAULT_VALIDITY_DAYS.rootDays).toBe(7300);
   });
 
@@ -27,6 +27,11 @@ describe('pki-settings', () => {
     expect(() => resolvePkiValidity(cfg)).toThrow(/must not outlive its issuer/);
   });
 
+  test('the renewal threshold must be smaller than the server certificate validity (a new certificate would be rotated at once)', () => {
+    expect(() => resolvePkiValidity({ serverCertDays: 60 })).toThrow(/must be smaller than serverCertDays/);
+    expect(() => resolvePkiValidity({ serverCertRenewDays: 365 })).toThrow(/must be smaller than serverCertDays/);
+    expect(resolvePkiValidity({ serverCertDays: 30, serverCertRenewDays: 10 })).toMatchObject({ serverCertDays: 30, serverCertRenewDays: 10 });
+  });
   test.each([0, -5, 1.5, 36501, NaN])('rejects %p days', (n) => {
     expect(() => resolvePkiValidity({ serverCertDays: n })).toThrow(/whole number of days/);
   });

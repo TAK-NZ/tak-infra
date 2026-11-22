@@ -10,6 +10,8 @@ export interface PkiValidityConfig {
   enrollmentCaDays?: number;
   serverCertDays?: number;
   adminCertDays?: number;
+  /** The server certificate is rotated when this many days or fewer are left (#131). Must be smaller than `serverCertDays`. */
+  serverCertRenewDays?: number;
 }
 
 export type P12Profile = 'compat3des' | 'aes256';
@@ -20,6 +22,7 @@ export const PKI_DEFAULT_VALIDITY_DAYS = {
   enrollmentCaDays: 1095,
   serverCertDays: 365,
   adminCertDays: 365,
+  serverCertRenewDays: 60,
 } as const;
 
 export const P12_PROFILES: readonly P12Profile[] = ['compat3des', 'aes256'];
@@ -36,6 +39,12 @@ export function resolvePkiValidity(config: PkiValidityConfig = {}): Required<Pki
     throw new Error(
       'pki.kmsCa.validity: a certificate must not outlive its issuer (root > intermediate > enrollment CA >= server and admin), got ' +
       `${v.rootDays}/${v.intermediateDays}/${v.enrollmentCaDays}/${v.serverCertDays}/${v.adminCertDays}`
+    );
+  }
+  if (!(v.serverCertRenewDays < v.serverCertDays)) {
+    throw new Error(
+      `pki.kmsCa.validity.serverCertRenewDays (${v.serverCertRenewDays}) must be smaller than serverCertDays (${v.serverCertDays}), ` +
+      'or every new server certificate would be rotated again at once'
     );
   }
   return v;

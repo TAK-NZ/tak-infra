@@ -104,6 +104,15 @@ Files in `/opt/tak/certs/files`, with the names TAK Server and the other scripts
 
 `pki-state.json` records the names, the p12 profile and the expiry dates, for the rotation orchestrator (#171).
 
+## Server certificate rotation (`server-cert-rotate.sh`)
+The TAK Server certificate (`takserver.pem`, `.key`, `.p12`, `.jks`) is rotated automatically on stacks with the first-boot PKI ([#131](https://github.com/TAK-NZ/tak-infra/issues/131)). A loop in `start-tak.sh` runs `server-cert-rotate.sh check` 15 minutes after the start and then every 24 hours; it rotates when the certificate has `pki.kmsCa.validity.serverCertRenewDays` (default 60) or fewer days left. `server-cert-rotate.sh rotate` rotates at once. Stacks with the PKI of the TAK Server scripts are left alone.
+Rotation runs under the cluster lock `server-cert-rotation`, so one node does it (`docs/CLUSTER_LOCK.md`):
+1. A new key and CSR for the names in `PKI_SERVER_NAMES` (so a changed host name or service name is picked up), signed by Intermediate CA S in KMS. Validity `serverCertDays` (default 365).
+2. Everything is built and checked in tmpfs first: chain to R and S, key against certificate, CN and SAN, days left, and that the new `takserver.jks` and `takserver.p12` open with the keystore password and hold the new certificate. A failed check changes nothing on the EFS.
+3. Swap: a marker file, a `.prev` copy of each of the four files, one atomic rename per file, the same checks on the installed files. A failure restores the `.prev` copies. A marker found at the next run means the swap was interrupted (task stopped): the `.prev` copies are restored then, and nothing is rotated until that works.
+4. The state file gets the new `notAfter.server`, `TakServerCertRotated` is emitted, and an ECS rolling deployment makes every node load the new keystore (TAK Server reads it at start). Phones are not touched: they do not pin the leaf, and S and R are unchanged.
+Every failure emits `TakServerCertRotationFailed` (alert). If only the deployment cannot be started, the new certificate stays installed and the failure metric tells you that TAK Server loads it at its next restart. `takserver.pem.prev` and the other `.prev` files hold the last previous set (the key and p12 are mode 600); the next rotation overwrites them. The renewal threshold must be smaller than the validity (checked at synth and at run time), or each new certificate would be rotated again at once.
+Not covered: the admin certificate (#132), and a server certificate signed with a different Intermediate CA than the one in the state file (#172).
 ## Metrics and alarms (`cert-metrics.sh`)
 
 One helper for all certificate work ([#129](https://github.com/TAK-NZ/tak-infra/issues/129)). Metrics go to the CloudWatch namespace `TAK/Certificates` with the dimension `Stack=<stack name>`; the alarms (created with `pki.kmsCa`) fire at a value of 1 and treat missing data as fine, so an alarm whose emitter is not built yet stays in OK.
@@ -116,8 +125,8 @@ From a script: `/opt/tak/scripts/cert-metrics.sh emit <MetricName> [value] [Dime
 | `IntermediateCAExpiryWarning` | daily maximum >= 1 | alert | `check-expiry`: Intermediate CA expires in 1275 days (2W + 1 year) or less |
 | `CAExpired` | daily maximum >= 1 | critical | `check-expiry`: Root, Intermediate or Enrollment CA has expired |
 | `RootCASigned` | every `kms:Sign` with a Root CA key | alert | the EventBridge rule of #136 (CloudTrail), not a metric |
-| `CertbotRenewalFailure` | 5 minute sum >= 1 | alert | #130 |
-| `TakServerCertRotated` / `TakServerCertRotationFailed` | 5 minute sum >= 1 | info / alert | #131 |
+| `CertbotRenewalFailure` | 5 minute sum >= 1 | alert | `certbot-renew.sh` and `letsencrypt-request-cert.sh` (#130, `docs/LETSENCRYPT.md`) |
+| `TakServerCertRotated` / `TakServerCertRotationFailed` | 5 minute sum >= 1 | info / alert | `server-cert-rotate.sh` (#131, below) |
 | `AdminCertRotated` | 5 minute sum >= 1 | info | #132 |
 | `SigningCARotated` | 5 minute sum >= 1 | info | #135 |
 | `IntermediateCARotationPhase` (`Phase=bridge`, `cut`, `retire`) | 5 minute sum >= 1, one alarm per phase | info | #172 |
@@ -142,6 +151,7 @@ The task role has no permission to do this. Afterwards remove the number from `r
 
 - `npx jest test/unit/constructs/ca-kms-keys.test.ts test/unit/utils/pki-names.test.ts`: key spec, policy, alias names, alert rule.
 - `test/KmsCa/test-cert-metrics.sh`: the metric helper (refused input, dimensions, CloudWatch down) and the expiry check (thresholds, expired CA, unreadable certificate) with a stub `aws`. Runs in CI.
+- `test/KmsCa/test-server-cert-rotate.sh`: the rotation end to end (not due, due, forced, a rejected new certificate, an install failure and rollback, an interrupted swap, a deployment that cannot start, two nodes at once, a held lock, changed names, p12 profiles) with SoftHSM and stubs for `aws`. Runs in CI. `test/KmsCa/pki-harness.sh` is the set-up it shares with the bootstrap test.
 - `test/KmsCa/test-cluster-lock.sh`: the cluster lock (`docs/CLUSTER_LOCK.md`). Runs in CI.
 - `test/KmsCa/test-pki-bootstrap.sh`: the first-boot PKI end to end (names, constraints, chains, keystores, truststores, no CA key on the EFS, restore on a later start, three nodes at once, fail-closed cases, validities, p12 profiles) with SoftHSM and a stub `aws`. Runs in CI.
 - `test/KmsCa/test-kms-ca.sh`: the wrapper end to end with SoftHSM standing in for KMS (root, intermediate, cross-certificate, enrollment CA, server cert, CRL, wrong-key and bad-input cases). Needs `softhsm2 opensc libengine-pkcs11-openssl jq`. It runs in CI.
