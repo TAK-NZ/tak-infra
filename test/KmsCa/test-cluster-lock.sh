@@ -78,17 +78,40 @@ assert_eq "the runs did not overlap" "${ok}" "1"
 assert_no_dir "the lock is gone after the last one" "${CLUSTER_LOCK_DIR}/mutex.lock"
 
 echo "== the first-boot pattern: a waiting node sees the finished work and skips it"
-STATE="${WORK}/pki.done"
+# Repeated: a failure here has shown up in CI only now and then. On a failure the trace shows who ran when,
+# and what every contender's lock said.
 RUNS="${WORK}/pki.runs"
-: > "${RUNS}"
-bootstrap_once() { [[ -e "${STATE}" ]] && return 0; sleep 0.5; echo run >> "${RUNS}"; : > "${STATE}"; }
+TRACE="${WORK}/pki.trace"
+bootstrap_once() {
+  [[ -e "${STATE}" ]] && { echo "$(date +%s.%N) $$ skip" >> "${TRACE}"; return 0; }
+  echo "$(date +%s.%N) $$ start" >> "${TRACE}"
+  sleep 0.5
+  echo run >> "${RUNS}"
+  : > "${STATE}"
+  echo "$(date +%s.%N) $$ end" >> "${TRACE}"
+}
 export -f bootstrap_once
-export STATE RUNS
-for i in 1 2 3 4; do
-  "${LIB}" run --wait 60 pki -- bash -c "$(declare -f bootstrap_once); bootstrap_once" 2> /dev/null &
+export RUNS TRACE
+bad=0
+for round in $(seq 1 20); do
+  STATE="${WORK}/pki.done.${round}"
+  export STATE
+  : > "${RUNS}"
+  : > "${TRACE}"
+  for i in 1 2 3 4; do
+    "${LIB}" run --wait 60 "pki${round}" -- bash -c "$(declare -f bootstrap_once); bootstrap_once" 2> "${WORK}/pki.err.${i}" &
+  done
+  wait
+  if [[ "$(wc -l < "${RUNS}")" != 1 ]]; then
+    bad=$((bad + 1))
+    echo "       round ${round}: the work ran $(wc -l < "${RUNS}") times"
+    echo "       trace (time pid event):"
+    sed 's/^/         /' "${TRACE}"
+    for i in 1 2 3 4; do echo "       contender ${i} said:"; sed 's/^/         /' "${WORK}/pki.err.${i}"; done
+    echo "       lock dir: $(ls -a "${CLUSTER_LOCK_DIR}" | tr '\n' ' ')"
+  fi
 done
-wait
-assert_eq "four fresh nodes: the work was done once" "$(wc -l < "${RUNS}")" "1"
+assert_eq "four fresh nodes, 20 rounds: the work was done once each time" "${bad}" "0"
 
 echo "== a lock directory that vanishes under a waiter never looks expired"
 # The holder releases between the waiter's "does it exist" and "when does it expire". A fresh lock that the
