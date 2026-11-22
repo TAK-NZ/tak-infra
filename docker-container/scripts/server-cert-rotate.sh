@@ -147,20 +147,6 @@ update_state() {
     && chmod 644 "${STATE_FILE}.new" && mv -f "${STATE_FILE}.new" "${STATE_FILE}"
 }
 
-trigger_deployment() { # a rolling deployment makes every node load the new keystore
-  if [[ "${SERVER_CERT_ROTATE_NO_DEPLOY:-0}" == "1" ]]; then log "deployment skipped (SERVER_CERT_ROTATE_NO_DEPLOY=1)"; return 0; fi
-  if [[ -z "${ECS_Cluster_Name:-}" || -z "${ECS_Service_Name:-}" ]]; then log "ECS_Cluster_Name or ECS_Service_Name is not set"; return 1; fi
-  local i
-  for i in 1 2 3; do
-    if aws ecs update-service --cluster "${ECS_Cluster_Name}" --service "${ECS_Service_Name}" --force-new-deployment > /dev/null 2>&1; then
-      log "rolling deployment started: every node loads the new certificate"
-      return 0
-    fi
-    sleep "${SERVER_CERT_ROTATE_RETRY_DELAY:-5}"
-  done
-  return 1
-}
-
 # The status of this function is the status of the script. It runs with `set -e` off (the caller needs its
 # status), so every step checks its own result.
 rotate_locked() { # [force]

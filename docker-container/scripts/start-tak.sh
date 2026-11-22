@@ -393,15 +393,15 @@ EOF
         sleep 86400
     done
 ) &
-# Daily check of the TAK Server certificate (#131) and the admin certificate (#132): each is rotated when 60 days
-# or fewer are left (only on stacks with the first-boot PKI). The first check comes 15 minutes after the start,
-# so a rotation does not compete with the start of TAK Server. The server certificate comes last: its rotation
-# ends in a rolling deployment that replaces this task.
+# Daily run of the rotation orchestrator (#171, only on stacks with the first-boot PKI): the admin certificate
+# (#132) and the TAK Server certificate (#131) when 60 days or fewer are left, then the orchestrated rotations
+# of the CAs, then the checks behind the alarms. The first run comes 15 minutes after the start, so a rotation
+# does not compete with the start of TAK Server. The server certificate is rotated last: its rotation ends in a
+# rolling deployment that replaces this task.
 (
     sleep 900
     while true; do
-        /opt/tak/scripts/admin-cert-rotate.sh check || true
-        /opt/tak/scripts/server-cert-rotate.sh check || true
+        /opt/tak/scripts/pki-rotate.sh run || true
         sleep 86400
     done
 ) &

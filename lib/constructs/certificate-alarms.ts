@@ -60,6 +60,10 @@ export const CERTIFICATE_ALARMS: readonly CertificateMetricAlarm[] = [
   { metric: 'RootCAExpiryWarning', severity: 'alert', ...DAILY, description: 'The Root CA expires in 730 days or less (#136, #169)' },
   { metric: 'RootCARotated', severity: 'info', ...EVENT, description: 'The Root CA was rotated (#169)' },
   { metric: 'RotationCoverageStragglers', severity: 'alert', ...EVENT, description: 'Active users have not re-enrolled when a rotation gate opens (#171)' },
+  { metric: 'RotationStepFailed', severity: 'alert', ...EVENT, description: 'A step of a CA rotation failed and is retried at the next daily run (#171)' },
+  { metric: 'RotationWaiting', severity: 'alert', ...DAILY, description: 'A CA rotation waits for an approval or for the coverage check after its window has passed (#171)' },
+  { metric: 'RotationSpareKeyMissing', dimensions: { Tier: 'root' }, severity: 'alert', ...DAILY, description: 'No spare Root CA key generation is left: add the next number to pki.kmsCa.rootCaNumbers (#171)' },
+  { metric: 'RotationSpareKeyMissing', dimensions: { Tier: 'intermediate' }, severity: 'alert', ...DAILY, description: 'No spare Intermediate CA key generation is left: add the next number to pki.kmsCa.intermediateCaNumbers (#171)' },
   { metric: 'CAExpired', severity: 'critical', ...DAILY, description: 'A CA certificate has expired' },
 ];
 

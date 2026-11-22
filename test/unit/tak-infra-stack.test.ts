@@ -135,7 +135,7 @@ describe('TakInfraStack', () => {
 
     test('creates the keys and passes them to the container when enabled', () => {
       const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
-      expect(kmsKeysWithSigningPolicy(template)).toHaveLength(2);
+      expect(kmsKeysWithSigningPolicy(template)).toHaveLength(4); // generation 1 and the spare generation 2 of both tiers
       template.hasResourceProperties('AWS::KMS::Alias', { AliasName: 'alias/tak-nz-try-root-ca-01' });
       const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];
       const env = defs[0].Properties.ContainerDefinitions[0].Environment as any[];
@@ -145,11 +145,13 @@ describe('TakInfraStack', () => {
       const slots = JSON.stringify(byName.PKI_KMS_CA_KEYS);
       expect(slots).toContain('root-ca-01=');
       expect(slots).toContain('intermediate-ca-01=');
+      expect(slots).toContain('root-ca-02=');
+      expect(slots).toContain('intermediate-ca-02=');
     });
 
     test('creates the certificate alarms and sends the Root CA signing alert to their alert topic', () => {
       const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
-      template.resourceCountIs('AWS::CloudWatch::Alarm', 14);
+      template.resourceCountIs('AWS::CloudWatch::Alarm', 18);
       template.resourceCountIs('AWS::SNS::Topic', 3);
       template.hasResourceProperties('AWS::CloudWatch::Alarm', { Namespace: 'TAK/Certificates', MetricName: 'RootCAExpiryWarning',
         Dimensions: [{ Name: 'Stack', Value: 'TAK-Try-TakInfra' }] });
@@ -177,6 +179,10 @@ describe('TakInfraStack', () => {
       expect(byName.PKI_SERVER_CERT_RENEW_DAYS).toBe('60');
       expect(byName.PKI_ADMIN_CERT_RENEW_DAYS).toBe('60');
       expect(byName.PKI_ADMIN_CERT_GRACE_DAYS).toBe('7');
+      expect(byName.PKI_CLIENT_CERT_DAYS).toBe('365');
+      expect(byName.PKI_ROTATION_BUFFER_DAYS).toBe('90');
+      expect(byName.PKI_ENROLLMENT_CA_ROTATION_DAYS).toBe('365');
+      expect(byName.PKI_ROTATION_REQUIRE_APPROVAL).toBe('retire');
       // the Enrollment CA secret (Ref to the secret)
       expect(JSON.stringify(byName.PKI_ENROLLMENT_CA_SECRET)).toContain('EnrollmentCaSecret');
       // CN first: service name, then host name, both under the hosted zone from BaseInfra (never literal)
@@ -206,6 +212,14 @@ describe('TakInfraStack', () => {
       const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];
       const byName = Object.fromEntries((defs[0].Properties.ContainerDefinitions[0].Environment as any[]).map(e => [e.Name, e.Value]));
       expect(byName.PKI_SERVER_CERT_RENEW_DAYS).toBe('10');
+    });
+    test('rotation settings reach the container and a setting that cannot work fails the synth', () => {
+      const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try', rotation: { bufferDays: 30, requireApproval: ['cut', 'retire'] } } });
+      const defs = Object.values(template.findResources('AWS::ECS::TaskDefinition')) as any[];
+      const byName = Object.fromEntries((defs[0].Properties.ContainerDefinitions[0].Environment as any[]).map(e => [e.Name, e.Value]));
+      expect(byName.PKI_ROTATION_BUFFER_DAYS).toBe('30');
+      expect(byName.PKI_ROTATION_REQUIRE_APPROVAL).toBe('cut,retire');
+      expect(() => build({ kmsCa: { enabled: true, environmentLabel: 'Try', rotation: { enrollmentCaRotationDays: 900 } } })).toThrow(/Enrollment CA validity/);
     });
     test('the signer in the key policy is the task role of the TAK Server task', () => {
       const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
