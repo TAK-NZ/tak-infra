@@ -186,7 +186,7 @@ crl_revoke_serial() { # alias serial(hex) notAfter(date) subject(/O=..) reason
   find "${key}" "${cnf}" "${backup}" -delete 2> /dev/null
   umask 022
   (( rc == 0 )) || return 1
-  crl_combine > /dev/null || log "WARNING: the combined CRL file could not be written"
+  crl_combine > /dev/null || [[ $? == 10 ]] || log "WARNING: the combined CRL file could not be written"
   log "revoked serial ${serial} in the CRL of ${alias} (${reason}); it is in force after the next start of TAK Server"
   return 10
 }
@@ -197,7 +197,7 @@ crl_retire() { # alias
   crl_alias_ok "${alias}" || { log "crl: invalid alias '${alias}'"; return 1; }
   [[ -z "$(crl_ca_cert "${alias}")" ]] || { log "crl: ${alias} is still in the trust manifest: not deleting its CRL"; return 1; }
   find "${CRL_DIR}/${alias}.crl" "${CRL_DIR}/${alias}.crl.new" "${CRL_DIR}/db/${alias}" -delete 2> /dev/null
-  crl_combine > /dev/null || log "WARNING: the combined CRL file could not be written"
+  crl_combine > /dev/null || [[ $? == 10 ]] || log "WARNING: the combined CRL file could not be written"
   log "the CRL of ${alias} is deleted: CoreConfig.xml loses it at the next start"
   return 0
 }
