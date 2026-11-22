@@ -19,6 +19,8 @@
 # restarts, crashes and node changes.
 #
 # Gates between steps (all of them must be open):
+#   restart   TAK Server runs a task that started after the previous step (the previous step asked for a restart and
+#             the rolling deployment has replaced the task): the step needs the new keystores to be loaded
 #   window    W = client certificate validity + buffer (455 days by default) since the previous step, so that
 #             every phone has received a certificate from the new chain before trust is removed (#171)
 #   coverage  rotation-coverage.sh (arguments from the scenario: `<n>_coverage_args`) reports no active user who is
@@ -35,12 +37,12 @@
 #   <n>_summary           one line for plan: current|notAfter epoch|trigger epoch or -|note
 #   <n>_due               returns 0 when a rotation must start now
 #   <n>_steps             echoes the step names in order
-#   <n>_gate <step>       echoes the gates of the step: none, or any of: window coverage approval
+#   <n>_gate <step>       echoes the gates of the step: none, or any of: restart window coverage approval
 #   <n>_deadline <step>   echoes an epoch (optional)
 #   <n>_coverage_args <step>  echoes the arguments of rotation-coverage.sh for a step with a coverage gate
 #   <n>_run <step>        does the step. 0 done, 10 done and TAK Server must restart, anything else failed and is
 #                         retried at the next run. Steps must be idempotent: after a crash the step runs again
-#   <n>_abort             optional: undoes what can be undone
+#   <n>_abort             optional: undoes what can be undone. Return 2 when it cannot be undone any more: the rotation stays active
 # A restart is requested once, after the state is saved (an ECS rolling deployment: TAK Server reads its
 # truststore and signing keystore only at start).
 #
@@ -50,7 +52,8 @@
 #
 # Environment: the settings of pki-bootstrap.sh, plus PKI_CLIENT_CERT_DAYS (365), PKI_ROTATION_BUFFER_DAYS (90),
 # PKI_ENROLLMENT_CA_ROTATION_DAYS (365), PKI_ROTATION_REQUIRE_APPROVAL (retire), PKI_ROTATION_NOW (epoch, for
-# tests and `plan`), PKI_ROTATE_SCENARIO_DIR, PKI_ROTATE_COVERAGE_CMD, PKI_ROTATE_LEAF_SCRIPTS, PKI_ROTATE_NO_DEPLOY.
+# tests and `plan`), PKI_ROTATE_SCENARIO_DIR, PKI_ROTATE_COVERAGE_CMD, PKI_ROTATE_LEAF_SCRIPTS, PKI_ROTATE_NO_DEPLOY, PKI_ROTATE_TASK_STARTED (epoch, for the restart gate),
+# PKI_ROTATE_BUILTIN_SCENARIOS=0 (tests).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PKI_BOOTSTRAP_SOURCE_ONLY=1
 # shellcheck source=pki-bootstrap.sh
@@ -96,6 +99,8 @@ load_scenarios() {
   local dir f name
   for dir in "${SCRIPT_DIR}/rotation" "${PKI_ROTATE_SCENARIO_DIR:-}"; do
     [[ -n "${dir}" && -d "${dir}" ]] || continue
+    # test hook: PKI_ROTATE_BUILTIN_SCENARIOS=0 leaves out the scenarios of rotation/ (the state machine tests use their own)
+    [[ "${dir}" == "${SCRIPT_DIR}/rotation" && "${PKI_ROTATE_BUILTIN_SCENARIOS:-1}" == "0" ]] && continue
     for f in "${dir}"/*.sh; do
       [[ -f "${f}" ]] || continue
       name="$(basename "${f}" .sh)"
@@ -160,6 +165,13 @@ $("${cmd}" ${args} --list 2> /dev/null)
   fi
   st_set --argjson t "${t}" --arg d "${digest}" --argjson c "${count}" '.active.coverageReport = {at: $t, digest: $d, count: $c}'
 }
+# When the task that runs this started: the age of the container's first process, or PKI_ROTATE_TASK_STARTED (tests)
+task_started() {
+  [[ "${PKI_ROTATE_TASK_STARTED:-}" =~ ^[0-9]+$ ]] && { echo "${PKI_ROTATE_TASK_STARTED}"; return 0; }
+  local age
+  age="$(ps -o etimes= -p 1 2> /dev/null | tr -d ' ')"
+  [[ "${age}" =~ ^[0-9]+$ ]] && echo $(( $(date +%s) - age )) || echo 0
+}
 # Sets GATE_OUT to "open" or "waiting:<window|coverage|approval>[:<epoch the window opens>]", and GATE_PAST_WINDOW=1
 # when the window is over (so waiting for coverage or approval is a stuck rotation, not a normal wait). Not run in
 # a subshell: the variables are the result.
@@ -174,6 +186,14 @@ gate_status() { # scenario step
   scn_has "${s}" deadline && deadline="$(scn "${s}" deadline "${step}")"
   local pastdeadline=0
   [[ "${deadline}" =~ ^[0-9]+$ ]] && (( t >= deadline )) && pastdeadline=1
+  if [[ "${gates}" == *" restart "* ]]; then
+    base="$(st_get '.active.lastDoneAt')"
+    if (( "$(task_started)" <= base )); then
+      # a restart takes minutes; a rotation that waits for two days is stuck (the deployment failed)
+      (( t - base > 2 * DAY )) && GATE_PAST_WINDOW=1
+      GATE_OUT="waiting:restart"; return 0
+    fi
+  fi
   if [[ "${gates}" == *" window "* ]] && (( ! pastdeadline )); then
     base="$(st_get '.active.lastDoneAt')"
     opens=$(( base + WINDOW_DAYS * DAY ))
@@ -428,7 +448,13 @@ abort_locked() {
   local s
   [[ "$(st_get '.active != null')" == "true" ]] || { log "no rotation is active"; return 0; }
   s="$(st_get '.active.scenario')"
-  scn_has "${s}" abort && { scn "${s}" abort || log "WARNING: ${s} could not undo everything"; }
+  if scn_has "${s}" abort; then
+    local rc=0
+    scn "${s}" abort || rc=$?
+    # 2: the scenario cannot be undone any more (it is past the point of no return): the rotation stays active
+    (( rc == 2 )) && { log "the rotation ${s} cannot be aborted any more: it stays active"; return 2; }
+    (( rc == 0 )) || log "WARNING: ${s} could not undo everything"
+  fi
   finish_rotation aborted
 }
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

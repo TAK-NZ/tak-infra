@@ -74,6 +74,13 @@ case "$1 $2" in
     echo "topic=${topic} subject=${subject}" >> "${STUB_LOG}/sns.log"; printf '%s\n' "${message}" > "${STUB_LOG}/sns-last.txt"; echo '{"MessageId":"x"}'; exit 0 ;;
   "ecs update-service") echo "$*" >> "${STUB_LOG}/ecs.log"; [[ -n "${STUB_ECS_FAILS:-}" ]] && exit 1; echo '{}'; exit 0 ;;
   "secretsmanager put-secret-value" | "secretsmanager get-secret-value") ;;
+  "secretsmanager delete-secret")
+    shift 2; id=""; window=""; force=0
+    while [[ $# -gt 0 ]]; do case "$1" in --secret-id) id="$2"; shift 2 ;; --recovery-window-in-days) window="$2"; shift 2 ;; --force-delete-without-recovery) force=1; shift ;; *) shift ;; esac; done
+    dest="${STUB_SECRETS}/$(echo "${id}" | tr '/:' '__')"
+    echo "id=${id} window=${window} force=${force}" >> "${STUB_LOG}/delete.log"
+    [[ -f "${dest}" ]] || { echo "ResourceNotFoundException" >&2; exit 254; }
+    mv "${dest}" "${dest}.deleted"; echo '{}'; exit 0 ;;
   "secretsmanager describe-secret"|"secretsmanager create-secret")
     sub="$2"; shift 2
     id=""; file=""
@@ -86,10 +93,12 @@ case "$1 $2" in
     done
     dest="${STUB_SECRETS}/$(echo "${id}" | tr '/:' '__')"
     if [[ "${sub}" == "describe-secret" ]]; then
+      # --query DeletedDate --output text: None, or a date for a secret that is scheduled for deletion
+      if [[ -f "${dest}.deleted" ]]; then echo "1700000000.0"; exit 0; fi
       [[ -f "${dest}" ]] || { echo "ResourceNotFoundException" >&2; exit 254; }
-      echo '{}'; exit 0
+      echo 'None'; exit 0
     fi
-    [[ -f "${dest}" ]] && { echo "ResourceExistsException" >&2; exit 254; }
+    [[ -f "${dest}" || -f "${dest}.deleted" ]] && { echo "ResourceExistsException" >&2; exit 254; }
     [[ -n "${STUB_SECRET_WRITE_FAILS:-}" ]] && { echo "AccessDenied" >&2; exit 254; }
     cp "${file}" "${dest}"; echo '{}'; exit 0 ;;
   *) echo "stub aws: unexpected: $*" >&2; exit 90 ;;
@@ -108,6 +117,10 @@ if [[ "${sub}" == "put-secret-value" ]]; then
   [[ -n "${STUB_SECRET_WRITE_FAILS:-}" ]] && { echo "AccessDenied" >&2; exit 254; }
   cp "${file}" "${dest}"; echo '{}'
 else
+  # ${STUB_LOG}/read-fails holds a number: that many reads fail (a secret that is not readable yet), then it counts down
+  if [[ -s "${STUB_LOG}/read-fails" ]] && (( $(cat "${STUB_LOG}/read-fails") > 0 )); then
+    echo $(( $(cat "${STUB_LOG}/read-fails") - 1 )) > "${STUB_LOG}/read-fails"; echo "ResourceNotFoundException" >&2; exit 254
+  fi
   [[ -f "${dest}" ]] || { echo "ResourceNotFoundException" >&2; exit 254; }
   base64 -w0 "${dest}"; echo
 fi

@@ -240,7 +240,9 @@ bootstrap() {
            truststore-intermediate-ca.jks truststore-intermediate-ca.p12 truststore-phone.jks truststore-phone.p12 fed-truststore.jks; do
     cp "${f}" "${FILES_DIR}/${f}"
   done
-  mkdir -p "${FILES_DIR}/crl" && cp -R crl/. "${FILES_DIR}/crl/" && chmod -R a+rX "${FILES_DIR}/crl" || die "could not install the CRL"
+  mkdir -p "${FILES_DIR}/crl" && cp -R crl/. "${FILES_DIR}/crl/" || die "could not install the CRL"
+  crl_combine > /dev/null || [[ $? == 10 ]] || die "could not write the combined CRL file"
+  chmod -R a+rX "${FILES_DIR}/crl" || die "could not install the CRL"
   cp intermediate-ca.pem "${FILES_DIR}/ca.pem"            # the issuing CA, as TAK's own flow names it (FederateCA secret)
   cp takserver.key "${FILES_DIR}/takserver.key"
   cp admin.key "${FILES_DIR}/admin.key"

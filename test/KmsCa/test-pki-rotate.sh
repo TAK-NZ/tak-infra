@@ -50,12 +50,23 @@ demo_finished() { echo "finished" >> "${STUB_LOG}/demo.log"; }
 demo_abort() { echo "abort" >> "${STUB_LOG}/demo.log"; }
 EOF
 
+# the scenarios of rotation/ stay out of the state machine tests (their due check reads the real date); `plan` loads them
+cat > "${WORK}/scenarios/restarty.sh" <<'EOF'
+# a test scenario: a step that needs a restart, then a step that waits for it (gate restart); abort can be refused
+restarty_summary() { echo "restarty"; }
+restarty_due() { [[ -e "${STUB_LOG}/restarty-due" ]]; }
+restarty_steps() { echo "first second"; }
+restarty_gate() { case "$1" in first) echo none ;; second) echo restart ;; esac; }
+restarty_run() { echo "run $1" >> "${STUB_LOG}/restarty.log"; [[ "$1" == first ]] && return 10; return 0; }
+restarty_abort() { echo "abort" >> "${STUB_LOG}/restarty.log"; [[ -e "${STUB_LOG}/restarty-refuse" ]] && return 2; return 0; }
+EOF
+export PKI_ROTATE_BUILTIN_SCENARIOS=0
 export PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf1.sh ${WORK}/leaf2.sh" PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh"
 new_stack() { fresh "$1"; shift; env "$@" "${BOOTSTRAP}" > "${WORK}/bootstrap.log" 2>&1 || { echo "bootstrap failed"; tail -5 "${WORK}/bootstrap.log"; exit 1; }; }
 orch() { # epoch [env assignments...] -> exit status; output in run.log
   local at="$1"
   shift
-  env PKI_ROTATION_NOW="${at}" PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf1.sh ${WORK}/leaf2.sh" \
+  env PKI_ROTATION_NOW="${at}" PKI_ROTATE_BUILTIN_SCENARIOS=0 PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf1.sh ${WORK}/leaf2.sh" \
     PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh" PKI_ALERT_TOPIC_ARN="arn:aws:sns:ap-southeast-6:1:alert" PKI_ENV_LABEL=Test "$@" "${ROT}" run > "${WORK}/run.log" 2>&1
   echo $?
 }
@@ -258,6 +269,20 @@ printf 'other:1:1:1 60 othernode\n' > "${FILES}/.locks/pki-rotation.lock"
 assert_eq "exit 75 after the wait" "$(orch ${T0} CLUSTER_LOCK_WAIT=1)" "75"
 find "${FILES}/.locks/pki-rotation.lock" -delete
 
+echo "the gate restart: the step needs a task that started after the previous step"
+reset_log
+: > "${STUB_LOG}/restarty.log"
+touch "${STUB_LOG}/restarty-due"
+assert_eq "first step runs and asks for a restart" "$(orch ${T0} PKI_ROTATE_TASK_STARTED=$(( T0 - 100 )))/$(wc -l < "${STUB_LOG}/ecs.log")/$(state '.active.steps[.active.index]')" "0/1/second"
+rm -f "${STUB_LOG}/restarty-due"
+assert_eq "the old task: the second step waits for the restart" "$(orch $(( T0 + 600 )) PKI_ROTATE_TASK_STARTED=$(( T0 - 100 )))/$(state '.active.waitingFor')/$(grep -c 'run second' "${STUB_LOG}/restarty.log")" "0/restart/0"
+assert_eq "...and that is not a stuck rotation yet" "$(metric_last RotationWaiting)" "0"
+assert_eq "a task that started in the same second as the step is the old task" "$(orch $(( T0 + 700 )) PKI_ROTATE_TASK_STARTED=${T0})/$(state '.active.waitingFor')" "0/restart"
+assert_eq "after two days without a new task it is a stuck rotation" "$(orch $(( T0 + 2 * 86400 + 1 )) PKI_ROTATE_TASK_STARTED=$(( T0 - 100 )))/$(metric_last RotationWaiting)" "0/1"
+assert_eq "the abort hook may refuse (2): the rotation stays active, exit 2" "$(touch "${STUB_LOG}/restarty-refuse"; "${ROT}" abort > "${WORK}/run.log" 2>&1; echo $?)/$(state '.active.scenario')" "2/restarty"
+assert_contains "it says so" "$(cat "${WORK}/run.log")" "cannot be aborted any more"
+assert_eq "a new task: the second step runs" "$(orch $(( T0 + 3 * 86400 )) PKI_ROTATE_TASK_STARTED=$(( T0 + 1 )))/$(grep -c 'run second' "${STUB_LOG}/restarty.log")/$(state '.active')" "0/1/null"
+rm -f "${STUB_LOG}/restarty-refuse"
 echo "every Enrollment CA has a CRL"
 reset_log
 assert_eq "a stack with its CRL: no restart for it" "$(orch ${T0})/$(wc -l < "${STUB_LOG}/ecs.log")" "0/0"
@@ -285,7 +310,7 @@ assert_eq "after the rotation to Root CA 02 there is no spare left for the root 
 jq '.numbers.root = 1' "${FILES}/pki-state.json" > "${WORK}/p.json" && cp "${WORK}/p.json" "${FILES}/pki-state.json"
 
 echo "plan"
-plan_env() { env PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_KMS_CA_KEYS="${two},root-ca-02=33333333-3333-4333-8333-333333333333,intermediate-ca-02=44444444-4444-4444-8444-444444444444" "$@"; }
+plan_env() { env PKI_ROTATE_BUILTIN_SCENARIOS=1 PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_KMS_CA_KEYS="${two},root-ca-02=33333333-3333-4333-8333-333333333333,intermediate-ca-02=44444444-4444-4444-8444-444444444444" "$@"; }
 before="$(sha256sum "${FILES}/rotation-state.json" "${FILES}/pki-state.json" | cut -c1-16 | tr '\n' ' ')"
 plan_env "${ROT}" plan > "${WORK}/plan.txt" 2>&1
 assert_eq "plan: exit 0" "$?" "0"
@@ -310,7 +335,8 @@ plan_env "${ROT}" plan --at "$(date -u -d '+400 days' +%Y-%m-%d)" --json > "${WO
 assert_eq "plan --at in 400 days: the leaf certificates (365 days) and the Enrollment CA (age 365) are due, the CAs above are not" "$(j '[.layers[] | select(.status == "due") | .layer] | join(",")')" "Server certificate,Admin certificate,Enrollment CA"
 plan_env "${ROT}" plan --at "$(date -u -d '+10 years' +%Y-%m-%d)" --json > "${WORK}/plan.json" 2> /dev/null
 assert_eq "plan --at in 10 years: everything but the Root CA is due" "$(j '[.layers[] | select(.status == "due") | .layer] | join(",")')" "Server certificate,Admin certificate,Enrollment CA,Intermediate CA"
-assert_contains "plan notes that the Enrollment CA rotation is not built yet" "$(cat "${WORK}/plan.txt")" "orchestrated rotation not built yet (#135)"
+assert_not_contains "plan: the Enrollment CA rotation is built" "$(cat "${WORK}/plan.txt")" "not built yet (#135)"
+assert_contains "plan notes that the Intermediate CA rotation is not built yet" "$(cat "${WORK}/plan.txt")" "orchestrated rotation not built yet (#172)"
 assert_eq "plan with a bad date: exit 1" "$(plan_env "${ROT}" plan --at nonsense > /dev/null 2>&1; echo $?)" "1"
 assert_eq "plan with an unknown option: exit 64" "$(plan_env "${ROT}" plan --bogus > /dev/null 2>&1; echo $?)" "64"
 echo "plan shows an active rotation"

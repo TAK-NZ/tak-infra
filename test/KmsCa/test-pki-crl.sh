@@ -51,6 +51,7 @@ assert_eq "valid for 365 days (TAK Server ignores nextUpdate, #204, but other to
 assert_eq "the CRL is world readable (it is public), no key is on the EFS under crl/" "$(stat -c %a "$(crl enrollment-ca-01)")/$(grep -rl 'PRIVATE KEY' "${FILES}/crl" | wc -l)" "644/0"
 assert_eq "the database of the CA is there (index, serial numbers, no key)" "$(ls "${FILES}/crl/db/enrollment-ca-01" | grep -c -e '^index.txt$' -e '^crlnumber$' -e '^serial$')" "3"
 assert_eq "--list shows nothing revoked" "$(revoke --list)/$(grep -c 'nothing revoked' "${WORK}/run.log")" "0/1"
+assert_eq "00-all.crl holds the CRL of every Enrollment CA (TAK Server's API reads only the first <crl>, #135)" "$(cmp "${FILES}/crl/00-all.crl" "$(crl enrollment-ca-01)" && echo same)/$(stat -c %a "${FILES}/crl/00-all.crl")" "same/644"
 
 echo "revoking a certificate by file"
 issue x "admin" 0xA001
@@ -128,9 +129,14 @@ reset_log
 assert_eq "a start without CRLs (a PKI from before #204): exit 0" "$("${BOOTSTRAP}" > "${WORK}/run.log" 2>&1; echo $?)" "0"
 assert_eq "the empty CRL is back, signed by Enrollment CA 01" "$(serials "$(crl enrollment-ca-01)")/$(crl_verify "$(crl enrollment-ca-01)" "${FILES}/enrollment-ca.pem")" "/verify OK"
 assert_contains "the log says CoreConfig gets it at the next start" "$(cat "${WORK}/run.log")" "CoreConfig.xml gets it at the next start"
-before="$(sha256sum "$(crl enrollment-ca-01)" | cut -c1-16)"
+assert_eq "...and the combined file is back" "$(cmp "${FILES}/crl/00-all.crl" "$(crl enrollment-ca-01)" && echo same)" "same"
+before="$(sha256sum "$(crl enrollment-ca-01)" "${FILES}/crl/00-all.crl" | cut -c1-16 | tr '\n' ' ')"
 "${BOOTSTRAP}" > /dev/null 2>&1
-assert_eq "a start with a CRL leaves it alone" "$(sha256sum "$(crl enrollment-ca-01)" | cut -c1-16)" "${before}"
+assert_eq "a start with a CRL leaves it and the combined file alone" "$(sha256sum "$(crl enrollment-ca-01)" "${FILES}/crl/00-all.crl" | cut -c1-16 | tr '\n' ' ')" "${before}"
+find "${FILES}/crl/00-all.crl" -delete
+reset_log
+"${BOOTSTRAP}" > "${WORK}/run.log" 2>&1
+assert_eq "a start without the combined file (a stack from before it) writes it" "$(cmp "${FILES}/crl/00-all.crl" "$(crl enrollment-ca-01)" && echo same)" "same"
 
 echo "a second Enrollment CA: revocation goes to the CRL of the CA that issued the certificate"
 new_stack gen
@@ -144,6 +150,7 @@ openssl pkcs12 -export -in "${WORK}/cl2.pem" -inkey "${WORK}/cl2.key" -certfile 
 assert_eq "generation 2 is current" "$(jq -r .numbers.enrollment "${FILES}/pki-state.json")" "2"
 "${BOOTSTRAP}" > "${WORK}/run.log" 2>&1
 assert_eq "a start creates the empty CRL of Enrollment CA 02" "$([[ -s "$(crl enrollment-ca-02)" ]] && echo yes)/$(serials "$(crl enrollment-ca-02)")/$(crl_verify "$(crl enrollment-ca-02)" "${FILES}/trust-certs/enrollment-ca-02.pem")" "yes//verify OK"
+assert_eq "the combined file holds both, 01 first" "$(cmp "${FILES}/crl/00-all.crl" <(cat "$(crl enrollment-ca-01)" "$(crl enrollment-ca-02)") && echo same)" "same"
 issue new "admin" 0xD001 "${TMPFS}/intermediate-ca-signing.p12" "${FILES}/trust-certs/enrollment-ca-02.pem"
 reset_log
 assert_eq "revoke a certificate of the OLD Enrollment CA (its key comes from its secret): exit 0" "$(revoke "${WORK}/old.pem" --no-restart)" "0"
@@ -152,6 +159,7 @@ assert_eq "CRL 01 is still signed by Enrollment CA 01" "$(crl_verify "$(crl enro
 assert_eq "revoke a certificate of the CURRENT Enrollment CA: exit 0" "$(revoke "${WORK}/new.pem" --no-restart)" "0"
 assert_eq "CRL 02 has it, signed by Enrollment CA 02" "$(serials "$(crl enrollment-ca-02)")/$(crl_verify "$(crl enrollment-ca-02)" "${FILES}/trust-certs/enrollment-ca-02.pem")" "D001/verify OK"
 assert_eq "CRL 01 is untouched by that" "$(serials "$(crl enrollment-ca-01)")" "C001"
+assert_eq "the combined file follows both revocations" "$(cmp "${FILES}/crl/00-all.crl" <(cat "$(crl enrollment-ca-01)" "$(crl enrollment-ca-02)") && echo same)/$(grep -c 'BEGIN X509 CRL' "${FILES}/crl/00-all.crl")" "same/2"
 assert_eq "the old CA's key was read from a secret and removed again" "$(no_leftovers)" "0"
 assert_eq "--list shows both CAs" "$(revoke --list)/$(grep -c -e '^enrollment-ca-01' -e '^enrollment-ca-02' "${WORK}/run.log")" "0/2"
 
@@ -162,7 +170,7 @@ for v in 5.4-RELEASE-19 5.5-RELEASE-1 5.8-RELEASE-103; do
   out="${WORK}/CoreConfig-${v}.xml"
   env TAK_VERSION="takserver-docker-${v}" TAK_CRL_DIR="${FILES}/crl" bash "${CORECONFIG}" "${out}" > "${WORK}/cc.log" 2>&1
   tls="$(grep -A1 '<security>' "${out}" | tr -d '\n')"
-  assert_eq "${v}: <security><tls> holds a <crl> for each of the two CRL files" "$(grep -o '<crl _name="[^"]*" crlFile="[^"]*"/>' <<< "${tls}" | sed 's/crlFile="[^"]*"//' | tr '\n' ' ')" '<crl _name="enrollment-ca-01" /> <crl _name="enrollment-ca-02" /> '
+  assert_eq "${v}: <security><tls> holds a <crl> for the combined file (first) and for each of the two CRL files" "$(grep -o '<crl _name="[^"]*" crlFile="[^"]*"/>' <<< "${tls}" | sed 's/crlFile="[^"]*"//' | tr '\n' ' ')" '<crl _name="00-all" /> <crl _name="enrollment-ca-01" /> <crl _name="enrollment-ca-02" /> '
   assert_contains "${v}: the file path is the CRL file" "${tls}" "crlFile=\"${FILES}/crl/enrollment-ca-01.crl\""
   assert_not_contains "${v}: the placeholder is gone" "$(cat "${out}")" "{{CRL_ELEMENTS}}"
 done
