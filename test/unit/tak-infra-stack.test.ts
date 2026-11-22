@@ -183,7 +183,7 @@ describe('TakInfraStack', () => {
       expect(byName.PKI_CLIENT_CERT_DAYS).toBe('365');
       expect(byName.PKI_ROTATION_BUFFER_DAYS).toBe('90');
       expect(byName.PKI_ENROLLMENT_CA_ROTATION_DAYS).toBe('365');
-      expect(byName.PKI_ROTATION_REQUIRE_APPROVAL).toBe('retire');
+      expect(byName.PKI_ROTATION_REQUIRE_APPROVAL).toBe('cut,retire');
       // the Enrollment CA secret (Ref to the secret)
       expect(JSON.stringify(byName.PKI_ENROLLMENT_CA_SECRET)).toContain('EnrollmentCaSecret');
       // CN first: service name, then host name, both under the hosted zone from BaseInfra (never literal)

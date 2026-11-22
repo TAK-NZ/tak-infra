@@ -47,8 +47,8 @@ EOF
 chmod +x "${WORK}/bin/java-stub" "${WORK}/bin/curl-stub" "${WORK}/leaf.sh" "${WORK}/coverage.sh"
 export JAVA_BIN="${WORK}/bin/java-stub" CURL_BIN="${WORK}/bin/curl-stub" TAK_USER_MANAGER_JAR=/nonexistent/UserManager.jar
 export PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf.sh" PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh"
-# Rotation every 10 days, W = 20 + 10 = 30 days, Enrollment CA 100 days, Intermediate CA 200 days
-export PKI_ROOT_DAYS=400 PKI_INTERMEDIATE_DAYS=200 PKI_ENROLLMENT_CA_DAYS=100 PKI_SERVER_CERT_DAYS=30 PKI_ADMIN_CERT_DAYS=30
+# Rotation every 10 days, W = 20 + 10 = 30 days, Enrollment CA 100 days, Intermediate CA 500 days (more than 2 x W + 365 = 425: its own rotation is not due)
+export PKI_ROOT_DAYS=700 PKI_INTERMEDIATE_DAYS=500 PKI_ENROLLMENT_CA_DAYS=100 PKI_SERVER_CERT_DAYS=30 PKI_ADMIN_CERT_DAYS=30
 export PKI_CLIENT_CERT_DAYS=20 PKI_ROTATION_BUFFER_DAYS=10 PKI_ENROLLMENT_CA_ROTATION_DAYS=10 PKI_ADMIN_CERT_RENEW_DAYS=10
 T=$(date +%s)
 DAY=86400

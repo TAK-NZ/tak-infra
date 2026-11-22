@@ -46,6 +46,12 @@ enrollment_due() {
     return 1
   fi
   s_left=$(( ($(cert_enddate "${FILES_DIR}/intermediate-ca.pem") - t) / DAY ))
+  # The Intermediate CA rotation (#172) makes a new Enrollment CA itself, and it must start at its trigger: a rotation of
+  # the Enrollment CA that takes W and more would eat the margin that the trigger leaves
+  if (( s_left <= 2 * WINDOW_DAYS + 365 )); then
+    log "enrollment: the Enrollment CA is ${age} days old and due, but the Intermediate CA has ${s_left} days left (its rotation starts at $(( 2 * WINDOW_DAYS + 365 )) or fewer): the Intermediate CA has to be rotated first (#172), which makes a new Enrollment CA"
+    return 1
+  fi
   if (( s_left - 1 < CL_ROTATION_DAYS + WINDOW_DAYS )); then
     log "WARNING: the Enrollment CA is ${age} days old and due, but the Intermediate CA has ${s_left} days left, not the $(( CL_ROTATION_DAYS + WINDOW_DAYS + 1 )) that a new one needs (age ${CL_ROTATION_DAYS} + window ${WINDOW_DAYS}): the Intermediate CA has to be rotated first (#172)"
     return 1
@@ -81,8 +87,14 @@ enrollment_new_number() {
 }
 
 # --- create ----------------------------------------------------------------------------------
+# The issuer of the new Enrollment CA and the chain above it are the current Intermediate CA S and [S, R] by default. The
+# Intermediate CA rotation (#172) sets ENROLLMENT_ISSUER_LABEL, ENROLLMENT_ISSUER_PEM and ENROLLMENT_CHAIN (the chain file
+# above the new Cl: [A, S_old, R]) for a new Enrollment CA under the new Intermediate CA.
 enrollment_create_in() { # workdir new
-  local w="$1" new="$2" alias secret days s_left s_num p12="$1/cl.p12"
+  local w="$1" new="$2" alias secret days s_left p12="$1/cl.p12" issuer_label issuer_pem chain
+  issuer_label="${ENROLLMENT_ISSUER_LABEL:-intermediate-ca-$(printf '%02d' "$(jq -r '.numbers.intermediate' "${STATE_FILE}")")}"
+  issuer_pem="${ENROLLMENT_ISSUER_PEM:-${FILES_DIR}/intermediate-ca.pem}"
+  chain="${ENROLLMENT_CHAIN:-$(enrollment_chain_file)}"
   alias="$(enrollment_alias "${new}")"
   secret="$(signing_secret_name "${new}")"
   if aws secretsmanager describe-secret --secret-id "${secret}" > /dev/null 2>&1; then
@@ -91,23 +103,22 @@ enrollment_create_in() { # workdir new
     signing_fetch "${new}" "${p12}" || { log "ERROR: cannot read the secret ${secret}"; return 1; }
     openssl pkcs12 -in "${p12}" -passin "pass:${KS_PASS}" -clcerts -nokeys -out "${w}/cl.pem" 2> /dev/null || { log "ERROR: cannot read the keystore of ${secret}"; return 1; }
   else
-    s_left=$(( ($(cert_enddate "${FILES_DIR}/intermediate-ca.pem") - $(now)) / DAY ))
+    s_left=$(( ($(cert_enddate "${issuer_pem}") - $(now)) / DAY ))
     days="${ENROLLMENT_DAYS}"
     (( s_left - 1 < days )) && days=$(( s_left - 1 ))
     if (( days < CL_ROTATION_DAYS + WINDOW_DAYS )); then
-      log "ERROR: the Intermediate CA has ${s_left} days left: a new Enrollment CA would get ${days} days, less than the ${CL_ROTATION_DAYS} + ${WINDOW_DAYS} that the rotation needs"
+      log "ERROR: the issuer has ${s_left} days left: a new Enrollment CA would get ${days} days, less than the ${CL_ROTATION_DAYS} + ${WINDOW_DAYS} that the rotation needs"
       return 1
     fi
-    s_num="$(printf '%02d' "$(jq -r '.numbers.intermediate' "${STATE_FILE}")")"
-    log "enrollment: new ${alias} for ${days} days, signed by Intermediate CA ${s_num}"
+    log "enrollment: new ${alias} for ${days} days, signed by ${issuer_label}"
     openssl genrsa -out "${w}/cl.key" 2048 2> /dev/null || { log "ERROR: could not generate the key"; return 1; }
     openssl req -new -key "${w}/cl.key" -subj "/O=TAK.NZ/CN=$(enrollment_cn "${new}")" -out "${w}/cl.csr" || { log "ERROR: could not build the CSR"; return 1; }
-    "${KMS_CA}" issue-ca "intermediate-ca-${s_num}" "${FILES_DIR}/intermediate-ca.pem" "${w}/cl.csr" "${w}/cl.pem" "${days}" > /dev/null \
-      || { log "ERROR: the Intermediate CA could not sign the new Enrollment CA"; return 1; }
-    openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted "${FILES_DIR}/intermediate-ca.pem" "${w}/cl.pem" > /dev/null 2>&1 \
-      || { log "ERROR: the new Enrollment CA does not chain to the Intermediate CA and the Root CA"; return 1; }
+    "${KMS_CA}" issue-ca "${issuer_label}" "${issuer_pem}" "${w}/cl.csr" "${w}/cl.pem" "${days}" > /dev/null \
+      || { log "ERROR: ${issuer_label} could not sign the new Enrollment CA"; return 1; }
+    openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted <(chain_without_last "${chain}") "${w}/cl.pem" > /dev/null 2>&1 \
+      || { log "ERROR: the new Enrollment CA does not chain to the Root CA"; return 1; }
     [[ "$(pub_of_key "${w}/cl.key")" == "$(pub_of_cert "${w}/cl.pem")" ]] || { log "ERROR: the new certificate does not match its key"; return 1; }
-    signing_keystore_build "${w}/cl.pem" "${w}/cl.key" "$(enrollment_chain_file)" "${p12}" || { log "ERROR: could not build the keystore"; return 1; }
+    signing_keystore_build "${w}/cl.pem" "${w}/cl.key" "${chain}" "${p12}" || { log "ERROR: could not build the keystore"; return 1; }
     signing_store "${new}" "${p12}" || return 1
   fi
   trust_add "${alias}" "${w}/cl.pem" server || return 1
@@ -132,9 +143,11 @@ enrollment_create() {
 }
 
 # --- switch ----------------------------------------------------------------------------------
-enrollment_switch() {
-  local old new new_alias old_alias w p12 copy rc=0
-  old="$(enrollment_data old)"; new="$(enrollment_data new)"
+enrollment_switch() { enrollment_activate "$(enrollment_data old)" "$(enrollment_data new)"; }
+# Makes Enrollment CA NEW the signing CA; OLD stays trusted. ENROLLMENT_NEW_CHAIN (a chain file) becomes enrollment-chain.pem
+# when it is set (the bridge of an Intermediate CA rotation, #172).
+enrollment_activate() { # old new
+  local old="$1" new="$2" new_alias old_alias w p12 copy rc=0
   [[ -n "${old}" && -n "${new}" ]] || { log "ERROR: the rotation has no old and new number"; return 1; }
   old_alias="$(enrollment_alias "${old}")"; new_alias="$(enrollment_alias "${new}")"
   # 1. the server truststore holds both Enrollment CAs
@@ -159,6 +172,10 @@ enrollment_switch() {
   fi
   signing_activate "${new}" "${p12}" || { find "${w}" -delete; return 1; }
   find "${w}" -delete
+  if [[ -n "${ENROLLMENT_NEW_CHAIN:-}" ]]; then
+    cp "${ENROLLMENT_NEW_CHAIN}" "${FILES_DIR}/enrollment-chain.pem.new" && chmod 644 "${FILES_DIR}/enrollment-chain.pem.new" \
+      && mv -f "${FILES_DIR}/enrollment-chain.pem.new" "${FILES_DIR}/enrollment-chain.pem" || return 1
+  fi
   cp "${FILES_DIR}/$(enrollment_copy_of "${new}")" "${FILES_DIR}/enrollment-ca.pem.new" && chmod 644 "${FILES_DIR}/enrollment-ca.pem.new" \
     && mv -f "${FILES_DIR}/enrollment-ca.pem.new" "${FILES_DIR}/enrollment-ca.pem" || return 1
   trust_state_set --arg cn "$(enrollment_cn "${new}")" --arg endate "$(openssl x509 -in "${FILES_DIR}/enrollment-ca.pem" -noout -enddate | cut -d= -f2)" \
@@ -169,9 +186,9 @@ enrollment_switch() {
 }
 
 # --- admin -----------------------------------------------------------------------------------
-enrollment_admin() {
-  local new
-  new="$(enrollment_data new)"
+enrollment_admin() { enrollment_admin_for "$(enrollment_data new)"; }
+enrollment_admin_for() { # number of the Enrollment CA that signs the admin certificate
+  local new="$1"
   # an earlier run rotated the certificate already and was interrupted before it saved that
   if openssl verify -no_check_time -partial_chain -CAfile "${FILES_DIR}/$(enrollment_copy_of "${new}")" <(openssl x509 -in "${FILES_DIR}/admin.pem") > /dev/null 2>&1; then
     log "enrollment: the admin certificate is signed by $(enrollment_alias "${new}") already"
@@ -181,9 +198,11 @@ enrollment_admin() {
 }
 
 # --- retire ----------------------------------------------------------------------------------
-enrollment_retire() {
-  local old alias rc=0
-  old="$(enrollment_data old)"
+enrollment_retire() { enrollment_retire_cl "$(enrollment_data old)"; }
+# Retires Enrollment CA OLD: out of the truststores, CRL deleted, key destroyed. A caller may have removed other CA
+# certificates from the manifest before (the Intermediate CA rotation does): one truststore change for all.
+enrollment_retire_cl() { # old
+  local old="$1" alias rc=0
   [[ -n "${old}" ]] || { log "ERROR: the rotation has no old number"; return 1; }
   alias="$(enrollment_alias "${old}")"
   [[ "$(jq -r '.numbers.enrollment' "${STATE_FILE}")" != "${old}" ]] || { log "ERROR: ${alias} is the current Enrollment CA"; return 1; }
@@ -215,9 +234,15 @@ enrollment_run() {
 # Before the switch everything that create made is removed. After it the new Cl is in use and its certificates may
 # exist: the rotation goes on (return 2).
 enrollment_abort() {
-  local old new alias rc=0
-  old="$(enrollment_data old)"; new="$(enrollment_data new)"
+  local new rc
+  new="$(enrollment_data new)"
   [[ -n "${new}" ]] || return 0
+  rc=0; enrollment_undo_create "${new}" || rc=$?
+  return "${rc}"
+}
+# Undoes `create` of Enrollment CA NEW; 2 when it signs already
+enrollment_undo_create() { # new
+  local new="$1" alias rc=0
   if [[ "$(jq -r '.numbers.enrollment' "${STATE_FILE}")" == "${new}" ]]; then
     log "enrollment: $(enrollment_alias "${new}") signs already: this rotation can only go on (retire the old one when its time has come)"
     return 2
