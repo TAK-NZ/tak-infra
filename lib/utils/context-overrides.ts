@@ -176,8 +176,3 @@ function parseContextBoolean(value: any): boolean | undefined {
   }
   return undefined;
 }
-/** Parse a comma-separated list of words (for example `retire,cut`); an empty value is an empty list. */
-function parseContextList(value: any): string[] | undefined {
-  if (value === undefined || value === null) return undefined;
-  return String(value).split(',').map(v => v.trim()).filter(v => v !== '');
-}

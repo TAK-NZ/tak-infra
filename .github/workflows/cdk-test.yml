@@ -64,6 +64,8 @@ jobs:
           fi
           ./scripts/github/check-breaking-changes.sh tak prod $OVERRIDE
 
+      - name: Type check (ts-node compiles the app at deploy time; Jest does not catch every error)
+        run: npx tsc --noEmit -p .
       - name: Test kms-ca.sh (CA signing through PKCS#11)
         run: test/KmsCa/test-kms-ca.sh
 

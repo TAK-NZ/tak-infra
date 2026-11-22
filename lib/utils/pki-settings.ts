@@ -80,12 +80,12 @@ export interface PkiRotationConfig {
   enrollmentCaRotationDays?: number;
   requireApproval?: string[];
 }
-export const PKI_DEFAULT_ROTATION = {
+export const PKI_DEFAULT_ROTATION: Required<PkiRotationConfig> = {
   clientCertDays: 365,
   bufferDays: 90,
   enrollmentCaRotationDays: 365,
   requireApproval: ['retire'],
-} as const;
+};
 /** Steps that exist in the rotation scenarios; an approval can only be required for one of these. */
 export const PKI_ROTATION_STEP_NAMES = ['bridge', 'cut', 'retire', 'switch'] as const;
 export function resolvePkiRotation(
