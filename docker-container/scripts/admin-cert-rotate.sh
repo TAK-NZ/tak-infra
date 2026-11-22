@@ -76,7 +76,8 @@ register_admin() { # pem: makes TAK Server know this certificate as administrato
 }
 check_registered() { # pem: TAK Server lists it as ROLE_ADMIN with this fingerprint
   local out fp
-  out="$(user_manager certmod -s "$1" 2> /dev/null)" || { log "certmod -s failed"; return 1; }
+  # UserManager.jar writes the status to stderr (its logger), so both streams are read
+  out="$(user_manager certmod -s "$1" 2>&1)" || { log "certmod -s failed"; return 1; }
   fp="$(openssl x509 -in "$1" -noout -fingerprint -sha256 | cut -d= -f2)"
   [[ "${out}" == *ROLE_ADMIN* && "${out}" == *"${fp}"* ]] || { log "check: TAK Server does not list the certificate as administrator with fingerprint ${fp}"; return 1; }
 }

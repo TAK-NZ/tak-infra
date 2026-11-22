@@ -28,7 +28,8 @@ mkdir -p ignite && echo x > ignite/work   # what the embedded Ignite node does: 
 case "$1 $2" in
   "certmod -A") [[ "${STUB_JAVA_FAILS:-}" == *A* ]] && exit 1; fp "$3" > "${STUB_LOG}/registered"; exit 0 ;;
   "certmod -s") [[ "${STUB_JAVA_FAILS:-}" == *S* ]] && exit 1
-                printf "\tUsername:      'admin'\n\tRole:          ROLE_ADMIN\n\tFingerprint:   %s\n" "$(cat "${STUB_LOG}/registered" 2> /dev/null)"; exit 0 ;;
+                # the real UserManager.jar writes this to stderr
+                printf "\tUsername:      'admin'\n\tRole:          ROLE_ADMIN\n\tFingerprint:   %s\n" "$(cat "${STUB_LOG}/registered" 2> /dev/null)" >&2; exit 0 ;;
 esac
 exit 2
 EOF
