@@ -29,6 +29,9 @@
 #     the files on every call, and TAK Server looks the user up when a request arrives.
 # Every failure emits AdminCertRotationFailed (alarm and SNS alert from #129); a rotation emits AdminCertRotated.
 #
+# pki-state.json keeps a list `adminPrevious` (serial, SHA-256 fingerprint, notAfter, issuer, replacedAt) of the
+# certificates that were replaced, so that they can be revoked later (a CRL for the Enrollment CA, #204).
+#
 # The `.prev` copies hold the old admin key. They are deleted PKI_ADMIN_CERT_GRACE_DAYS (7) after the rotation:
 # that is the window in which a rollback is possible and in which the services pick up the new secret
 # (TAKTeamManager refreshes it every 24 hours).
@@ -238,6 +241,13 @@ rotate_locked() { # [force]
     emit_failed
     return 1
   fi
+  # What a later revocation (a CRL for the Enrollment CA, #204) needs to know about the certificate that goes
+  local previous
+  previous="$(jq -n --arg serial "$(openssl x509 -in "${FILES_DIR}/admin.pem" -noout -serial | cut -d= -f2)" \
+    --arg fingerprint "$(openssl x509 -in "${FILES_DIR}/admin.pem" -noout -fingerprint -sha256 | cut -d= -f2)" \
+    --arg notAfter "$(openssl x509 -in "${FILES_DIR}/admin.pem" -noout -enddate | cut -d= -f2)" \
+    --arg issuer "$(openssl x509 -in "${FILES_DIR}/admin.pem" -noout -issuer -nameopt RFC2253 | sed 's/^issuer=//')" \
+    '{serial: $serial, fingerprint: $fingerprint, notAfter: $notAfter, issuer: $issuer}')" || previous="{}"
   # 4: swap
   if ! install_new; then
     log "ERROR: installing the new certificate failed; restoring the previous files"
@@ -256,8 +266,10 @@ rotate_locked() { # [force]
   local pending=false
   update_secret || pending=true
   state_set --arg notAfter "$(openssl x509 -in "${FILES_DIR}/admin.pem" -noout -enddate | cut -d= -f2)" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-    --arg remove "$(date -u -d "+${GRACE_DAYS} days" +%Y-%m-%dT%H:%M:%SZ)" --argjson pending "${pending}" \
-    '.notAfter.admin = $notAfter | .adminCertRotatedAt = $at | .adminPreviousRemoveAfter = $remove | (if $pending then .adminSecretPending = true else del(.adminSecretPending) end)' \
+    --arg remove "$(date -u -d "+${GRACE_DAYS} days" +%Y-%m-%dT%H:%M:%SZ)" --argjson pending "${pending}" --argjson previous "${previous}" \
+    '.notAfter.admin = $notAfter | .adminCertRotatedAt = $at | .adminPreviousRemoveAfter = $remove
+     | .adminPrevious = ((.adminPrevious // []) + [$previous + {replacedAt: $at}])
+     | (if $pending then .adminSecretPending = true else del(.adminSecretPending) end)' \
     || log "WARNING: could not update ${STATE_FILE}"
   "${METRICS}" emit AdminCertRotated 1 || true
   if [[ "${pending}" == "true" ]]; then

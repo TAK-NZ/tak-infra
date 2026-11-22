@@ -90,6 +90,8 @@ echo "due: the certificate is rotated"
 new_stack due 50
 reset_log
 old_fp="$(fp "${FILES}/admin.pem")"
+old_serial="$(openssl x509 -in "${FILES}/admin.pem" -noout -serial | cut -d= -f2)"
+old_notafter="$(openssl x509 -in "${FILES}/admin.pem" -noout -enddate | cut -d= -f2)"
 old_installed="$(sha256sum "${FILES}/admin.pem" | cut -c1-12)"
 old_sums="$(sums ${CERT_SET})"
 other_before="$(sums ${OTHER_SET})"
@@ -124,6 +126,9 @@ assert_eq "the secret holds the new admin.p12" "$(cmp "${STUB_SECRETS}/TAK-Test_
 assert_contains "...with the file hash as request token (as start-tak.sh)" "$(grep 'Admin-Cert' "${STUB_LOG}/aws.log")" "--client-request-token $(sha256sum "${FILES}/admin.p12" | cut -d' ' -f1)"
 assert_eq "state: new notAfter" "$(jq -r .notAfter.admin "${FILES}/pki-state.json")" "$(openssl x509 -in "${FILES}/admin.pem" -noout -enddate | cut -d= -f2)"
 assert_eq "state: rotation time and the day the old copies go (7 days)" "$(jq -r '(.adminCertRotatedAt | length > 0) and (((.adminPreviousRemoveAfter | fromdateiso8601) - now) | (. > 6.9*86400 and . < 7.1*86400))' "${FILES}/pki-state.json")" "true"
+assert_eq "state: the replaced certificate is recorded (serial, fingerprint, notAfter, issuer) for a later revocation" \
+  "$(jq -r '.adminPrevious | length' "${FILES}/pki-state.json")/$(jq -r '.adminPrevious[0].serial' "${FILES}/pki-state.json")/$(jq -r '.adminPrevious[0].fingerprint' "${FILES}/pki-state.json")/$(jq -r '.adminPrevious[0].notAfter' "${FILES}/pki-state.json")/$(jq -r '.adminPrevious[0].issuer' "${FILES}/pki-state.json")/$(jq -r '.adminPrevious[0].replacedAt | length > 0' "${FILES}/pki-state.json")" \
+  "1/${old_serial}/$(echo "${old_fp}" | cut -d= -f2)/${old_notafter}/CN=TAK.NZ Try Enrollment CA 01,O=TAK.NZ/true"
 assert_eq "state: no pending secret" "$(jq -r '.adminSecretPending // false' "${FILES}/pki-state.json")" "false"
 assert_eq "AdminCertRotated emitted once, with the Stack dimension" "$(metric_count AdminCertRotated)/$(grep AdminCertRotated "${STUB_LOG}/metrics.log" | grep -c 'Stack=TAK-Test')" "1/1"
 assert_eq "no failure metric" "$(metric_count AdminCertRotationFailed)" "0"
@@ -145,6 +150,7 @@ reset_log
 assert_eq "rotate although not due: exit 0" "$(rotate rotate)" "0"
 [[ "$(fp "${FILES}/admin.pem")" != "${new_fp}" ]] && pass "rotate replaces the certificate" || fail "rotate replaces the certificate"
 assert_eq "...and the .prev copy is the one that was there before" "$(fp "${FILES}/admin.pem.prev")" "${new_fp}"
+assert_eq "...and the list of replaced certificates has both, the newer last" "$(jq -r '.adminPrevious | length' "${FILES}/pki-state.json")/$(jq -r '.adminPrevious[1].fingerprint' "${FILES}/pki-state.json")" "2/$(echo "${new_fp}" | cut -d= -f2)"
 
 echo "TAK Server does not accept the new certificate: nothing changes on the EFS"
 new_stack apirefuses 50
@@ -159,6 +165,7 @@ assert_eq "the current certificate is registered again" "$(cat "${STUB_LOG}/regi
 assert_eq "AdminCertRotationFailed emitted, AdminCertRotated not" "$(metric_count AdminCertRotationFailed)/$(metric_count AdminCertRotated)" "1/0"
 assert_eq "the secret was not touched" "$(grep -c 'Admin-Cert' "${STUB_LOG}/aws.log")" "0"
 assert_eq "no work directories, no .new files, lock released" "$(no_leftovers)" "0/0/free"
+assert_eq "a refused rotation records nothing" "$(jq -r '.adminPrevious // [] | length' "${FILES}/pki-state.json")" "0"
 reset_log
 assert_eq "the next check rotates" "$(rotate check)/$(metric_count AdminCertRotated)" "0/1"
 echo "registering fails"
