@@ -104,6 +104,15 @@ export class CaKmsKeys extends Construct {
     });
     this.enrollmentCaSecret.grantRead(props.signerRole);
     this.enrollmentCaSecret.grantWrite(props.signerRole);
+    // Later Enrollment CA generations are secrets that the rotation orchestrator creates at run time (#171), one
+    // per generation, named <stack>/TAK-Server/Enrollment-CA-NN. The role may create and use secrets with that
+    // prefix and nothing else. Deleting them is the retire step of the Enrollment CA rotation (#135), not here.
+    const stack = Stack.of(this);
+    props.signerRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      sid: 'EnrollmentCaGenerations',
+      actions: ['secretsmanager:CreateSecret', 'secretsmanager:DescribeSecret', 'secretsmanager:GetSecretValue', 'secretsmanager:PutSecretValue'],
+      resources: [`arn:${stack.partition}:secretsmanager:${stack.region}:${stack.account}:secret:${stack.stackName}/TAK-Server/Enrollment-CA-*`],
+    }));
 
     // Alert on every use of a Root CA key
     if (props.alertTopic) {

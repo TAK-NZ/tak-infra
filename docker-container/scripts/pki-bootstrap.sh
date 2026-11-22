@@ -130,10 +130,6 @@ authorityKeyIdentifier=keyid:always
 EOF
 }
 
-trust_entry() { # keystore alias pem
-  keytool -import -trustcacerts -file "$3" -alias "$2" -keystore "$1" -storepass "${KS_PASS}" -noprompt > /dev/null 2>&1 \
-    || die "could not add $2 to $1"
-}
 
 jks_from_p12() { # p12 jks alias
   keytool -importkeystore -srckeystore "$1" -srcstoretype PKCS12 -srcstorepass "${KS_PASS}" \
@@ -141,11 +137,6 @@ jks_from_p12() { # p12 jks alias
     || die "could not build $2"
 }
 
-p12_from_jks_truststore() { # jks p12
-  keytool -importkeystore -srckeystore "$1" -srcstoretype JKS -srcstorepass "${KS_PASS}" \
-    -destkeystore "$2" -deststoretype PKCS12 -deststorepass "${KS_PASS}" > /dev/null 2>&1 \
-    || die "could not build $2"
-}
 
 link_signing_keystore() { # dir with intermediate-ca-signing.{jks,p12}
   ln -sfn "${TMPFS_DIR}/intermediate-ca-signing.jks" "${FILES_DIR}/intermediate-ca-signing.jks"
@@ -153,6 +144,8 @@ link_signing_keystore() { # dir with intermediate-ca-signing.{jks,p12}
 }
 
 
+# shellcheck source=pki-trust-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/pki-trust-lib.sh"
 # ---------------------------------------------------------------------------------------------
 # Restore: the Enrollment CA keystore from Secrets Manager into tmpfs
 # ---------------------------------------------------------------------------------------------
@@ -160,10 +153,12 @@ restore_signing_keystore() {
   log "restoring the Enrollment CA keystore from Secrets Manager into tmpfs"
   mkdir -p "${TMPFS_DIR}"
   chmod 700 "${TMPFS_DIR}"
-  local b64
-  b64="$(aws secretsmanager get-secret-value --secret-id "${PKI_ENROLLMENT_CA_SECRET}" --query SecretBinary --output text 2> /dev/null)" \
-    || die "cannot read secret ${PKI_ENROLLMENT_CA_SECRET} (state file exists, so the PKI is already bootstrapped)"
-  [[ -n "${b64}" && "${b64}" != "None" ]] || die "secret ${PKI_ENROLLMENT_CA_SECRET} has no value"
+  local b64 secret
+  # the current generation: the secret that pki-rotate.sh recorded (a later Enrollment CA), else the one of the stack
+  secret="$(signing_current_secret)"
+  b64="$(aws secretsmanager get-secret-value --secret-id "${secret}" --query SecretBinary --output text 2> /dev/null)" \
+    || die "cannot read secret ${secret} (state file exists, so the PKI is already bootstrapped)"
+  [[ -n "${b64}" && "${b64}" != "None" ]] || die "secret ${secret} has no value"
   ( umask 077; echo "${b64}" | base64 -d > "${TMPFS_DIR}/intermediate-ca-signing.p12" )
   ( umask 077; rm -f "${TMPFS_DIR}/intermediate-ca-signing.jks"; jks_from_p12 "${TMPFS_DIR}/intermediate-ca-signing.p12" "${TMPFS_DIR}/intermediate-ca-signing.jks" "${SIGNING_ALIAS}" )
   chmod 644 "${TMPFS_DIR}/intermediate-ca-signing.jks"
@@ -225,19 +220,11 @@ bootstrap() {
     -out admin.p12 -passout "pass:${KS_PASS}"
   openssl rsa -in admin.key.plain -aes256 -out admin.key -passout "pass:${KS_PASS}" 2> /dev/null
   cat admin.cert.pem enrollment-ca.pem intermediate-ca.pem > admin.pem
-  # Truststores: the server trusts R, S and every Enrollment CA (ATAK sends only its leaf cert, #133).
-  # Phones get S and R only, so the Enrollment CA is not in their store (#171, known limit).
-  for ks in truststore-intermediate-ca truststore-phone fed-truststore; do rm -f "${ks}.jks"; done
-  trust_entry truststore-intermediate-ca.jks root-ca-01 root-ca.pem
-  trust_entry truststore-intermediate-ca.jks intermediate-ca-01 intermediate-ca.pem
-  trust_entry truststore-intermediate-ca.jks enrollment-ca-01 enrollment-ca.pem
-  trust_entry truststore-phone.jks root-ca-01 root-ca.pem
-  trust_entry truststore-phone.jks intermediate-ca-01 intermediate-ca.pem
-  trust_entry fed-truststore.jks root-ca-01 root-ca.pem
-  trust_entry fed-truststore.jks intermediate-ca-01 intermediate-ca.pem
-  p12_from_jks_truststore truststore-intermediate-ca.jks truststore-intermediate-ca.p12
-  p12_from_jks_truststore truststore-phone.jks truststore-phone.p12
-
+  # Truststores, built from a manifest that goes into the state file (pki-trust-lib.sh): the server trusts R, S
+  # and every Enrollment CA (ATAK sends only its leaf cert, #133), phones get S and R only (the Enrollment CA is
+  # not in their store, #171, known limit)
+  trust_default_manifest > trust-manifest.json
+  trust_build trust-manifest.json "$(pwd)" "$(pwd)" || die "could not build the truststores"
   log "storing the Enrollment CA keystore in Secrets Manager"
   aws secretsmanager put-secret-value --secret-id "${PKI_ENROLLMENT_CA_SECRET}" --secret-binary fileb://intermediate-ca-signing.p12 > /dev/null \
     || die "cannot write secret ${PKI_ENROLLMENT_CA_SECRET}; nothing was installed"
@@ -274,9 +261,10 @@ bootstrap() {
     --arg root "${ROOT_CN}" --arg inter "${INTERMEDIATE_CN}" --arg enr "${ENROLLMENT_CN}" --arg server "${SERVER_CN}" --arg san "${SAN}" \
     --arg rootEnd "$(nb root-ca.pem)" --arg interEnd "$(nb intermediate-ca.pem)" --arg enrEnd "$(nb enrollment-ca.pem)" \
     --arg serverEnd "$(nb takserver.pem)" --arg adminEnd "$(nb admin.cert.pem)" --arg profile "${P12_PROFILE:-compat3des}" \
+    --argjson trust "$(jq -c '{entries: .entries}' trust-manifest.json)" \
     '{version: 1, created: $created, environmentLabel: $envLabel, p12Profile: $profile,
       names: {root: $root, intermediate: $inter, enrollment: $enr, serverCn: $server, serverSan: $san},
-      numbers: {root: 1, intermediate: 1, enrollment: 1},
+      numbers: {root: 1, intermediate: 1, enrollment: 1}, trust: $trust,
       notAfter: {root: $rootEnd, intermediate: $interEnd, enrollment: $enrEnd, server: $serverEnd, admin: $adminEnd}}' \
     > "${STATE_FILE}.new"
   mv "${STATE_FILE}.new" "${STATE_FILE}"

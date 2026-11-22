@@ -84,6 +84,8 @@ jobs:
           done
       - name: Test server-cert-rotate.sh (TAK Server certificate rotation)
         run: test/KmsCa/test-server-cert-rotate.sh
+      - name: Test pki-trust.sh (truststores and signing keystore generations)
+        run: test/KmsCa/test-pki-trust.sh
       - name: Test pki-rotate.sh (rotation orchestrator)
         run: test/KmsCa/test-pki-rotate.sh
       - name: Test admin-cert-rotate.sh (admin certificate rotation)
