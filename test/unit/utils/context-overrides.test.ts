@@ -128,6 +128,10 @@ describe('Context Overrides', () => {
       const result = applyContextOverrides(appWith({ pkiServerCertRenewDays: '45' }), withKmsCa(base));
       expect(result.pki?.kmsCa?.validity).toEqual({ serverCertRenewDays: 45 });
     });
+    test('the command line can set the admin certificate renewal threshold and grace period', () => {
+      const result = applyContextOverrides(appWith({ pkiAdminCertRenewDays: '45', pkiAdminCertGraceDays: '3' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.validity).toEqual({ adminCertRenewDays: 45, adminCertGraceDays: 3 });
+    });
     test('the command line can set the info email', () => {
       const result = applyContextOverrides(appWith({ pkiInfoEmail: 'info@example.org' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
       expect(result.pki?.kmsCa?.infoEmail).toBe('info@example.org');

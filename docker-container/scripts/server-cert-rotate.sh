@@ -31,20 +31,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PKI_BOOTSTRAP_SOURCE_ONLY=1
 # shellcheck source=pki-bootstrap.sh
 source "${SCRIPT_DIR}/pki-bootstrap.sh"
+# shellcheck source=pki-rotate-common.sh
+source "${SCRIPT_DIR}/pki-rotate-common.sh"
 CERT_FILES=(takserver.pem takserver.key takserver.p12 takserver.jks)
 MARKER="${FILES_DIR}/.takserver-rotation.pending"
-METRICS="${SCRIPT_DIR}/cert-metrics.sh"
 LOCK_NAME="server-cert-rotation"
 
-emit() { "${METRICS}" emit "$1" 1 || true; }
-days_left() { # pem -> whole days until notAfter (negative when expired)
-  local end
-  end="$(openssl x509 -in "$1" -noout -enddate | cut -d= -f2)" || return 1
-  echo $(( ($(date -d "${end}" +%s) - $(date +%s)) / 86400 ))
-}
-pub_of_cert() { openssl x509 -in "$1" -noout -pubkey 2> /dev/null | openssl sha256 2> /dev/null; }
-pub_of_key() { openssl pkey -in "$1" -pubout 2> /dev/null | openssl sha256 2> /dev/null; }
-fp_of_cert() { openssl x509 -in "$1" -noout -fingerprint -sha256 2> /dev/null; }
 fp_of_jks() { # jks -> fingerprint of the takserver entry
   keytool -exportcert -alias takserver -keystore "$1" -storepass "${KS_PASS}" -rfc 2> /dev/null | openssl x509 -noout -fingerprint -sha256 2> /dev/null
 }
@@ -79,7 +71,15 @@ build_new() {
   log "new server certificate ${SERVER_CN} (${SAN}), signed by ${slot}"
   openssl genrsa -out takserver.key 2048 2> /dev/null || { log "could not generate the key"; return 1; }
   openssl req -new -key takserver.key -subj "/O=TAK.NZ/CN=${SERVER_CN}" -out takserver.csr || { log "could not build the CSR"; return 1; }
-  "${KMS_CA}" sign "${slot}" "${FILES_DIR}/intermediate-ca.pem" takserver.csr takserver.pem "${SERVER_DAYS}" server ext.cfg > /dev/null \
+  # The certificate must not outlive its issuer: capped to what Intermediate CA S has left
+  local days="${SERVER_DAYS}" s_left
+  s_left="$(days_left "${FILES_DIR}/intermediate-ca.pem")" || { log "could not read intermediate-ca.pem"; return 1; }
+  if (( s_left - 1 < days )); then
+    days=$(( s_left - 1 ))
+    log "Intermediate CA S has ${s_left} days left: the new certificate gets ${days} days, not ${SERVER_DAYS}"
+  fi
+  (( days > RENEW_DAYS )) || { log "check: Intermediate CA S has only ${s_left} days left, not enough for a certificate that outlasts the renewal threshold of ${RENEW_DAYS} days: rotate the Intermediate CA first (#172)"; return 1; }
+  "${KMS_CA}" sign "${slot}" "${FILES_DIR}/intermediate-ca.pem" takserver.csr takserver.pem "${days}" server ext.cfg > /dev/null \
     || { log "KMS signing failed"; return 1; }
   # CN and SAN as configured
   [[ "$(openssl x509 -in takserver.pem -noout -subject -nameopt RFC2253 2> /dev/null)" == "subject=CN=${SERVER_CN},O=TAK.NZ" ]] \

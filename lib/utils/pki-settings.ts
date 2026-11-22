@@ -12,6 +12,10 @@ export interface PkiValidityConfig {
   adminCertDays?: number;
   /** The server certificate is rotated when this many days or fewer are left (#131). Must be smaller than `serverCertDays`. */
   serverCertRenewDays?: number;
+  /** The admin certificate is rotated when this many days or fewer are left (#132). Must be smaller than `adminCertDays`. */
+  adminCertRenewDays?: number;
+  /** Days after an admin certificate rotation until the copies of the previous admin key are deleted (#132). */
+  adminCertGraceDays?: number;
 }
 
 export type P12Profile = 'compat3des' | 'aes256';
@@ -23,6 +27,8 @@ export const PKI_DEFAULT_VALIDITY_DAYS = {
   serverCertDays: 365,
   adminCertDays: 365,
   serverCertRenewDays: 60,
+  adminCertRenewDays: 60,
+  adminCertGraceDays: 7,
 } as const;
 
 export const P12_PROFILES: readonly P12Profile[] = ['compat3des', 'aes256'];
@@ -45,6 +51,12 @@ export function resolvePkiValidity(config: PkiValidityConfig = {}): Required<Pki
     throw new Error(
       `pki.kmsCa.validity.serverCertRenewDays (${v.serverCertRenewDays}) must be smaller than serverCertDays (${v.serverCertDays}), ` +
       'or every new server certificate would be rotated again at once'
+    );
+  }
+  if (!(v.adminCertRenewDays < v.adminCertDays)) {
+    throw new Error(
+      `pki.kmsCa.validity.adminCertRenewDays (${v.adminCertRenewDays}) must be smaller than adminCertDays (${v.adminCertDays}), ` +
+      'or every new admin certificate would be rotated again at once'
     );
   }
   return v;

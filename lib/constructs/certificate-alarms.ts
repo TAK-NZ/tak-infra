@@ -51,6 +51,7 @@ export const CERTIFICATE_ALARMS: readonly CertificateMetricAlarm[] = [
   { metric: 'TakServerCertRotated', severity: 'info', ...EVENT, description: 'The TAK Server TLS certificate was rotated (#131)' },
   { metric: 'TakServerCertRotationFailed', severity: 'alert', ...EVENT, description: 'The TAK Server TLS certificate rotation failed (#131)' },
   { metric: 'AdminCertRotated', severity: 'info', ...EVENT, description: 'The admin certificate was rotated (#132)' },
+  { metric: 'AdminCertRotationFailed', severity: 'alert', ...EVENT, description: 'The admin certificate rotation failed (#132)' },
   { metric: 'SigningCARotated', severity: 'info', ...EVENT, description: 'The Enrollment Signing CA was rotated (#135)' },
   { metric: 'IntermediateCAExpiryWarning', severity: 'alert', ...DAILY, description: 'The Intermediate CA is inside the window in which its rotation must start (2W + 1 year before expiry, #172)' },
   { metric: 'IntermediateCARotationPhase', dimensions: { Phase: 'bridge' }, severity: 'info', ...EVENT, description: 'Intermediate CA rotation: bridge phase started (#172)' },

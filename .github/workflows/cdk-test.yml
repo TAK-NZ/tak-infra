@@ -82,6 +82,8 @@ jobs:
           done
       - name: Test server-cert-rotate.sh (TAK Server certificate rotation)
         run: test/KmsCa/test-server-cert-rotate.sh
+      - name: Test admin-cert-rotate.sh (admin certificate rotation)
+        run: test/KmsCa/test-admin-cert-rotate.sh
       - name: Test admin-p12-reexport.sh (admin.p12 readable by OpenSSL 3)
         run: test/KmsCa/test-admin-p12-reexport.sh
       - name: Test certbot-renew.sh (Let's Encrypt renewal, cron line, failure metric)

@@ -19,9 +19,9 @@ describe('CertificateAlarms construct', () => {
     create();
     const template = Template.fromStack(stack);
     template.resourceCountIs('AWS::CloudWatch::Alarm', CERTIFICATE_ALARMS.length);
-    expect(CERTIFICATE_ALARMS.length).toBe(13);
+    expect(CERTIFICATE_ALARMS.length).toBe(14);
     const names = CERTIFICATE_ALARMS.map(a => a.metric);
-    for (const m of ['CertbotRenewalFailure', 'TakServerCertRotated', 'TakServerCertRotationFailed', 'AdminCertRotated', 'SigningCARotated',
+    for (const m of ['CertbotRenewalFailure', 'TakServerCertRotated', 'TakServerCertRotationFailed', 'AdminCertRotated', 'AdminCertRotationFailed', 'SigningCARotated',
       'IntermediateCAExpiryWarning', 'IntermediateCARotationPhase', 'RootCAExpiryWarning', 'RootCARotated', 'RotationCoverageStragglers', 'CAExpired']) {
       expect(names).toContain(m);
     }

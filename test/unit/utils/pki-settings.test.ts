@@ -5,7 +5,7 @@ import { PKI_DEFAULT_VALIDITY_DAYS, resolvePkiValidity, validateP12Profile } fro
 
 describe('pki-settings', () => {
   test('defaults follow #171: root 20 y, intermediate 10 y, enrollment CA 3 y, server and admin 1 y', () => {
-    expect(resolvePkiValidity()).toEqual({ rootDays: 7300, intermediateDays: 3650, enrollmentCaDays: 1095, serverCertDays: 365, adminCertDays: 365, serverCertRenewDays: 60 });
+    expect(resolvePkiValidity()).toEqual({ rootDays: 7300, intermediateDays: 3650, enrollmentCaDays: 1095, serverCertDays: 365, adminCertDays: 365, serverCertRenewDays: 60, adminCertRenewDays: 60, adminCertGraceDays: 7 });
     expect(PKI_DEFAULT_VALIDITY_DAYS.rootDays).toBe(7300);
   });
 
@@ -31,6 +31,11 @@ describe('pki-settings', () => {
     expect(() => resolvePkiValidity({ serverCertDays: 60 })).toThrow(/must be smaller than serverCertDays/);
     expect(() => resolvePkiValidity({ serverCertRenewDays: 365 })).toThrow(/must be smaller than serverCertDays/);
     expect(resolvePkiValidity({ serverCertDays: 30, serverCertRenewDays: 10 })).toMatchObject({ serverCertDays: 30, serverCertRenewDays: 10 });
+  });
+  test('the admin certificate renewal threshold must be smaller than its validity', () => {
+    expect(() => resolvePkiValidity({ adminCertDays: 60 })).toThrow(/adminCertRenewDays.*must be smaller than adminCertDays/);
+    expect(() => resolvePkiValidity({ adminCertRenewDays: 365 })).toThrow(/must be smaller than adminCertDays/);
+    expect(resolvePkiValidity({ adminCertDays: 30, adminCertRenewDays: 10, adminCertGraceDays: 3 })).toMatchObject({ adminCertRenewDays: 10, adminCertGraceDays: 3 });
   });
   test.each([0, -5, 1.5, 36501, NaN])('rejects %p days', (n) => {
     expect(() => resolvePkiValidity({ serverCertDays: n })).toThrow(/whole number of days/);

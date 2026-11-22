@@ -6,6 +6,8 @@ On a stack with the PKI of the TAK Server scripts (no `pki-state.json`), `makeCe
 
 New stacks with the first-boot PKI (`pki.kmsCa`) write the compat3des profile already (`-legacy -descert`: 3DES, SHA-1 MAC; `docs/KMS_CA_KEYS.md`), so they need nothing.
 
+New stacks with the first-boot PKI also rotate the admin certificate automatically (`docs/KMS_CA_KEYS.md`, #132); every rotated `admin.p12` has the compat3des profile.
+
 ## The fix for an existing stack
 
 `/opt/tak/scripts/admin-p12-reexport.sh` (in the image from this change on) exports the same key and certificates again with the compat3des profile.

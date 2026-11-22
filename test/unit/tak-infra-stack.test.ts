@@ -149,7 +149,7 @@ describe('TakInfraStack', () => {
 
     test('creates the certificate alarms and sends the Root CA signing alert to their alert topic', () => {
       const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
-      template.resourceCountIs('AWS::CloudWatch::Alarm', 13);
+      template.resourceCountIs('AWS::CloudWatch::Alarm', 14);
       template.resourceCountIs('AWS::SNS::Topic', 3);
       template.hasResourceProperties('AWS::CloudWatch::Alarm', { Namespace: 'TAK/Certificates', MetricName: 'RootCAExpiryWarning',
         Dimensions: [{ Name: 'Stack', Value: 'TAK-Try-TakInfra' }] });
@@ -175,6 +175,8 @@ describe('TakInfraStack', () => {
       expect(byName.PKI_SERVER_CERT_DAYS).toBe('365');
       expect(byName.PKI_ADMIN_CERT_DAYS).toBe('365');
       expect(byName.PKI_SERVER_CERT_RENEW_DAYS).toBe('60');
+      expect(byName.PKI_ADMIN_CERT_RENEW_DAYS).toBe('60');
+      expect(byName.PKI_ADMIN_CERT_GRACE_DAYS).toBe('7');
       // the Enrollment CA secret (Ref to the secret)
       expect(JSON.stringify(byName.PKI_ENROLLMENT_CA_SECRET)).toContain('EnrollmentCaSecret');
       // CN first: service name, then host name, both under the hosted zone from BaseInfra (never literal)
