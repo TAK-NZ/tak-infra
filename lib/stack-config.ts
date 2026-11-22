@@ -96,6 +96,8 @@ export interface ContextEnvironmentConfig {
         enrollmentCaDays?: number;
         serverCertDays?: number;
         adminCertDays?: number;
+        /** Rotate the server certificate when this many days or fewer are left (#131). Default 60. */
+        serverCertRenewDays?: number;
       };
       /** PKCS#12 profile of the user-facing p12 files: `compat3des` (default) or `aes256` (#133). */
       p12Profile?: 'compat3des' | 'aes256';

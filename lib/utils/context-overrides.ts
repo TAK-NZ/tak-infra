@@ -92,6 +92,7 @@ function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']):
     enrollmentCaDays: parseContextNumber(app.node.tryGetContext('pkiEnrollmentCaDays')),
     serverCertDays: parseContextNumber(app.node.tryGetContext('pkiServerCertDays')),
     adminCertDays: parseContextNumber(app.node.tryGetContext('pkiAdminCertDays')),
+    serverCertRenewDays: parseContextNumber(app.node.tryGetContext('pkiServerCertRenewDays')),
   };
   const daysOverridden = Object.values(days).some(v => v !== undefined);
   const overridden = [enabled, environmentLabel, rootCaNumbers, intermediateCaNumbers, alertEmail, infoEmail, p12Profile].some(v => v !== undefined) || daysOverridden;

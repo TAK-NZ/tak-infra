@@ -12,6 +12,9 @@
 # (intermediate-ca-signing.jks) is a symlink to it. This script does not renew or rotate anything
 # (#131, #132, #135, #169, #171, #172).
 #
+# server-cert-rotate.sh (#131) sources this file with PKI_BOOTSTRAP_SOURCE_ONLY=1 for the settings and
+# the helpers (load_settings, write_ext_file, jks_from_p12); `main` is not run then.
+#
 # Exit codes: 0 PKI ready (bootstrapped now, or restored), 2 not applicable (not configured, or this
 # stack already has a PKI from the old flow), 1 error.
 #
@@ -318,4 +321,6 @@ main() {
   with_cluster_lock pki-bootstrap run_locked
   [[ "${NOT_APPLICABLE}" -eq 0 ]] || exit 2
 }
-main "$@"
+if [[ "${PKI_BOOTSTRAP_SOURCE_ONLY:-0}" != "1" ]]; then
+  main "$@"
+fi

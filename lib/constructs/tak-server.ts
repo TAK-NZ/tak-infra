@@ -484,6 +484,7 @@ export class TakServer extends Construct {
               PKI_ENROLLMENT_CA_DAYS: String(v.enrollmentCaDays),
               PKI_SERVER_CERT_DAYS: String(v.serverCertDays),
               PKI_ADMIN_CERT_DAYS: String(v.adminCertDays),
+              PKI_SERVER_CERT_RENEW_DAYS: String(v.serverCertRenewDays),
             };
           })(),
         } : {}),
