@@ -179,6 +179,7 @@ describe('TakInfraStack', () => {
       expect(byName.PKI_SERVER_CERT_RENEW_DAYS).toBe('60');
       expect(byName.PKI_ADMIN_CERT_RENEW_DAYS).toBe('60');
       expect(byName.PKI_ADMIN_CERT_GRACE_DAYS).toBe('7');
+      expect(JSON.stringify(byName.PKI_ALERT_TOPIC_ARN)).toContain('AlertTopic');
       expect(byName.PKI_CLIENT_CERT_DAYS).toBe('365');
       expect(byName.PKI_ROTATION_BUFFER_DAYS).toBe('90');
       expect(byName.PKI_ENROLLMENT_CA_ROTATION_DAYS).toBe('365');
@@ -220,6 +221,13 @@ describe('TakInfraStack', () => {
       expect(byName.PKI_ROTATION_BUFFER_DAYS).toBe('30');
       expect(byName.PKI_ROTATION_REQUIRE_APPROVAL).toBe('cut,retire');
       expect(() => build({ kmsCa: { enabled: true, environmentLabel: 'Try', rotation: { enrollmentCaRotationDays: 900 } } })).toThrow(/Enrollment CA validity/);
+    });
+    test('the task role may publish to the alert topic, for the list of users that the coverage check reports (#171)', () => {
+      const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
+      const policies = Object.values(template.findResources('AWS::IAM::Policy')) as any[];
+      const publish = policies.flatMap(p => p.Properties.PolicyDocument.Statement as any[])
+        .filter(s => ([] as string[]).concat(s.Action).includes('sns:Publish') && JSON.stringify(s.Resource).includes('AlertTopic'));
+      expect(publish.length).toBeGreaterThan(0);
     });
     test('the signer in the key policy is the task role of the TAK Server task', () => {
       const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });

@@ -343,6 +343,9 @@ export class TakServer extends Construct {
         alertTopic: this.certificateAlarms.alertTopic,
         secretEncryptionKey: props.infrastructure.kmsKey,
       });
+      // The coverage check of the rotation orchestrator sends the list of users who have not enrolled again to the
+      // alert topic (#171)
+      this.certificateAlarms.alertTopic.grantPublish(taskRole);
     }
 
     // Create task definition
@@ -468,6 +471,7 @@ export class TakServer extends Construct {
           PKI_ENV_LABEL: props.contextConfig.pki!.kmsCa!.environmentLabel,
           PKI_KMS_CA_KEYS: this.caKmsKeys.pkcs11SlotsValue,
           PKI_KMS_REGION: Stack.of(this).region,
+          PKI_ALERT_TOPIC_ARN: this.certificateAlarms!.alertTopic.topicArn,
           // First-boot PKI (pki-bootstrap.sh, #189). The server cert CN is the first name: the public
           // service name, then the TAK host name; both come from the config and the hosted zone.
           PKI_ENROLLMENT_CA_SECRET: this.caKmsKeys.enrollmentCaSecret.secretArn,

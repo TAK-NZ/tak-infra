@@ -21,8 +21,9 @@
 # Gates between steps (all of them must be open):
 #   window    W = client certificate validity + buffer (455 days by default) since the previous step, so that
 #             every phone has received a certificate from the new chain before trust is removed (#171)
-#   coverage  rotation-coverage.sh reports no active user whose latest client certificate predates the chain
-#             change (#171; the report itself is a separate piece)
+#   coverage  rotation-coverage.sh (arguments from the scenario: `<n>_coverage_args`) reports no active user who is
+#             still on the old side. While it does, the list of users goes to the log and to the alert topic (SNS,
+#             once a week for the same users) and RotationCoverageStragglers carries the number
 #   approval  `pki-rotate.sh approve <scenario> <step>`; required for the steps named in
 #             PKI_ROTATION_REQUIRE_APPROVAL (default: retire, the only destructive step)
 #   A step can have a hard deadline (the expiry of what it depends on, minus a margin): from then on the
@@ -36,6 +37,7 @@
 #   <n>_steps             echoes the step names in order
 #   <n>_gate <step>       echoes the gates of the step: none, or any of: window coverage approval
 #   <n>_deadline <step>   echoes an epoch (optional)
+#   <n>_coverage_args <step>  echoes the arguments of rotation-coverage.sh for a step with a coverage gate
 #   <n>_run <step>        does the step. 0 done, 10 done and TAK Server must restart, anything else failed and is
 #                         retried at the next run. Steps must be idempotent: after a crash the step runs again
 #   <n>_abort             optional: undoes what can be undone
@@ -111,11 +113,52 @@ scn_has() { declare -F "$(fn "$1" "$2")" > /dev/null; }
 # ---------------------------------------------------------------------------------------------
 # Gates
 # ---------------------------------------------------------------------------------------------
-coverage_stragglers() { # prints the number of active users that have not got a certificate from the new chain
-  local cmd="${PKI_ROTATE_COVERAGE_CMD:-${SCRIPT_DIR}/rotation-coverage.sh}" n
+# The arguments of the coverage check come from the scenario (`<n>_coverage_args <step>`: --issued-before EPOCH or
+# --issuer ALIAS, see rotation-coverage.sh)
+coverage_cmd() { echo "${PKI_ROTATE_COVERAGE_CMD:-${SCRIPT_DIR}/rotation-coverage.sh}"; }
+coverage_args() { scn_has "$1" coverage_args && scn "$1" coverage_args "$2"; return 0; }
+coverage_stragglers() { # scenario step: prints the number of active users that are still on the old side
+  local cmd n args
+  cmd="$(coverage_cmd)"
+  args="$(coverage_args "$1" "$2")"
   [[ -x "${cmd}" ]] || { log "the coverage check ${cmd} is not available: the coverage gate stays closed"; echo unknown; return 0; }
-  n="$("${cmd}" 2> /dev/null)" || { log "the coverage check failed: the coverage gate stays closed"; echo unknown; return 0; }
+  # shellcheck disable=SC2086
+  n="$("${cmd}" ${args} 2> /dev/null)" || { log "the coverage check failed: the coverage gate stays closed"; echo unknown; return 0; }
   [[ "${n}" =~ ^[0-9]+$ ]] && echo "${n}" || echo unknown
+}
+# Tells a human who has not enrolled again: the table goes to the log and to the alert topic (SNS). Not more than once
+# a week for the same set of users, so a rotation that waits does not fill an inbox.
+report_stragglers() { # scenario step
+  local s="$1" step="$2" cmd args json digest last old t deadline msg subject count unknown topic="${PKI_ALERT_TOPIC_ARN:-}"
+  cmd="$(coverage_cmd)"
+  [[ -x "${cmd}" ]] || return 0
+  args="$(coverage_args "${s}" "${step}")"
+  # shellcheck disable=SC2086
+  json="$("${cmd}" ${args} --json 2> /dev/null)" || return 0
+  digest="$(jq -c '[.users[] | [.kind, .user]]' <<< "${json}" | sha256sum | cut -c1-16)"
+  t="$(now)"
+  last="$(st_get '.active.coverageReport.at // 0')"
+  old="$(st_get '.active.coverageReport.digest // ""')"
+  if [[ "${digest}" == "${old}" ]] && (( t - last < 7 * DAY )); then return 0; fi
+  count="$(jq -r '.stragglers' <<< "${json}")"
+  unknown="$(jq -r '.unknown' <<< "${json}")"
+  deadline=""
+  scn_has "${s}" deadline && deadline="$(scn "${s}" deadline "${step}")"
+  msg="The rotation '${s}' waits at step '${step}' for ${count} active user(s) who are still on the old certificates.
+Active means connected now or seen in the last $(jq -r '.activeDays' <<< "${json}") days. Each of them has to enroll again (the QR code of the enrolment portal) so that the phone gets the new chain.
+$([[ "${deadline}" =~ ^[0-9]+$ ]] && echo "The step runs when all of them have enrolled again, or on $(fmt_date "${deadline}") at the latest, whoever is left then loses access." || echo "The step runs when all of them have enrolled again.")
+
+$("${cmd}" ${args} --list 2> /dev/null)
+
+'unknown' users connect with a certificate that TAK Server did not issue through enrolment (a data package made by hand): the check cannot see their chain, and they do not hold the rotation back (${unknown} now). Check them by hand."
+  subject="TAK.NZ ${PKI_ENV_LABEL:-} rotation ${s}: ${count} user(s) must enroll again"
+  log "coverage: ${count} active user(s) are still on the old side (${unknown} unknown):"
+  echo "${msg}" | sed 's/^/    /'
+  if [[ -n "${topic}" ]]; then
+    aws sns publish --topic-arn "${topic}" --subject "${subject:0:100}" --message "${msg}" > /dev/null 2>&1 \
+      && log "the list was sent to the alert topic" || log "WARNING: could not publish the list to the alert topic"
+  fi
+  st_set --argjson t "${t}" --arg d "${digest}" --argjson c "${count}" '.active.coverageReport = {at: $t, digest: $d, count: $c}'
 }
 # Sets GATE_OUT to "open" or "waiting:<window|coverage|approval>[:<epoch the window opens>]", and GATE_PAST_WINDOW=1
 # when the window is over (so waiting for coverage or approval is a stuck rotation, not a normal wait). Not run in
@@ -138,9 +181,12 @@ gate_status() { # scenario step
   fi
   GATE_PAST_WINDOW=1
   if [[ "${gates}" == *" coverage "* ]] && (( ! pastdeadline )); then
-    n="$(coverage_stragglers)"
+    n="$(coverage_stragglers "${s}" "${step}")"
     if [[ "${n}" != "0" ]]; then
-      [[ "${n}" =~ ^[0-9]+$ ]] && "${METRICS}" emit RotationCoverageStragglers "${n}" || true
+      if [[ "${n}" =~ ^[0-9]+$ ]]; then
+        "${METRICS}" emit RotationCoverageStragglers "${n}" || true
+        report_stragglers "${s}" "${step}" || true
+      fi
       GATE_OUT="waiting:coverage"; return 0
     fi
   fi
