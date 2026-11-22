@@ -70,6 +70,24 @@ case "$1 $2" in
   "cloudwatch put-metric-data") echo "$*" >> "${STUB_LOG}/metrics.log"; exit 0 ;;
   "ecs update-service") echo "$*" >> "${STUB_LOG}/ecs.log"; [[ -n "${STUB_ECS_FAILS:-}" ]] && exit 1; echo '{}'; exit 0 ;;
   "secretsmanager put-secret-value" | "secretsmanager get-secret-value") ;;
+  "secretsmanager describe-secret"|"secretsmanager create-secret")
+    sub="$2"; shift 2
+    id=""; file=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --secret-id|--name) id="$2"; shift 2 ;;
+        --secret-binary) file="${2#fileb://}"; shift 2 ;;
+        *) shift ;;
+      esac
+    done
+    dest="${STUB_SECRETS}/$(echo "${id}" | tr '/:' '__')"
+    if [[ "${sub}" == "describe-secret" ]]; then
+      [[ -f "${dest}" ]] || { echo "ResourceNotFoundException" >&2; exit 254; }
+      echo '{}'; exit 0
+    fi
+    [[ -f "${dest}" ]] && { echo "ResourceExistsException" >&2; exit 254; }
+    [[ -n "${STUB_SECRET_WRITE_FAILS:-}" ]] && { echo "AccessDenied" >&2; exit 254; }
+    cp "${file}" "${dest}"; echo '{}'; exit 0 ;;
   *) echo "stub aws: unexpected: $*" >&2; exit 90 ;;
 esac
 sub="$2"; shift 2

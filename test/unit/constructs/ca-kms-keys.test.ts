@@ -33,6 +33,17 @@ describe('CaKmsKeys construct', () => {
     });
   });
 
+  test('the signer role may create and use Enrollment CA generation secrets with the stack prefix and nothing else (#171)', () => {
+    create();
+    const policies = Object.values(Template.fromStack(stack).findResources('AWS::IAM::Policy')) as any[];
+    const statements = policies.flatMap(p => p.Properties.PolicyDocument.Statement as any[]);
+    const generations = statements.filter(s => JSON.stringify(s.Resource).includes('Enrollment-CA-*'));
+    expect(generations).toHaveLength(1);
+    expect(generations[0].Effect).toBe('Allow');
+    expect([...generations[0].Action].sort()).toEqual(['secretsmanager:CreateSecret', 'secretsmanager:DescribeSecret', 'secretsmanager:GetSecretValue', 'secretsmanager:PutSecretValue']);
+    expect(JSON.stringify(generations[0].Resource)).toContain('/TAK-Server/Enrollment-CA-*');
+    expect(JSON.stringify(generations[0].Action)).not.toContain('DeleteSecret');
+  });
   test('aliases follow the naming rules', () => {
     create();
     const template = Template.fromStack(stack);
