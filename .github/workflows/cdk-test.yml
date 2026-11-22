@@ -75,5 +75,10 @@ jobs:
 
       - name: Test cluster-lock.sh (lock for steps that run once per cluster)
         run: test/KmsCa/test-cluster-lock.sh
+      - name: Test cluster-lock.sh on Ubuntu 22.04 and 24.04 (GNU coreutils; the runner image has uutils)
+        run: |
+          for image in ubuntu:22.04 ubuntu:24.04; do
+            docker run --rm -v "$PWD":/repo -w /repo "$image" test/KmsCa/test-cluster-lock.sh
+          done
       - name: Run tests with coverage report
         run: npm run test:coverage

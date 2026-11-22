@@ -1,7 +1,8 @@
 #!/bin/bash
-# Tests for docker-container/scripts/cluster-lock.sh (#7). Needs only bash and coreutils.
+# Tests for docker-container/scripts/cluster-lock.sh (#7). Needs only bash and coreutils (GNU or uutils:
+# the GitHub runner image ubuntu-26.04 has uutils, whose mkdir is not exclusive under concurrency).
 # Several processes on one machine stand in for several TAK Server nodes sharing the EFS: the lock is a
-# directory, and mkdir is atomic on a local disk like on EFS.
+# directory; the lock is a file created with O_EXCL, which is atomic on a local disk like on EFS.
 # Run from the repository root:  test/KmsCa/test-cluster-lock.sh
 set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -113,14 +114,18 @@ for round in $(seq 1 20); do
 done
 assert_eq "four fresh nodes, 20 rounds: the work was done once each time" "${bad}" "0"
 
-echo "== a lock directory that vanishes under a waiter never looks expired"
-# The holder releases between the waiter's "does it exist" and "when does it expire". A fresh lock that the
+echo "== a lock file that vanishes under a waiter never looks expired"
+# The holder releases between the waiter's "does it exist" and "is it expired". A fresh lock that the
 # next node creates right after must not be broken because of that.
-now=$(date +%s)
-exp="$(_cl_expiry_of "${WORK}/gone.lock")"
-assert_eq "the expiry of a missing lock is not in the past" "$((exp >= now))" "1"
-mt="$(_cl_mtime "${WORK}/gone.lock.breaker")"
-assert_eq "the age of a missing breaker is not old" "$((now - mt <= 1))" "1"
+_cl_expired "${WORK}/gone.lock" && fail "a missing lock file is not expired" || pass "a missing lock file is not expired"
+printf 'x:1:1:1 3 h\n' > "${WORK}/fresh1.lock"
+_cl_expired "${WORK}/fresh1.lock" && fail "a lock file touched now is not expired" || pass "a lock file touched now is not expired"
+touch -d '10 seconds ago' "${WORK}/fresh1.lock"
+_cl_expired "${WORK}/fresh1.lock" && pass "...and is expired after its TTL (3 s) without a touch" || fail "expired after its TTL"
+: > "${WORK}/empty.lock"
+_cl_expired "${WORK}/empty.lock" && fail "an empty lock file just created is not expired" || pass "an empty lock file just created is not expired"
+touch -d '2 minutes ago' "${WORK}/empty.lock"
+_cl_expired "${WORK}/empty.lock" && pass "an empty lock file is expired after 30 s" || fail "empty lock file expiry"
 # A stress run of the first-boot pattern: eight contenders, tight polling, many rounds
 RUNS="${WORK}/stress.runs"
 bad=0
@@ -164,27 +169,26 @@ wait "${holder}"
 
 echo "== a node that died: the lock expires and is broken"
 # A holder killed with SIGKILL together with its heartbeat leaves the lock directory behind
-mkdir -p "${CLUSTER_LOCK_DIR}/dead.lock"
-printf 'ghost:1:1:1 %s deadhost\n' "$(($(date +%s) + 3))" > "${CLUSTER_LOCK_DIR}/dead.lock/owner"
+printf 'ghost:1:1:1 3 deadhost\n' > "${CLUSTER_LOCK_DIR}/dead.lock"
 start=$(date +%s)
 "${LIB}" run --wait 20 dead -- echo took-over 2> "${WORK}/err" > "${WORK}/out"
 assert_eq "the waiter got the lock after the expiry" "$(cat "${WORK}/out")" "took-over"
 elapsed=$(($(date +%s) - start))
 assert_eq "...not before the expiry, not long after (${elapsed} s)" "$((elapsed >= 2 && elapsed <= 8))" "1"
 assert_contains "the break is logged with the dead holder" "$(cat "${WORK}/err")" "breaking the expired lock dead.lock (holder deadhost)"
-# a lock directory without an owner file (creator died between mkdir and writing it) expires 30 s after creation
-mkdir -p "${CLUSTER_LOCK_DIR}/noowner.lock"
+# an empty lock file (creator died between creating it and writing it) expires 30 s after creation
+: > "${CLUSTER_LOCK_DIR}/noowner.lock"
 touch -d '2 minutes ago' "${CLUSTER_LOCK_DIR}/noowner.lock"
 "${LIB}" run --wait 5 noowner -- true 2> /dev/null
-assert_eq "an old lock directory without an owner file is broken" "$?" "0"
-mkdir -p "${CLUSTER_LOCK_DIR}/fresh.lock"
+assert_eq "an old empty lock file is broken" "$?" "0"
+: > "${CLUSTER_LOCK_DIR}/fresh.lock"
 "${LIB}" run --wait 0 fresh -- true 2> /dev/null
-assert_eq "a just created lock directory without an owner file is respected" "$?" "75"
+assert_eq "a just created empty lock file is respected" "$?" "75"
 find "${CLUSTER_LOCK_DIR}/fresh.lock" -delete
 
 echo "== several waiters on one expired lock: one breaks it, they run one after the other"
-mkdir -p "${CLUSTER_LOCK_DIR}/race.lock"
-printf 'ghost:1:1:1 %s deadhost\n' "$(($(date +%s) - 100))" > "${CLUSTER_LOCK_DIR}/race.lock/owner"
+printf 'ghost:1:1:1 5 deadhost\n' > "${CLUSTER_LOCK_DIR}/race.lock"
+touch -d '100 seconds ago' "${CLUSTER_LOCK_DIR}/race.lock"
 LOG="${WORK}/race.log"
 : > "${LOG}"
 for i in 1 2 3 4 5 6; do
@@ -213,7 +217,7 @@ assert_no_dir "set -e: the heartbeat released the lock within a few seconds" "${
 bash -c "set -e; source '${LIB}'; CLUSTER_LOCK_TTL=4 with_cluster_lock killed sleep 60" 2> /dev/null &
 victim=$!
 sleep 1
-[[ -d "${CLUSTER_LOCK_DIR}/killed.lock" ]] && pass "the lock is held while the shell lives" || fail "the lock is held while the shell lives"
+[[ -e "${CLUSTER_LOCK_DIR}/killed.lock" ]] && pass "the lock is held while the shell lives" || fail "the lock is held while the shell lives"
 kill -KILL "${victim}" 2> /dev/null
 wait "${victim}" 2> /dev/null
 for _ in $(seq 1 30); do [[ -e "${CLUSTER_LOCK_DIR}/killed.lock" ]] || break; sleep 0.2; done
@@ -231,9 +235,9 @@ LOST="${CLUSTER_LOCK_DIR}/lost.lock"
 slow() { sleep 3; }
 CLUSTER_LOCK_TTL=4 with_cluster_lock lost slow 2> "${WORK}/err" &
 sleep 1
-printf 'someone-else:2:2:2 %s otherhost\n' "$(($(date +%s) + 60))" > "${LOST}/owner"
+printf 'someone-else:2:2:2 60 otherhost\n' > "${LOST}"
 wait $!
-assert_eq "the new owner's lock is still there" "$(cut -d' ' -f1 "${LOST}/owner" 2> /dev/null)" "someone-else:2:2:2"
+assert_eq "the new owner's lock is still there" "$(cut -d' ' -f1 "${LOST}" 2> /dev/null)" "someone-else:2:2:2"
 assert_contains "the old holder noticed" "$(cat "${WORK}/err")" "no longer ours"
 find "${LOST}" -delete
 

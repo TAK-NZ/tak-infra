@@ -26,14 +26,14 @@ Under `set -e` a failing command ends the calling shell (`with_cluster_lock` doe
 
 ## How it works
 
-- The lock is the directory `/opt/tak/certs/files/.locks/<name>.lock` on the EFS. `mkdir` is atomic on EFS (NFSv4), so only one node creates it. The file `owner` in it holds a random token, an expiry time and the host name.
-- A background loop in the holder moves the expiry forward every TTL/4 seconds (TTL: 90 s, `CLUSTER_LOCK_TTL`). A long command needs no long TTL. When the shell that took the lock ends, the loop releases the lock.
+- The lock is the file `/opt/tak/certs/files/.locks/<name>.lock` on the EFS. The shell creates it with `set -C` (noclobber, `O_CREAT|O_EXCL`), which is atomic on EFS (NFSv4), so only one node creates it. No external command is part of that step: `mkdir` was used first, and the `mkdir` of uutils coreutils 0.10 (the default in Ubuntu 26.04, the current GitHub runner image) succeeds for several callers at once. The file holds a random token, the TTL and the host name.
+- A background loop in the holder touches the file every TTL/4 seconds (TTL: 90 s, `CLUSTER_LOCK_TTL`). A lock that has not been touched for the TTL is expired. A long command needs no long TTL. When the shell that took the lock ends, the loop releases it.
 - A node that dies stops the heartbeat, and the lock expires after the TTL. A waiting node breaks an expired lock under a second short lock (`<name>.lock.breaker`) and checks the expiry again inside it, so two waiters cannot both break the lock and both take it.
 - Only the holder's token releases a lock. A holder whose heartbeat was late for more than the TTL finds another token, logs `no longer ours`, and does not remove the new owner's lock.
 - Settings: `CLUSTER_LOCK_DIR`, `CLUSTER_LOCK_TTL` (90), `CLUSTER_LOCK_WAIT` (600 s; 0 = do not wait), `CLUSTER_LOCK_POLL` (2 s).
 
 Limits:
-- The expiry is a wall-clock time written by one node and read by others. ECS tasks use the Amazon Time Sync Service; a skew of a few seconds is far below the TTL.
+- The expiry compares the modification time of the lock file (set by the file system) with the clock of the waiting node. ECS tasks use the Amazon Time Sync Service; a skew of a few seconds is far below the TTL.
 - A holder that is alive but frozen for longer than the TTL loses the lock to a waiter. The commands under the lock are idempotent where this matters (certbot, PKI restore), and the holder logs the loss.
 - This is not a lock against the database: use it only for work on the shared EFS and for AWS calls that two nodes must not make at once.
 
