@@ -7,7 +7,7 @@ Most of what `start-tak.sh` does is safe to run on every node at once: `CoreConf
 | First-boot PKI of `pki.kmsCa` stacks | `pki-bootstrap` | `pki-bootstrap.sh` | Finds `pki-state.json` of the first node and only restores the Enrollment CA key into its own tmpfs |
 | First-boot certificates of the TAK Server scripts (stacks without `pki.kmsCa`) | `first-boot-certs` | `start-tak.sh` | Finds `ca.pem` and skips |
 | Let's Encrypt request, change or removal | `letsencrypt` | `start-tak.sh`, around `letsencrypt-request-cert.sh` | Finds the certificate the first node got and keeps it. Waits up to 30 minutes |
-| Let's Encrypt renewal (cron, twice a day) | `certbot-renew` | `/etc/cron.d/certbot`, rewritten by `start-tak.sh` | Skips this round (`--wait 0`); the other node renews, and the certificate is on the shared EFS |
+| Let's Encrypt renewal (cron, twice a day) | `certbot-renew` | `certbot-renew.sh`, run by `/etc/cron.d/certbot` (`docs/LETSENCRYPT.md`) | Skips this round (`--wait 0`); the other node renews, and the certificate is on the shared EFS |
 
 The certificate rotations of the CA overhaul (#131, #132, #135, #169, #171, #172) take the same lock with their own names.
 
@@ -39,6 +39,6 @@ Limits:
 
 ## Tests
 
-`test/KmsCa/test-cluster-lock.sh` (runs in CI, needs only bash): exit codes and usage errors, a shell function as the command, six contenders that never overlap, the first-boot pattern (four nodes, work done once), `--wait 0` and timeouts, the heartbeat keeping a lock beyond the TTL, an expired lock broken after the owner died, six waiters on one expired lock, release after `set -e` and after `kill -9` of the holder, the caller's EXIT trap not run by the heartbeat, no release of a lock that was taken over, and the cron line rewrite. `test/KmsCa/test-pki-bootstrap.sh` adds three nodes starting together on a fresh stack (one builds, two restore) and a node that sees `ca.pem` of a node still bootstrapping.
+`test/KmsCa/test-cluster-lock.sh` (runs in CI, needs only bash): exit codes and usage errors, a shell function as the command, six contenders that never overlap, the first-boot pattern (four nodes, work done once), `--wait 0` and timeouts, the heartbeat keeping a lock beyond the TTL, an expired lock broken after the owner died, six waiters on one expired lock, release after `set -e` and after `kill -9` of the holder, the caller's EXIT trap not run by the heartbeat, no release of a lock that was taken over. `test/KmsCa/test-pki-bootstrap.sh` adds three nodes starting together on a fresh stack (one builds, two restore) and a node that sees `ca.pem` of a node still bootstrapping.
 
 Not covered by automated tests: two real ECS tasks on one EFS. That is the check in #7 (deploy two fresh nodes at once, and watch for the `took pki-bootstrap.lock` and `waiting for` lines in the log).

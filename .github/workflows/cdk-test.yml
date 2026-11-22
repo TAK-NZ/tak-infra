@@ -80,5 +80,7 @@ jobs:
           for image in ubuntu:22.04 ubuntu:24.04; do
             docker run --rm -v "$PWD":/repo -w /repo "$image" test/KmsCa/test-cluster-lock.sh
           done
+      - name: Test certbot-renew.sh (Let's Encrypt renewal, cron line, failure metric)
+        run: test/KmsCa/test-certbot-renew.sh
       - name: Run tests with coverage report
         run: npm run test:coverage
