@@ -19,9 +19,10 @@
 # --------------------
 # The Enrollment CA key is a software key in a Secrets Manager secret per generation
 # (<StackName>/TAK-Server/Enrollment-CA-NN, created here at run time: the task role may create secrets with that
-# prefix and nothing else). `signing_install` stores a new generation, makes it the current one in pki-state.json
-# (`.enrollmentSecret`), and puts it into this node's tmpfs. A node that starts later restores the current one
-# (pki-bootstrap.sh). The old secret stays until the rotation retires it.
+# prefix, and delete them with a recovery window of 30 days). `signing_store` stores a new generation as a secret;
+# `signing_activate` makes it the current one in pki-state.json (`.enrollmentSecret`) and puts it into this node's
+# tmpfs (`signing_install` does both). A node that starts later restores the current one (pki-bootstrap.sh). The old
+# secret stays until the rotation retires it (`signing_destroy`).
 TRUST_SETS=(server phone fed)
 trust_jks_name() { case "$1" in server) echo truststore-intermediate-ca.jks ;; phone) echo truststore-phone.jks ;; fed) echo fed-truststore.jks ;; esac; }
 trust_p12_name() { case "$1" in server) echo truststore-intermediate-ca.p12 ;; phone) echo truststore-phone.p12 ;; esac; }
@@ -127,6 +128,14 @@ trust_remove() { # alias
   trust_state_set --arg a "$1" '.trust.entries |= map(select(.alias != $a))'
 }
 
+# Points the manifest entry of an alias at another file with the same certificate (the file of the current Enrollment CA
+# moves to trust-certs/ when a new one takes over enrollment-ca.pem)
+trust_set_file() { # alias file(relative to the files directory)
+  [[ "$(jq -r --arg a "$1" '[.trust.entries[]? | select(.alias == $a)] | length' "${STATE_FILE}")" != "0" ]] || { log "trust: ${1} is not in the manifest"; return 1; }
+  openssl x509 -in "${FILES_DIR}/$2" -noout > /dev/null 2>&1 || { log "trust: ${FILES_DIR}/$2 is not a certificate"; return 1; }
+  trust_state_set --arg a "$1" --arg f "$2" '.trust.entries |= map(if .alias == $a then .file = $f else . end)'
+}
+
 trust_restore_previous() {
   local f ok=0
   while IFS= read -r f; do
@@ -201,10 +210,19 @@ signing_keystore_build() { # cl.pem cl.key s.pem r.pem out.p12
   find "${chain}" -delete
   return "${rc}"
 }
-# Stores generation N (a p12 built by signing_keystore_build) as a secret, makes it the current one and puts it
-# into this node's tmpfs. The secret is created if it does not exist; an existing one with other content is an error.
-signing_install() { # number p12
+# The keystore of generation N, from its secret, into a file (generation 1 is the secret of the stack)
+signing_fetch() { # number out.p12
+  local n="$1" secret b64
+  if (( n == 1 )); then secret="${PKI_ENROLLMENT_CA_SECRET:-}"; else secret="$(signing_secret_name "${n}")"; fi
+  b64="$(aws secretsmanager get-secret-value --secret-id "${secret}" --query SecretBinary --output text 2> /dev/null)" || b64=""
+  [[ -n "${b64}" && "${b64}" != "None" ]] || return 1
+  ( umask 077; echo "${b64}" | base64 -d > "$2" )
+}
+# Stores generation N (a p12 built by signing_keystore_build) as a secret. The secret is created if it does not
+# exist; an existing one with other content is an error. It does not change what TAK Server signs with.
+signing_store() { # number p12
   local n="$1" p12="$2" name back
+  (( n >= 2 && n <= 99 )) || { log "ERROR: Enrollment CA number ${n} cannot be stored as a secret (2 to 99)"; return 1; }
   name="$(signing_secret_name "${n}")"
   if aws secretsmanager describe-secret --secret-id "${name}" > /dev/null 2>&1; then
     back="$(aws secretsmanager get-secret-value --secret-id "${name}" --query SecretBinary --output text 2> /dev/null)" || back=""
@@ -220,6 +238,14 @@ signing_install() { # number p12
     back="$(aws secretsmanager get-secret-value --secret-id "${name}" --query SecretBinary --output text 2> /dev/null)" || back=""
     [[ "${back}" == "$(base64 -w0 "${p12}")" ]] || { log "ERROR: the secret ${name} does not read back as written"; return 1; }
   fi
+  # the highest number ever used: a secret that is deleted keeps its name for the recovery window, so a number is never reused
+  trust_state_set --argjson n "${n}" '.enrollmentHighest = ([(.enrollmentHighest // 0), $n] | max)' || return 1
+}
+# Makes generation N (stored) the current one: pki-state.json and this node's tmpfs. A node that starts later restores
+# the current secret (pki-bootstrap.sh); the other nodes get it at their restart.
+signing_activate() { # number p12
+  local n="$1" p12="$2" name
+  name="$(signing_secret_name "${n}")"
   ( umask 077; mkdir -p "${TMPFS_DIR}"; chmod 700 "${TMPFS_DIR}"; cp "${p12}" "${TMPFS_DIR}/intermediate-ca-signing.p12.new" && mv -f "${TMPFS_DIR}/intermediate-ca-signing.p12.new" "${TMPFS_DIR}/intermediate-ca-signing.p12" ) \
     || { log "ERROR: cannot write the signing keystore into ${TMPFS_DIR}"; return 1; }
   ( umask 077; rm -f "${TMPFS_DIR}/intermediate-ca-signing.jks"; jks_from_p12 "${TMPFS_DIR}/intermediate-ca-signing.p12" "${TMPFS_DIR}/intermediate-ca-signing.jks" "${SIGNING_ALIAS}" ) || return 1
@@ -227,4 +253,50 @@ signing_install() { # number p12
   link_signing_keystore
   trust_state_set --arg s "${name}" --argjson n "${n}" '.enrollmentSecret = $s | .numbers.enrollment = $n' || return 1
   log "Enrollment CA ${n}: the secret ${name} is the current signing keystore (TAK Server loads it at its next start)"
+}
+signing_install() { # number p12
+  signing_store "$1" "$2" && signing_activate "$1" "$2"
+}
+# The key of a generation that is not in use any more is destroyed (the retire step of a rotation, #135).
+#  N >= 2   the secret is deleted with a recovery window of 30 days (the task role may delete these secrets only with a
+#           window of 30 days or more: a mistake can be undone for a month)
+#  N = 1    the secret of the stack is a CDK resource and stays; its value is overwritten twice with a text, so that the
+#           current and the previous version no longer hold the key. The first version, now without a staging label, is
+#           deprecated: Secrets Manager removes it, and only its version ID reads it.
+# Refuses the current generation and one that the trust manifest still lists. Safe to run again.
+SIGNING_RECOVERY_DAYS=30
+signing_destroy() { # number
+  local n="$1" alias secret tomb i
+  alias="$(printf 'enrollment-ca-%02d' "${n}")"
+  [[ "${n}" =~ ^[0-9]+$ ]] || { log "ERROR: invalid Enrollment CA number '${n}'"; return 1; }
+  [[ "$(jq -r '.numbers.enrollment' "${STATE_FILE}")" != "${n}" ]] || { log "ERROR: Enrollment CA ${n} is the current one: not destroying its key"; return 1; }
+  [[ "$(jq -r --arg a "${alias}" '[.trust.entries[]? | select(.alias == $a)] | length' "${STATE_FILE}")" == "0" ]] \
+    || { log "ERROR: ${alias} is still in the trust manifest: not destroying its key"; return 1; }
+  if (( n == 1 )); then
+    secret="${PKI_ENROLLMENT_CA_SECRET:-}"
+    [[ -n "${secret}" ]] || { log "ERROR: PKI_ENROLLMENT_CA_SECRET is not set"; return 1; }
+    [[ "$(jq -r '.enrollmentSecret // empty' "${STATE_FILE}")" != "${secret}" ]] || { log "ERROR: ${secret} is the current signing secret"; return 1; }
+    tomb="$(mktemp "${TMPFS_DIR}/tomb.XXXXXX")" || return 1
+    for i in 1 2; do
+      printf 'The key of Enrollment CA 01 was destroyed on %s by pki-rotate.sh (%s of 2).\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${i}" > "${tomb}"
+      aws secretsmanager put-secret-value --secret-id "${secret}" --secret-binary "fileb://${tomb}" > /dev/null \
+        || { log "ERROR: could not overwrite the secret ${secret}"; find "${tomb}" -delete; return 1; }
+    done
+    find "${tomb}" -delete
+    log "the key of Enrollment CA 01 is destroyed (the secret ${secret} was overwritten twice)"
+    return 0
+  fi
+  secret="$(signing_secret_name "${n}")"
+  local deleted
+  if ! deleted="$(aws secretsmanager describe-secret --secret-id "${secret}" --query DeletedDate --output text 2> /dev/null)"; then
+    log "the secret ${secret} does not exist"
+    return 0
+  fi
+  if [[ -n "${deleted}" && "${deleted}" != "None" ]]; then
+    log "the secret ${secret} is scheduled for deletion already"
+    return 0
+  fi
+  aws secretsmanager delete-secret --secret-id "${secret}" --recovery-window-in-days "${SIGNING_RECOVERY_DAYS}" > /dev/null \
+    || { log "ERROR: could not delete the secret ${secret}"; return 1; }
+  log "the secret ${secret} is deleted (recoverable for ${SIGNING_RECOVERY_DAYS} days)"
 }

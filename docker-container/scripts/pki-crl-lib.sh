@@ -167,6 +167,16 @@ crl_revoke_serial() { # alias serial(hex) notAfter(date) subject(/O=..) reason
   log "revoked serial ${serial} in the CRL of ${alias} (${reason}); it is in force after the next start of TAK Server"
   return 10
 }
+# Deletes the CRL and its database of a CA that is not trusted any more (the retire step of an Enrollment CA rotation).
+# Refuses an alias that the trust manifest still lists. Safe to run again.
+crl_retire() { # alias
+  local alias="$1"
+  crl_alias_ok "${alias}" || { log "crl: invalid alias '${alias}'"; return 1; }
+  [[ -z "$(crl_ca_cert "${alias}")" ]] || { log "crl: ${alias} is still in the trust manifest: not deleting its CRL"; return 1; }
+  find "${CRL_DIR}/${alias}.crl" "${CRL_DIR}/${alias}.crl.new" "${CRL_DIR}/db/${alias}" -delete 2> /dev/null
+  log "the CRL of ${alias} is deleted: CoreConfig.xml loses it at the next start"
+  return 0
+}
 # Which Enrollment CA issued this certificate? Prints the alias.
 crl_alias_of_cert() { # cert.pem
   local a ca

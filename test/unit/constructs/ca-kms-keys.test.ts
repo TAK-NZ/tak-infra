@@ -44,6 +44,24 @@ describe('CaKmsKeys construct', () => {
     expect(JSON.stringify(generations[0].Resource)).toContain('/TAK-Server/Enrollment-CA-*');
     expect(JSON.stringify(generations[0].Action)).not.toContain('DeleteSecret');
   });
+  test('the signer role may delete a generation secret only with a recovery window of 30 days or more (#135)', () => {
+    create();
+    const policies = Object.values(Template.fromStack(stack).findResources('AWS::IAM::Policy')) as any[];
+    const statements = policies.flatMap(p => p.Properties.PolicyDocument.Statement as any[]);
+    const deletes = statements.filter(s => JSON.stringify(s.Action).includes('DeleteSecret'));
+    const allow = deletes.filter(s => s.Effect === 'Allow');
+    expect(allow).toHaveLength(1);
+    expect(allow[0].Action).toBe('secretsmanager:DeleteSecret');
+    expect(allow[0].Condition).toEqual({ NumericGreaterThanEquals: { 'secretsmanager:RecoveryWindowInDays': '30' } });
+    // generation 2 and later, with the random suffix of the ARN: not the secret of generation 1 (a stack resource)
+    expect(JSON.stringify(allow[0].Resource)).toContain('/TAK-Server/Enrollment-CA-??-??????');
+    expect(JSON.stringify(allow[0].Resource)).not.toContain('Enrollment-CA-*');
+    const deny = deletes.filter(s => s.Effect === 'Deny');
+    expect(deny).toHaveLength(1);
+    expect(deny[0].Condition).toEqual({ Bool: { 'secretsmanager:ForceDeleteWithoutRecovery': 'true' } });
+    // no other statement of the role deletes secrets
+    expect(deletes).toHaveLength(2);
+  });
   test('aliases follow the naming rules', () => {
     create();
     const template = Template.fromStack(stack);

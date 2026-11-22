@@ -106,12 +106,29 @@ export class CaKmsKeys extends Construct {
     this.enrollmentCaSecret.grantWrite(props.signerRole);
     // Later Enrollment CA generations are secrets that the rotation orchestrator creates at run time (#171), one
     // per generation, named <stack>/TAK-Server/Enrollment-CA-NN. The role may create and use secrets with that
-    // prefix and nothing else. Deleting them is the retire step of the Enrollment CA rotation (#135), not here.
+    // prefix and nothing else. Deleting one is the retire step of the Enrollment CA rotation (#135), below.
     const stack = Stack.of(this);
     props.signerRole.addToPrincipalPolicy(new iam.PolicyStatement({
       sid: 'EnrollmentCaGenerations',
       actions: ['secretsmanager:CreateSecret', 'secretsmanager:DescribeSecret', 'secretsmanager:GetSecretValue', 'secretsmanager:PutSecretValue'],
       resources: [`arn:${stack.partition}:secretsmanager:${stack.region}:${stack.account}:secret:${stack.stackName}/TAK-Server/Enrollment-CA-*`],
+    }));
+    // The retire step deletes the secret of a generation that is not in use any more (generation 2 and later; the
+    // secret of generation 1 is a stack resource and is overwritten instead). Only with a recovery window of 30 days
+    // or more, so a mistake can be undone for a month, and never without a recovery window. `??-??????` is the
+    // generation number and the random suffix of the secret ARN: it does not match the secret of generation 1.
+    props.signerRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      sid: 'EnrollmentCaGenerationsDelete',
+      actions: ['secretsmanager:DeleteSecret'],
+      resources: [`arn:${stack.partition}:secretsmanager:${stack.region}:${stack.account}:secret:${stack.stackName}/TAK-Server/Enrollment-CA-??-??????`],
+      conditions: { NumericGreaterThanEquals: { 'secretsmanager:RecoveryWindowInDays': '30' } },
+    }));
+    props.signerRole.addToPrincipalPolicy(new iam.PolicyStatement({
+      sid: 'DenyForceDeleteSecret',
+      effect: iam.Effect.DENY,
+      actions: ['secretsmanager:DeleteSecret'],
+      resources: ['*'],
+      conditions: { Bool: { 'secretsmanager:ForceDeleteWithoutRecovery': 'true' } },
     }));
 
     // Alert on every use of a Root CA key
