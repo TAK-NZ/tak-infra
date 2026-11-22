@@ -298,12 +298,12 @@ intermediate_abort() {
     log "intermediate: $(enrollment_alias "${cl}") signs already (the bridge is in place): this rotation can only go on. It waits at its next gate, nothing is lost"
     return 2
   fi
-  enrollment_undo_create "${cl}" || rc=$?
-  (( rc == 0 )) || return "${rc}"
+  # A leaves the manifest first, so that the one truststore change of the undo is the final one
   if [[ "$(jq -r --arg a "${a_alias}" '[.trust.entries[]? | select(.alias == $a)] | length' "${STATE_FILE}")" != "0" ]]; then
     trust_remove "${a_alias}" || return 1
-    trust_apply || [[ $? == 10 ]] || return 1
   fi
+  enrollment_undo_create "${cl}" || rc=$?
+  (( rc == 0 )) || return "${rc}"
   find "${FILES_DIR}/$(intermediate_file "${a_alias}")" -delete 2> /dev/null
   log "intermediate: the preparation of $(intermediate_label "${new}") is undone (its key in KMS is untouched)"
   return 0
