@@ -10,14 +10,18 @@
 #   /opt/tak/scripts/cluster-lock.sh run [--ttl S] [--wait S] <name> -- <command> [args...]
 #
 # What it does:
-# - The lock is the directory <CLUSTER_LOCK_DIR>/<name>.lock. `mkdir` is atomic on EFS (NFSv4), so only
-#   one node creates it. The directory holds a file `owner`: "<token> <expiry epoch> <host>".
-# - While the command runs, a background loop pushes the expiry forward every TTL/4 seconds. A node that
-#   dies stops doing so, and the lock becomes breakable TTL seconds later. A long command therefore does
-#   not need a long TTL. The loop also releases the lock when the shell that took it has exited.
-# - A node that finds an expired lock breaks it under a second, short-lived lock (<name>.lock.breaker),
-#   and checks the expiry again inside that lock. Two waiting nodes therefore cannot both break the
-#   lock and then both take it.
+# - The lock is the file <CLUSTER_LOCK_DIR>/<name>.lock. It is created by the shell itself with
+#   `set -C` (noclobber), which opens it with O_CREAT|O_EXCL: only one node creates it, on EFS (NFSv4)
+#   as on a local disk. No external command is part of that step. (An earlier version used `mkdir`; the
+#   `mkdir` of uutils coreutils 0.10, the default in Ubuntu 26.04, succeeds for several callers at once.)
+#   The file holds "<token> <ttl seconds> <host>".
+# - While the command runs, a background loop touches the file every TTL/4 seconds. A lock whose file
+#   has not been touched for TTL seconds is expired. A node that dies stops touching it, so the lock
+#   can be broken TTL seconds later; a long command needs no long TTL. The loop also releases the lock
+#   when the shell that took it has exited.
+# - A node that finds an expired lock breaks it under a second, short-lived lock (<name>.lock.breaker,
+#   created the same way) and checks again inside that lock. Two waiting nodes therefore cannot both
+#   break the lock and then both take it.
 # - A node that waits gets the lock only after the holder is done. The command must therefore check
 #   again whether its work is still needed ("ca.pem exists now: skip").
 #
@@ -27,78 +31,71 @@
 # Settings (environment): CLUSTER_LOCK_DIR (default /opt/tak/certs/files/.locks), CLUSTER_LOCK_TTL
 # (default 90 s), CLUSTER_LOCK_WAIT (default 600 s, 0 = do not wait), CLUSTER_LOCK_POLL (default 2 s).
 #
-# Limits: the expiry is a wall-clock time written by the holder and compared by the waiters, so the
-# nodes need roughly the same time (ECS tasks use the Amazon Time Sync Service); skew of a few seconds
-# is far below the TTL. If the heartbeat of a live holder stalls for longer than the TTL, another node
-# may take the lock; the holder notices on its next heartbeat and logs it.
+# Limits: expiry compares the modification time of the lock file (set by the file system) with the
+# time of the waiting node, so the nodes and the file system need roughly the same time (ECS tasks use
+# the Amazon Time Sync Service); skew of a few seconds is far below the TTL. If the heartbeat of a
+# live holder stalls for longer than the TTL, another node may take the lock; the holder notices on its
+# next heartbeat and logs it.
 # Not for a command that must keep a lock past a reboot: the lock is released when the holder ends.
 
 _cl_log() { echo "cluster-lock: $*" >&2; }
 _cl_now() { date +%s; }
-# A directory that vanished between the test and this call (its holder released it) counts as just
-# touched, never as old: "old" would make a fresh lock of the next node look expired.
-_cl_mtime() { stat -c %Y "$1" 2> /dev/null || _cl_now; }
-_cl_token_of() { cut -d' ' -f1 "$1/owner" 2> /dev/null || true; }
-_cl_host_of() { cut -d' ' -f3 "$1/owner" 2> /dev/null || true; }
-# Epoch second after which the lock directory counts as abandoned. A directory without an owner file
-# was just created (or its creator died before writing the file): give it 30 s.
-_cl_expiry_of() {
-  local exp
-  exp="$(cut -d' ' -f2 "$1/owner" 2> /dev/null || true)"
-  if [[ "${exp}" =~ ^[0-9]+$ ]]; then
-    echo "${exp}"
-  else
-    echo $(($(_cl_mtime "$1") + 30))
-  fi
+_cl_token_of() { cut -d' ' -f1 "$1" 2> /dev/null || true; }
+_cl_host_of() { cut -d' ' -f3 "$1" 2> /dev/null || true; }
+# Create <file> with <content>, only if it does not exist (O_EXCL, done by the shell).
+_cl_create() { # file content
+  (
+    set -C
+    printf '%s\n' "$2" > "$1"
+  ) 2> /dev/null
 }
-_cl_write_owner() { # lockdir token ttl
-  local tmp="$1/owner.$$.${RANDOM}.tmp"
-  { printf '%s %s %s\n' "$2" $(($(_cl_now) + $3)) "$(hostname)" > "${tmp}" && mv -f "${tmp}" "$1/owner"; } 2> /dev/null \
-    || { rm -f "${tmp}" 2> /dev/null; return 1; }
+# Whether the lock file is expired: not touched for its TTL. A file without content was just created
+# (or its creator died before writing it): 30 s. A file that vanished is never expired (its holder
+# released it, and the next node may already have created a new one).
+_cl_expired() { # file
+  local ttl mtime
+  [[ -e "$1" ]] || return 1
+  ttl="$(cut -d' ' -f2 "$1" 2> /dev/null || true)"
+  [[ "${ttl}" =~ ^[0-9]+$ ]] || ttl=30
+  mtime="$(stat -c %Y "$1" 2> /dev/null)" || return 1
+  (($(_cl_now) - mtime > ttl))
 }
-_cl_remove() { # lockdir
-  rm -f "$1"/owner "$1"/owner.*.tmp 2> /dev/null
-  rmdir "$1" 2> /dev/null
-}
-_cl_release() { # lockdir token
-  [[ "$(_cl_token_of "$1")" == "$2" ]] && _cl_remove "$1"
+_cl_release() { # file token
+  [[ "$(_cl_token_of "$1")" == "$2" ]] && rm -f "$1"
   return 0
 }
 # Break the lock if it expired. Returns 0 only when it removed it.
-_cl_break_if_expired() { # lockdir
-  local lock="$1" breaker="$1.breaker" broke=1
-  if [[ -d "${breaker}" ]] && (($(_cl_now) - $(_cl_mtime "${breaker}") > 30)); then
-    rmdir "${breaker}" 2> /dev/null || true # a breaker that died halfway
+_cl_break_if_expired() { # file
+  local lock="$1" breaker="$1.breaker" mtime broke=1 seen host
+  if mtime="$(stat -c %Y "${breaker}" 2> /dev/null)" && (($(_cl_now) - mtime > 30)); then
+    rm -f "${breaker}" # a breaker whose creator died halfway
   fi
-  mkdir "${breaker}" 2> /dev/null || return 1
-  if [[ -d "${lock}" ]]; then
-    local seen host expiry
+  _cl_create "${breaker}" "$(hostname)" || return 1
+  if [[ -e "${lock}" ]]; then
     seen="$(_cl_token_of "${lock}")"
     host="$(_cl_host_of "${lock}")"
-    expiry="$(_cl_expiry_of "${lock}")"
     # Look once more right before removing: the owner must still be the one that was expired
-    if (($(_cl_now) > expiry)) && [[ "$(_cl_token_of "${lock}")" == "${seen}" ]]; then
+    if _cl_expired "${lock}" && [[ "$(_cl_token_of "${lock}")" == "${seen}" ]]; then
       _cl_log "breaking the expired lock ${lock##*/} (holder ${host})"
-      _cl_remove "${lock}" && broke=0
+      rm -f "${lock}" && broke=0
     fi
   fi
-  rmdir "${breaker}" 2> /dev/null || true
+  rm -f "${breaker}"
   return "${broke}"
 }
 # Sets _CL_TOKEN. Returns 0, or 75 when the wait time ran out, or 1 when the directory is unusable.
-_cl_acquire() { # lockdir ttl wait
+_cl_acquire() { # file ttl wait
   local lock="$1" ttl="$2" wait_s="$3" poll="${CLUSTER_LOCK_POLL:-2}" deadline last_log=0 now
   mkdir -p "${lock%/*}" 2> /dev/null || { _cl_log "cannot create ${lock%/*}"; return 1; }
   deadline=$(($(_cl_now) + wait_s))
   _CL_TOKEN="$(hostname):${BASHPID:-$$}:${RANDOM}${RANDOM}:$(date +%s%N)"
   while true; do
-    if mkdir "${lock}" 2> /dev/null; then
-      _cl_write_owner "${lock}" "${_CL_TOKEN}" "${ttl}" || true
+    if _cl_create "${lock}" "${_CL_TOKEN} ${ttl} $(hostname)"; then
       return 0
     fi
-    if [[ ! -d "${lock}" ]]; then
+    if [[ ! -e "${lock}" ]]; then
       [[ -d "${lock%/*}" && -w "${lock%/*}" ]] || { _cl_log "cannot create ${lock}"; return 1; }
-      continue # it was released between our mkdir and the test
+      continue # it was released between our create and the test
     fi
     _cl_break_if_expired "${lock}" && continue
     now="$(_cl_now)"
@@ -114,7 +111,7 @@ _cl_acquire() { # lockdir ttl wait
   done
 }
 # Runs in the background while the command runs.
-_cl_heartbeat() { # lockdir token ttl parent_pid
+_cl_heartbeat() { # file token ttl parent_pid
   local lock="$1" token="$2" ttl="$3" parent="$4" interval=$(($3 / 4)) sleeper=""
   ((interval < 1)) && interval=1
   # Stopped by the holder with SIGTERM. The sleep must not outlive it: as a child it would keep the
@@ -130,7 +127,7 @@ _cl_heartbeat() { # lockdir token ttl parent_pid
       _cl_log "WARNING: ${lock##*/} is no longer ours (the heartbeat was late for more than ${ttl} s)"
       return 0
     fi
-    _cl_write_owner "${lock}" "${token}" "${ttl}" || true
+    touch -c "${lock}" 2> /dev/null || true
   done
   # The shell that took the lock is gone (the command failed under `set -e`, or it was killed)
   _cl_release "${lock}" "${token}"
