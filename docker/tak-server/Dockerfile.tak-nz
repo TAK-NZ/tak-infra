@@ -64,6 +64,7 @@ RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/cluster-lock.sh \
     && chmod +x /opt/tak/scripts/certbot-renew.sh \
     && chmod +x /opt/tak/scripts/server-cert-rotate.sh \
+    && chmod +x /opt/tak/scripts/admin-p12-reexport.sh \
     && if [ -d "branding" ]; then \
         cd branding \
         && zip -u ../takserver.war index.html \
