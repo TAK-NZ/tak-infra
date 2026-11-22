@@ -25,7 +25,7 @@ set -uo pipefail
 CERT_METRICS_NAMESPACE="TAK/Certificates"
 # The metrics the alarms in #129 know about. A typo would silently feed no alarm, so unknown names are refused.
 CERT_METRICS_KNOWN=(
-  CertbotRenewalFailure TakServerCertRotated TakServerCertRotationFailed AdminCertRotated SigningCARotated
+  CertbotRenewalFailure TakServerCertRotated TakServerCertRotationFailed AdminCertRotated AdminCertRotationFailed SigningCARotated
   IntermediateCAExpiryWarning IntermediateCARotationPhase RootCAExpiryWarning RootCARotated
   RotationCoverageStragglers CAExpired
 )

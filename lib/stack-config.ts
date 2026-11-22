@@ -98,6 +98,10 @@ export interface ContextEnvironmentConfig {
         adminCertDays?: number;
         /** Rotate the server certificate when this many days or fewer are left (#131). Default 60. */
         serverCertRenewDays?: number;
+        /** Rotate the admin certificate when this many days or fewer are left (#132). Default 60. */
+        adminCertRenewDays?: number;
+        /** Days until the copies of the previous admin key are deleted after a rotation (#132). Default 7. */
+        adminCertGraceDays?: number;
       };
       /** PKCS#12 profile of the user-facing p12 files: `compat3des` (default) or `aes256` (#133). */
       p12Profile?: 'compat3des' | 'aes256';

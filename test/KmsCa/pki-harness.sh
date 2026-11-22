@@ -2,7 +2,8 @@
 # Shared set-up of the PKI tests (test-pki-bootstrap.sh, test-server-cert-rotate.sh): assertion helpers,
 # SoftHSM2 tokens that stand in for the two KMS keys, a wrapper of kms-ca.sh that uses them, and a stub
 # `aws`. The stub keeps Secrets Manager secrets as files, logs put-metric-data to ${STUB_LOG}/metrics.log
-# and ecs update-service to ${STUB_LOG}/ecs.log (STUB_ECS_FAILS=1 makes the latter fail).
+# and ecs update-service to ${STUB_LOG}/ecs.log (STUB_ECS_FAILS=1 makes the latter fail). Every call is also
+# logged to ${STUB_LOG}/aws.log.
 # Meant to be sourced.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 KMS_CA_REAL="${REPO_ROOT}/docker-container/scripts/kms-ca.sh"
@@ -64,6 +65,7 @@ chmod +x "${WORK}/kms-ca-wrapper.sh"
 # --- stub aws: secrets are files ------------------------------------------------------------
 cat > "${WORK}/bin/aws" <<'EOF'
 #!/bin/bash
+echo "$*" >> "${STUB_LOG}/aws.log"
 case "$1 $2" in
   "cloudwatch put-metric-data") echo "$*" >> "${STUB_LOG}/metrics.log"; exit 0 ;;
   "ecs update-service") echo "$*" >> "${STUB_LOG}/ecs.log"; [[ -n "${STUB_ECS_FAILS:-}" ]] && exit 1; echo '{}'; exit 0 ;;

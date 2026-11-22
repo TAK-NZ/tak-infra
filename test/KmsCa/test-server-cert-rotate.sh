@@ -181,6 +181,20 @@ reset_log
 new_stack nodeploy2 50
 assert_eq "SERVER_CERT_ROTATE_NO_DEPLOY=1 rotates without a deployment" "$(rotate check SERVER_CERT_ROTATE_NO_DEPLOY=1)/$(ecs_count)" "0/0"
 
+echo "the new certificate does not outlive Intermediate CA S"
+new_stack shorts 50 PKI_INTERMEDIATE_DAYS=90 PKI_ENROLLMENT_CA_DAYS=60 PKI_ADMIN_CERT_DAYS=50
+reset_log
+s_left="$(days_left "${FILES}/intermediate-ca.pem")"
+assert_eq "check rotates: exit 0" "$(rotate check)" "0"
+assert_contains "the log says the validity was capped" "$(cat "${WORK}/run.log")" "the new certificate gets"
+assert_eq "the new certificate ends before S (S has ${s_left} days)" "$(( $(days_left "${FILES}/takserver.pem") < s_left && $(days_left "${FILES}/takserver.pem") >= s_left - 3 ))" "1"
+new_stack shortest 50 PKI_INTERMEDIATE_DAYS=70 PKI_ENROLLMENT_CA_DAYS=60 PKI_ADMIN_CERT_DAYS=50
+reset_log
+before="$(sums ${CERT_SET})"
+assert_eq "S with less life than the threshold: exit 1" "$(rotate check PKI_SERVER_CERT_RENEW_DAYS=80)" "1"
+assert_contains "the log says to rotate the Intermediate CA first" "$(cat "${WORK}/run.log")" "rotate the Intermediate CA first"
+assert_eq "nothing changed, Failed emitted" "$(sums ${CERT_SET})/$(metric_count TakServerCertRotationFailed)" "${before}/1"
+
 echo "two nodes check at the same time"
 new_stack race 50
 reset_log
