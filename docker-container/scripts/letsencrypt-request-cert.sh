@@ -107,6 +107,10 @@ execute_certbot() {
     fi
 }
 
+# Report a failed request: the metric CertbotRenewalFailure raises the alarm of #129 (#130)
+report_failure() {
+    "$(dirname "${BASH_SOURCE[0]}")/cert-metrics.sh" emit CertbotRenewalFailure 1 || true
+}
 # Validate environment before proceeding
 validate_environment
 
@@ -273,6 +277,7 @@ if [ ! -f "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/fu
 
     # Validate certbot command before proceeding
     if ! validate_certbot_command "${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" "${TAKSERVER_QuickConnect_LetsEncrypt_Email}"; then
+        report_failure
         exit 1
     fi
     
@@ -284,18 +289,20 @@ if [ ! -f "/etc/letsencrypt/live/${TAKSERVER_QuickConnect_LetsEncrypt_Domain}/fu
         CertbotParameter="--test-cert "
     fi
 
-    for i in {1..10}; do
+    # CERTBOT_ATTEMPTS and CERTBOT_RETRY_DELAY exist for the tests
+    ATTEMPTS="${CERTBOT_ATTEMPTS:-10}"
+    for i in $(seq 1 "${ATTEMPTS}"); do
         if execute_certbot "${TAKSERVER_QuickConnect_LetsEncrypt_Domain}" "${TAKSERVER_QuickConnect_LetsEncrypt_Email}" "${CertbotParameter}"; then
             break
         fi
-        if [ $i -eq 10 ]; then
-            echo "Certbot - Failed after 10 attempts. Check firewall/security group settings for port 80."
+        if [ "$i" -eq "${ATTEMPTS}" ]; then
+            echo "Certbot - Failed after ${ATTEMPTS} attempts. Check firewall/security group settings for port 80."
+            report_failure
             exit 1
         fi
-        echo "Certbot - Attempt $i/10 failed. Port TCP/80 not ready for HTTP-01 challenge - Retrying in 30 seconds..."
-        sleep 30
+        echo "Certbot - Attempt $i/${ATTEMPTS} failed. Port TCP/80 not ready for HTTP-01 challenge - Retrying in ${CERTBOT_RETRY_DELAY:-30} seconds..."
+        sleep "${CERTBOT_RETRY_DELAY:-30}"
     done
-
     # Save Certbot Cronjob
     cp "/etc/cron.d/certbot" "/etc/letsencrypt/certbot.cron"
 

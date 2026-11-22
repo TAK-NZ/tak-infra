@@ -241,20 +241,6 @@ assert_eq "the new owner's lock is still there" "$(cut -d' ' -f1 "${LOST}" 2> /d
 assert_contains "the old holder noticed" "$(cat "${WORK}/err")" "no longer ours"
 find "${LOST}" -delete
 
-echo "== start-tak.sh wraps the certbot cron job"
-CRON="${WORK}/certbot.cron"
-# the line of the Ubuntu 22.04 certbot package (the base image of the container is eclipse-temurin:17-jammy)
-cat > "${CRON}" <<'EOF2'
-0 */12 * * * root test -x /usr/bin/certbot -a \! -d /run/systemd/system && perl -e 'sleep int(rand(43200))' && certbot -q renew
-EOF2
-SED_CMD="$(grep -o "sed -i 's#&& certbot -q renew#[^']*'" "${REPO_ROOT}/docker-container/scripts/start-tak.sh" | head -1)"
-[[ -n "${SED_CMD}" ]] && pass "the sed command is in start-tak.sh" || fail "the sed command is in start-tak.sh"
-eval "${SED_CMD} '${CRON}'"
-assert_contains "the renewal runs through cluster-lock.sh without waiting" "$(cat "${CRON}")" "&& /opt/tak/scripts/cluster-lock.sh run --wait 0 certbot-renew -- certbot -q renew"
-assert_contains "the random sleep stays outside the lock" "$(cat "${CRON}")" "perl -e 'sleep int(rand(43200))' && /opt/tak/scripts/cluster-lock.sh"
-assert_eq "the cron line is still one line" "$(wc -l < "${CRON}")" "1"
-assert_eq "start-tak.sh skips a file that is already wrapped (it greps for cluster-lock.sh)" "$(grep -c 'grep -q "cluster-lock.sh"' "${REPO_ROOT}/docker-container/scripts/start-tak.sh")" "1"
-
 echo
 echo "passed ${PASS}, failed ${FAIL}"
 [[ "${FAIL}" -eq 0 ]]

@@ -64,13 +64,17 @@ echo "Certbot - Restoring cronjob"
 if [ ! -e "/etc/cron.d/certbot" ]; then
     cp /etc/letsencrypt/certbot.cron /etc/cron.d/certbot || true
 fi
-# The renewal runs under the cluster lock, so two nodes do not renew at once. A node that finds the lock
-# taken skips this round (--wait 0): the other node renews, and the certificate is on the shared EFS.
-# Also applies to a cron file restored from the EFS.
-if [ -e "/etc/cron.d/certbot" ] && ! grep -q "cluster-lock.sh" "/etc/cron.d/certbot"; then
-    sed -i 's#&& certbot -q renew#\&\& /opt/tak/scripts/cluster-lock.sh run --wait 0 certbot-renew -- certbot -q renew#' "/etc/cron.d/certbot" || true
+# Cron jobs get no environment from this container (no ECS_* and no task role credentials), so save what the
+# renewal needs: the deploy hook that restarts TAK Server, and the failure metric (#130).
+/opt/tak/scripts/certbot-renew.sh write-env || echo "Warning: could not write the cron environment file"
+# The renewal runs through certbot-renew.sh: cluster lock (a node that finds it taken skips this round, the
+# other node renews and the certificate is on the shared EFS), that environment, and the metric
+# CertbotRenewalFailure on failure. Also applies to a cron file restored from the EFS, which may hold the
+# plain line or an earlier wrapped one.
+if [ -e "/etc/cron.d/certbot" ] && ! grep -q "certbot-renew.sh" "/etc/cron.d/certbot"; then
+    sed -i -e 's#/opt/tak/scripts/cluster-lock.sh run --wait 0 certbot-renew -- certbot -q renew#/opt/tak/scripts/certbot-renew.sh#' \
+        -e 's#&& certbot -q renew#\&\& /opt/tak/scripts/certbot-renew.sh#' "/etc/cron.d/certbot" || true
 fi
-
 # New stacks with the Root CA and Intermediate CA keys in KMS (pki.kmsCa, #189) build their PKI with
 # pki-bootstrap.sh on the first start, and restore the Enrollment CA keystore into tmpfs on every later
 # start. Exit code 2 means "not applicable": the stack is not configured for it, or it already has a PKI
