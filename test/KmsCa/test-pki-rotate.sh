@@ -212,6 +212,14 @@ printf 'other:1:1:1 60 othernode\n' > "${FILES}/.locks/pki-rotation.lock"
 assert_eq "exit 75 after the wait" "$(orch ${T0} CLUSTER_LOCK_WAIT=1)" "75"
 find "${FILES}/.locks/pki-rotation.lock" -delete
 
+echo "every Enrollment CA has a CRL"
+reset_log
+assert_eq "a stack with its CRL: no restart for it" "$(orch ${T0})/$(wc -l < "${STUB_LOG}/ecs.log")" "0/0"
+find "${FILES}/crl" -delete
+reset_log
+assert_eq "the CRL is missing: run creates an empty one" "$(orch ${T0})/$([[ -s "${FILES}/crl/enrollment-ca-01.crl" ]] && echo yes)" "0/yes"
+assert_eq "...and asks for a rolling deployment, so TAK Server's CoreConfig gets it" "$(wc -l < "${STUB_LOG}/ecs.log")" "1"
+
 echo "spare key generations"
 reset_log
 two="root-ca-01=11111111-1111-4111-8111-111111111111,intermediate-ca-01=22222222-2222-4222-8222-222222222222"

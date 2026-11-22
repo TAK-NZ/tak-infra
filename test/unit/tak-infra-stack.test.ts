@@ -151,7 +151,7 @@ describe('TakInfraStack', () => {
 
     test('creates the certificate alarms and sends the Root CA signing alert to their alert topic', () => {
       const template = build({ kmsCa: { enabled: true, environmentLabel: 'Try' } });
-      template.resourceCountIs('AWS::CloudWatch::Alarm', 18);
+      template.resourceCountIs('AWS::CloudWatch::Alarm', 19);
       template.resourceCountIs('AWS::SNS::Topic', 3);
       template.hasResourceProperties('AWS::CloudWatch::Alarm', { Namespace: 'TAK/Certificates', MetricName: 'RootCAExpiryWarning',
         Dimensions: [{ Name: 'Stack', Value: 'TAK-Try-TakInfra' }] });
