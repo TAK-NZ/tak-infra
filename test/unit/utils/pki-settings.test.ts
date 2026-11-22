@@ -50,7 +50,7 @@ describe('pki-settings', () => {
 
 describe('resolvePkiRotation (#171)', () => {
   test('defaults: C 365, B 90, W 455, Enrollment CA rotated at 365 days, approval for retire', () => {
-    expect(resolvePkiRotation()).toEqual({ clientCertDays: 365, bufferDays: 90, enrollmentCaRotationDays: 365, requireApproval: ['retire'], windowDays: 455 });
+    expect(resolvePkiRotation()).toEqual({ clientCertDays: 365, bufferDays: 90, enrollmentCaRotationDays: 365, requireApproval: ['cut', 'retire'], windowDays: 455 });
     expect(PKI_DEFAULT_ROTATION.bufferDays).toBe(90);
   });
   test('W follows the client certificate validity and the buffer', () => {

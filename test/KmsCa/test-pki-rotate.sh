@@ -61,6 +61,8 @@ restarty_run() { echo "run $1" >> "${STUB_LOG}/restarty.log"; [[ "$1" == first ]
 restarty_abort() { echo "abort" >> "${STUB_LOG}/restarty.log"; [[ -e "${STUB_LOG}/restarty-refuse" ]] && return 2; return 0; }
 EOF
 export PKI_ROTATE_BUILTIN_SCENARIOS=0
+# the default is cut and retire; this test is about the gates, with the approval at retire as it was
+export PKI_ROTATION_REQUIRE_APPROVAL=retire
 export PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf1.sh ${WORK}/leaf2.sh" PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh"
 new_stack() { fresh "$1"; shift; env "$@" "${BOOTSTRAP}" > "${WORK}/bootstrap.log" 2>&1 || { echo "bootstrap failed"; tail -5 "${WORK}/bootstrap.log"; exit 1; }; }
 orch() { # epoch [env assignments...] -> exit status; output in run.log
@@ -283,6 +285,32 @@ assert_eq "the abort hook may refuse (2): the rotation stays active, exit 2" "$(
 assert_contains "it says so" "$(cat "${WORK}/run.log")" "cannot be aborted any more"
 assert_eq "a new task: the second step runs" "$(orch $(( T0 + 3 * 86400 )) PKI_ROTATE_TASK_STARTED=$(( T0 + 1 )))/$(grep -c 'run second' "${STUB_LOG}/restarty.log")/$(state '.active')" "0/1/null"
 rm -f "${STUB_LOG}/restarty-refuse"
+echo "the default approvals are cut and retire; the higher layer starts first"
+reset_log
+touch "${STUB_LOG}/demo-due"
+orch ${T0} PKI_ROTATION_REQUIRE_APPROVAL=cut,retire > /dev/null
+rm -f "${STUB_LOG}/demo-due"
+orch $(( T0 + W )) PKI_ROTATION_REQUIRE_APPROVAL=cut,retire > /dev/null
+orch $(( T0 + 2 * W )) PKI_ROTATION_REQUIRE_APPROVAL=cut,retire > /dev/null
+assert_eq "cut waits for its approval (it is in the list)" "$(state '.active.waitingFor')/$(grep -c 'run cut' "${STUB_LOG}/demo.log")" "approval/0"
+assert_eq "plan names the approval of cut" "$(env PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_ROTATION_REQUIRE_APPROVAL=cut,retire PKI_KMS_CA_KEYS="${PKI_KMS_CA_KEYS}" "${ROT}" plan 2>&1 | grep -c 'gates of this step: window coverage approval')" "1"
+"${ROT}" abort > /dev/null 2>&1
+cat > "${WORK}/scenarios/aaa-first.sh" <<'EOF'
+aaa_first_due() { echo "aaa-first" >> "${STUB_LOG}/order.log"; return 1; }
+EOF
+cat > "${WORK}/scenarios/root.sh" <<'EOF'
+root_due() { echo "root" >> "${STUB_LOG}/order.log"; return 1; }
+EOF
+cat > "${WORK}/scenarios/intermediate.sh" <<'EOF'
+intermediate_due() { echo "intermediate" >> "${STUB_LOG}/order.log"; return 1; }
+EOF
+cat > "${WORK}/scenarios/enrollment.sh" <<'EOF'
+enrollment_due() { echo "enrollment" >> "${STUB_LOG}/order.log"; return 1; }
+EOF
+: > "${STUB_LOG}/order.log"
+orch ${T0} > /dev/null
+assert_eq "root, intermediate, enrollment, then the others in their order" "$(tr '\n' ' ' < "${STUB_LOG}/order.log" | sed 's/ $//')" "root intermediate enrollment aaa-first"
+find "${WORK}/scenarios/aaa-first.sh" "${WORK}/scenarios/root.sh" "${WORK}/scenarios/intermediate.sh" "${WORK}/scenarios/enrollment.sh" -delete
 echo "every Enrollment CA has a CRL"
 reset_log
 assert_eq "a stack with its CRL: no restart for it" "$(orch ${T0})/$(wc -l < "${STUB_LOG}/ecs.log")" "0/0"
@@ -336,7 +364,8 @@ assert_eq "plan --at in 400 days: the leaf certificates (365 days) and the Enrol
 plan_env "${ROT}" plan --at "$(date -u -d '+10 years' +%Y-%m-%d)" --json > "${WORK}/plan.json" 2> /dev/null
 assert_eq "plan --at in 10 years: everything but the Root CA is due" "$(j '[.layers[] | select(.status == "due") | .layer] | join(",")')" "Server certificate,Admin certificate,Enrollment CA,Intermediate CA"
 assert_not_contains "plan: the Enrollment CA rotation is built" "$(cat "${WORK}/plan.txt")" "not built yet (#135)"
-assert_contains "plan notes that the Intermediate CA rotation is not built yet" "$(cat "${WORK}/plan.txt")" "orchestrated rotation not built yet (#172)"
+assert_not_contains "plan: the Intermediate CA rotation is built" "$(cat "${WORK}/plan.txt")" "not built yet (#172)"
+assert_contains "plan notes that the Root CA rotation is not built yet" "$(cat "${WORK}/plan.txt")" "orchestrated rotation not built yet (#169)"
 assert_eq "plan with a bad date: exit 1" "$(plan_env "${ROT}" plan --at nonsense > /dev/null 2>&1; echo $?)" "1"
 assert_eq "plan with an unknown option: exit 64" "$(plan_env "${ROT}" plan --bogus > /dev/null 2>&1; echo $?)" "64"
 echo "plan shows an active rotation"

@@ -27,7 +27,7 @@
 #             still on the old side. While it does, the list of users goes to the log and to the alert topic (SNS,
 #             once a week for the same users) and RotationCoverageStragglers carries the number
 #   approval  `pki-rotate.sh approve <scenario> <step>`; required for the steps named in
-#             PKI_ROTATION_REQUIRE_APPROVAL (default: retire, the only destructive step)
+#             PKI_ROTATION_REQUIRE_APPROVAL (default: cut and retire, the steps that cannot be undone)
 #   A step can have a hard deadline (the expiry of what it depends on, minus a margin): from then on the
 #   window and the coverage gate are open. The approval gate is never skipped, but the alarm RotationWaiting
 #   tells a human that the rotation is stuck on it.
@@ -51,7 +51,7 @@
 # after the one in use; the keys are created by CDK, `pki.kmsCa.rootCaNumbers` / `intermediateCaNumbers`).
 #
 # Environment: the settings of pki-bootstrap.sh, plus PKI_CLIENT_CERT_DAYS (365), PKI_ROTATION_BUFFER_DAYS (90),
-# PKI_ENROLLMENT_CA_ROTATION_DAYS (365), PKI_ROTATION_REQUIRE_APPROVAL (retire), PKI_ROTATION_NOW (epoch, for
+# PKI_ENROLLMENT_CA_ROTATION_DAYS (365), PKI_ROTATION_REQUIRE_APPROVAL (cut,retire), PKI_ROTATION_NOW (epoch, for
 # tests and `plan`), PKI_ROTATE_SCENARIO_DIR, PKI_ROTATE_COVERAGE_CMD, PKI_ROTATE_LEAF_SCRIPTS, PKI_ROTATE_NO_DEPLOY, PKI_ROTATE_TASK_STARTED (epoch, for the restart gate),
 # PKI_ROTATE_BUILTIN_SCENARIOS=0 (tests).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -76,7 +76,7 @@ load_rotation_settings() {
   CL_ROTATION_DAYS="$(int_setting PKI_ENROLLMENT_CA_ROTATION_DAYS 365)"
   WINDOW_DAYS=$(( CLIENT_DAYS + BUFFER_DAYS ))
   # an empty PKI_ROTATION_REQUIRE_APPROVAL switches the approvals off
-  REQUIRE_APPROVAL=",${PKI_ROTATION_REQUIRE_APPROVAL-retire},"
+  REQUIRE_APPROVAL=",${PKI_ROTATION_REQUIRE_APPROVAL-cut,retire},"
   REQUIRE_APPROVAL="${REQUIRE_APPROVAL// /}"
   SERVER_RENEW="$(int_setting PKI_SERVER_CERT_RENEW_DAYS 60)"
   ADMIN_RENEW="$(int_setting PKI_ADMIN_CERT_RENEW_DAYS 60)"
@@ -110,6 +110,17 @@ load_scenarios() {
       SCENARIOS+=("${name}")
     done
   done
+  order_scenarios
+}
+# The higher layer first: when the Intermediate CA is due, its rotation makes a new Enrollment CA itself, and a rotation of
+# the Enrollment CA that started first would use up the margin of the trigger (#172). Others keep their order after these.
+order_scenarios() {
+  local ordered=() n s
+  for n in root intermediate enrollment; do
+    for s in "${SCENARIOS[@]}"; do [[ "${s}" == "${n}" ]] && ordered+=("${s}"); done
+  done
+  for s in "${SCENARIOS[@]}"; do [[ " ${ordered[*]} " == *" ${s} "* ]] || ordered+=("${s}"); done
+  SCENARIOS=("${ordered[@]}")
 }
 fn() { echo "${1//-/_}_$2"; } # scenario function name
 scn() { local f; f="$(fn "$1" "$2")"; shift 2; "${f}" "$@"; } # call a scenario function

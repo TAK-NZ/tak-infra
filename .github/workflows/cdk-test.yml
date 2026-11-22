@@ -94,6 +94,8 @@ jobs:
         run: test/KmsCa/test-pki-rotate.sh
       - name: Test rotation/enrollment.sh (Enrollment CA rotation, #135)
         run: test/KmsCa/test-rotation-enrollment.sh
+      - name: Test rotation/intermediate.sh (Intermediate CA rotation, bridge and cut, #172)
+        run: test/KmsCa/test-rotation-intermediate.sh
       - name: Test admin-cert-rotate.sh (admin certificate rotation)
         run: test/KmsCa/test-admin-cert-rotate.sh
       - name: Test admin-p12-reexport.sh (admin.p12 readable by OpenSSL 3)
