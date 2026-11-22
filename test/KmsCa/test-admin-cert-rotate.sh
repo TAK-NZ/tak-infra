@@ -312,6 +312,22 @@ jq '.adminPreviousRemoveAfter = "2020-01-01T00:00:00Z" | del(.adminPrevious[0].i
 reset_log
 assert_eq "check: exit 0 and the previous certificate is revoked" "$(rotate check)/$(openssl crl -in "${FILES}/crl/enrollment-ca-01.crl" -noout -text | grep -c 'Serial Number:')" "0/1"
 
+echo "the bridge of an Intermediate CA rotation: the admin certificate carries the chain above Cl (#172)"
+new_stack bridge 50
+"${PKI_KMS_CA_SCRIPT}" csr intermediate-ca-02 "${WORK}/s2.csr" > /dev/null 2>&1
+"${PKI_KMS_CA_SCRIPT}" issue-ca intermediate-ca-01 "${FILES}/intermediate-ca.pem" "${WORK}/s2.csr" "${WORK}/A.pem" 1000 1 > /dev/null 2>&1
+openssl genrsa -out "${WORK}/cln.key" 2048 2> /dev/null
+openssl req -new -key "${WORK}/cln.key" -subj "/O=TAK.NZ/CN=TAK.NZ Try Enrollment CA 02" -out "${WORK}/cln.csr"
+"${PKI_KMS_CA_SCRIPT}" issue-ca intermediate-ca-02 "${WORK}/A.pem" "${WORK}/cln.csr" "${WORK}/cln.pem" 90 > /dev/null 2>&1
+cat "${WORK}/A.pem" "${FILES}/intermediate-ca.pem" "${FILES}/root-ca.pem" > "${FILES}/enrollment-chain.pem"
+openssl pkcs12 -export -in "${WORK}/cln.pem" -inkey "${WORK}/cln.key" -certfile "${FILES}/enrollment-chain.pem" -name intermediate-ca -out "${TMPFS}/intermediate-ca-signing.p12" -passout pass:atakatak 2> /dev/null
+cp "${WORK}/cln.pem" "${FILES}/enrollment-ca.pem"
+reset_log
+assert_eq "forced rotation with Enrollment CA 02 under A: exit 0" "$(rotate rotate)" "0"
+assert_eq "admin.pem: the certificate, Cl, A and S (not R)" "$(grep -c 'BEGIN CERTIFICATE' "${FILES}/admin.pem")" "4"
+assert_eq "admin.p12: the certificate, Cl, A, S and R" "$(p12_certs "${FILES}/admin.p12")" "5"
+assert_eq "the certificate is signed by Cl" "$(openssl verify -no_check_time -partial_chain -CAfile "${WORK}/cln.pem" <(openssl x509 -in "${FILES}/admin.pem") > /dev/null 2>&1 && echo yes)" "yes"
+assert_eq "it verifies through A and S to R" "$(openssl verify -CAfile "${FILES}/root-ca.pem" -untrusted <(cat "${WORK}/cln.pem" "${WORK}/A.pem" "${FILES}/intermediate-ca.pem") <(openssl x509 -in "${FILES}/admin.pem") > /dev/null 2>&1 && echo yes)" "yes"
 echo "settings"
 new_stack aes 50 P12_PROFILE=aes256
 assert_eq "the aes256 profile rotates" "$(rotate check P12_PROFILE=aes256)" "0"

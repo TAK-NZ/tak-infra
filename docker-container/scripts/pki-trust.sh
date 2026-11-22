@@ -8,6 +8,8 @@
 #   pki-trust.sh apply                             rebuild the truststores from the manifest (exit 10: changed, TAK
 #                                                  Server must restart to load them; 0: nothing to do)
 #   pki-trust.sh install-signing <N> <p12>         store Enrollment CA N as a secret and make it the current one
+#   pki-trust.sh rechain-signing <N> <p12>         replace the chain in the keystore of Enrollment CA N (same key and
+#                                                  certificate; the cut of an Intermediate CA rotation, #172)
 #   pki-trust.sh retire-signing <N>                destroy the key of Enrollment CA N, which is not in use any more: the
 #                                                  secret is deleted with a recovery window of 30 days (N = 1: its value is
 #                                                  overwritten). Refuses the current one and one that is still trusted
@@ -40,9 +42,11 @@ main() {
     apply) with_cluster_lock "${LOCK_NAME}" trust_apply || rc=$? ;;
     install-signing) [[ $# -eq 3 && "$2" =~ ^[0-9]+$ ]] || { echo "usage: ${0##*/} install-signing <N> <p12>" >&2; exit 64; }
       with_cluster_lock "${LOCK_NAME}" signing_install "$2" "$3" || rc=$? ;;
+    rechain-signing) [[ $# -eq 3 && "$2" =~ ^[0-9]+$ ]] || { echo "usage: ${0##*/} rechain-signing <N> <p12>" >&2; exit 64; }
+      with_cluster_lock "${LOCK_NAME}" signing_rechain "$2" "$3" || rc=$? ;;
     retire-signing) [[ $# -eq 2 && "$2" =~ ^[0-9]+$ ]] || { echo "usage: ${0##*/} retire-signing <N>" >&2; exit 64; }
       with_cluster_lock "${LOCK_NAME}" signing_destroy "$2" || rc=$? ;;
-    *) echo "usage: ${0##*/} show|add|remove|apply|install-signing|retire-signing" >&2; exit 64 ;;
+    *) echo "usage: ${0##*/} show|add|remove|apply|install-signing|rechain-signing|retire-signing" >&2; exit 64 ;;
   esac
   (( rc == 10 )) && log "the truststores changed: TAK Server loads them at its next start"
   exit "${rc}"

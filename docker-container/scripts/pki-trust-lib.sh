@@ -109,9 +109,18 @@ trust_add() { # alias pemfile sets (comma separated)
   done
   # it must chain to what is trusted already (the Root CA, through the Intermediate CA), so a wrong file cannot be added by mistake
   if [[ "$(jq -r --arg a "${alias}" '[.trust.entries[] | select(.alias == $a)] | length' "${STATE_FILE}")" == "0" ]]; then
-    openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted "${FILES_DIR}/intermediate-ca.pem" "${pem}" > /dev/null 2>&1 \
-      || [[ "$(openssl x509 -in "${pem}" -noout -subject)" == "$(openssl x509 -in "${pem}" -noout -issuer | sed 's/^issuer=/subject=/')" ]] \
-      || { log "trust: ${alias} does not chain to the Root CA through the Intermediate CA"; return 1; }
+    # the CA certificates of the manifest (and the current S) are the intermediates: an Enrollment CA of a bridged
+    # Intermediate CA chains through A, which is in the manifest (#172)
+    local inter f
+    inter="$(mktemp "${TMPFS_DIR}/trust-inter.XXXXXX" 2> /dev/null || mktemp)" || return 1
+    cat "${FILES_DIR}/intermediate-ca.pem" > "${inter}"
+    while IFS= read -r f; do [[ -s "${FILES_DIR}/${f}" ]] && cat "${FILES_DIR}/${f}" >> "${inter}"; done < <(jq -r '.trust.entries[]?.file' "${STATE_FILE}")
+    if ! { openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted "${inter}" "${pem}" > /dev/null 2>&1 \
+           || [[ "$(openssl x509 -in "${pem}" -noout -subject)" == "$(openssl x509 -in "${pem}" -noout -issuer | sed 's/^issuer=/subject=/')" ]]; }; then
+      find "${inter}" -delete 2> /dev/null
+      log "trust: ${alias} does not chain to the Root CA through the Intermediate CA"; return 1
+    fi
+    find "${inter}" -delete 2> /dev/null
   fi
   mkdir -p "${FILES_DIR}/trust-certs"
   dest="trust-certs/${alias}.pem"
@@ -200,15 +209,25 @@ trust_apply() {
 # ---------------------------------------------------------------------------------------------
 signing_current_secret() { local s; s="$(jq -r '.enrollmentSecret // empty' "${STATE_FILE}" 2> /dev/null)"; echo "${s:-${PKI_ENROLLMENT_CA_SECRET:-}}"; }
 signing_secret_name() { printf '%s/TAK-Server/Enrollment-CA-%02d' "${StackName:?StackName is not set}" "$1"; }
-# A PKCS#12 with the key and the chain [Cl, S, R], the file that TAK Server's CA config and the secret hold
-signing_keystore_build() { # cl.pem cl.key s.pem r.pem out.p12
-  local chain
-  chain="$(mktemp "${TMPFS_DIR}/chain.XXXXXX")" || return 1
-  cat "$3" "$4" > "${chain}"
-  openssl pkcs12 -export -in "$1" -inkey "$2" -certfile "${chain}" -name "${SIGNING_ALIAS}" -out "$5" -passout "pass:${KS_PASS}" 2> /dev/null
-  local rc=$?
-  find "${chain}" -delete
-  return "${rc}"
+# The chain above the Enrollment CA (Cl): the certificates up to and including R, in order, in
+# ${FILES_DIR}/enrollment-chain.pem. Normally [S, R]; during the bridge of an Intermediate CA rotation (#172) [A, S_old, R].
+# The signing keystore, the admin certificate and a new Enrollment CA are built from it. A PKI that was built before
+# the file existed gets [S, R].
+enrollment_chain_file() {
+  local f="${FILES_DIR}/enrollment-chain.pem"
+  if [[ ! -s "${f}" ]]; then
+    cat "${FILES_DIR}/intermediate-ca.pem" "${FILES_DIR}/root-ca.pem" > "${f}.new" && chmod 644 "${f}.new" && mv -f "${f}.new" "${f}" || return 1
+  fi
+  echo "${f}"
+}
+# every certificate of a PEM file except the last (the chain without R: what admin.pem carries after the certificate)
+chain_without_last() { # file
+  awk '/-----BEGIN CERTIFICATE-----/ {n++} n > 0 {b[n] = b[n] $0 "\n"} END {for (i = 1; i < n; i++) printf "%s", b[i]}' "$1"
+}
+# A PKCS#12 with the key and the chain, the file that TAK Server's CA config and the secret hold:
+# [Cl, the certificates of chain.pem]. chain.pem holds S and R (enrollment_chain_file).
+signing_keystore_build() { # cl.pem cl.key chain.pem out.p12
+  openssl pkcs12 -export -in "$1" -inkey "$2" -certfile "$3" -name "${SIGNING_ALIAS}" -out "$4" -passout "pass:${KS_PASS}" 2> /dev/null
 }
 # The keystore of generation N, from its secret, into a file (generation 1 is the secret of the stack)
 signing_fetch() { # number out.p12
@@ -246,6 +265,42 @@ signing_store() { # number p12
   fi
   # the highest number ever used: a secret that is deleted keeps its name for the recovery window, so a number is never reused
   trust_state_set --argjson n "${n}" '.enrollmentHighest = ([(.enrollmentHighest // 0), $n] | max)' || return 1
+}
+# Replaces the chain in the keystore of generation N (a new version of its secret). The key and the Enrollment CA
+# certificate must be the same as in the stored one: only the certificates above Cl change (the cut of an Intermediate CA
+# rotation, #172). If N is the current generation, this node's tmpfs gets it too.
+signing_rechain() { # number p12
+  local n="$1" p12="$2" secret old try back want
+  (( n == 1 )) && secret="${PKI_ENROLLMENT_CA_SECRET:-}" || secret="$(signing_secret_name "${n}")"
+  [[ -n "${secret}" ]] || { log "ERROR: no secret for Enrollment CA ${n}"; return 1; }
+  old="$(mktemp "${TMPFS_DIR}/rechain.XXXXXX")" || return 1
+  if ! signing_fetch "${n}" "${old}"; then log "ERROR: cannot read the secret ${secret}"; find "${old}" -delete; return 1; fi
+  local keyold keynew certold certnew
+  keyold="$(openssl pkcs12 -in "${old}" -passin "pass:${KS_PASS}" -nodes -nocerts 2> /dev/null | openssl pkey -pubout 2> /dev/null | openssl sha256)"
+  keynew="$(openssl pkcs12 -in "${p12}" -passin "pass:${KS_PASS}" -nodes -nocerts 2> /dev/null | openssl pkey -pubout 2> /dev/null | openssl sha256)"
+  certold="$(openssl pkcs12 -in "${old}" -passin "pass:${KS_PASS}" -clcerts -nokeys 2> /dev/null | openssl x509 -noout -fingerprint -sha256 2> /dev/null)"
+  certnew="$(openssl pkcs12 -in "${p12}" -passin "pass:${KS_PASS}" -clcerts -nokeys 2> /dev/null | openssl x509 -noout -fingerprint -sha256 2> /dev/null)"
+  find "${old}" -delete
+  if [[ -z "${keynew}" || "${keynew}" != "${keyold}" || -z "${certnew}" || "${certnew}" != "${certold}" ]]; then
+    log "ERROR: the new keystore does not hold the key and certificate of Enrollment CA ${n}: not replacing it"
+    return 1
+  fi
+  want="$(base64 -w0 "${p12}")"
+  back="$(aws secretsmanager get-secret-value --secret-id "${secret}" --query SecretBinary --output text 2> /dev/null)" || back=""
+  if [[ "${back}" == "${want}" ]]; then
+    log "the secret ${secret} holds this keystore already"
+  else
+    aws secretsmanager put-secret-value --secret-id "${secret}" --secret-binary "fileb://${p12}" > /dev/null \
+      || { log "ERROR: could not write the secret ${secret}"; return 1; }
+    for try in 1 2 3 4 5; do
+      back="$(aws secretsmanager get-secret-value --secret-id "${secret}" --query SecretBinary --output text 2> /dev/null)" || back=""
+      [[ "${back}" == "${want}" ]] && break
+      sleep "${PKI_ROTATE_RETRY_DELAY:-2}"
+    done
+    [[ "${back}" == "${want}" ]] || { log "ERROR: the secret ${secret} does not read back as written"; return 1; }
+  fi
+  if [[ "$(jq -r '.numbers.enrollment' "${STATE_FILE}")" == "${n}" ]]; then signing_activate "${n}" "${p12}" || return 1; fi
+  log "Enrollment CA ${n}: the chain in its keystore is replaced"
 }
 # Makes generation N (stored) the current one: pki-state.json and this node's tmpfs. A node that starts later restores
 # the current secret (pki-bootstrap.sh); the other nodes get it at their restart.

@@ -188,6 +188,43 @@ assert_contains "...it says that the next run continues with it" "$(cat "${WORK}
 assert_eq "...the state still names generation 4" "$(state '.numbers.enrollment')" "4"
 : > "${STUB_LOG}/read-fails"
 assert_eq "...and the secret exists, so the next try finds it (same keystore: exit 0)" "$(trust install-signing 5 "${WORK}/cl2.p12")" "0"
+echo "an Enrollment CA under a bridged Intermediate CA (#172)"
+assert_eq "chain_without_last drops R" "$( (PKI_BOOTSTRAP_SOURCE_ONLY=1; source "${BOOTSTRAP}"; chain_without_last "${FILES}/enrollment-chain.pem" | grep -c 'BEGIN CERTIFICATE') )" "1"
+"${PKI_KMS_CA_SCRIPT}" csr intermediate-ca-02 "${WORK}/s2.csr" > /dev/null 2>&1
+"${PKI_KMS_CA_SCRIPT}" issue-ca intermediate-ca-01 "${FILES}/intermediate-ca.pem" "${WORK}/s2.csr" "${WORK}/A.pem" 1000 1 > /dev/null 2>&1
+"${PKI_KMS_CA_SCRIPT}" issue-ca root-ca-01 "${FILES}/root-ca.pem" "${WORK}/s2.csr" "${WORK}/B.pem" 2000 > /dev/null 2>&1
+assert_eq "A (from S) and B (from R) have the same key and subject" "$(for c in A B; do openssl x509 -in "${WORK}/${c}.pem" -noout -pubkey | openssl sha256; openssl x509 -in "${WORK}/${c}.pem" -noout -subject; done | sort -u | wc -l)" "2"
+assert_contains "A has pathlen 1, B pathlen 2" "$(openssl x509 -in "${WORK}/A.pem" -noout -ext basicConstraints | tr -d '\n')$(openssl x509 -in "${WORK}/B.pem" -noout -ext basicConstraints | tr -d '\n')" "pathlen:1"
+openssl genrsa -out "${WORK}/cln.key" 2048 2> /dev/null
+openssl req -new -key "${WORK}/cln.key" -subj "/O=TAK.NZ/CN=TAK.NZ Try Enrollment CA 06" -out "${WORK}/cln.csr"
+"${PKI_KMS_CA_SCRIPT}" issue-ca intermediate-ca-02 "${WORK}/A.pem" "${WORK}/cln.csr" "${WORK}/cln.pem" 1000 > /dev/null 2>&1
+assert_eq "an Enrollment CA under A is refused while A is not in the manifest" "$(trust add enrollment-ca-06 "${WORK}/cln.pem" server)" "1"
+assert_contains "...it does not chain" "$(cat "${WORK}/run.log")" "does not chain to the Root CA"
+assert_eq "A is added (it chains to R through S)" "$(trust add intermediate-ca-02-bridge "${WORK}/A.pem" server,phone,fed)" "0"
+assert_eq "now the Enrollment CA under A is accepted" "$(trust add enrollment-ca-06 "${WORK}/cln.pem" server)" "0"
+assert_eq "the sets of A" "$(state '.trust.entries[] | select(.alias == "intermediate-ca-02-bridge") | .sets | join(",")')" "server,phone,fed"
+echo "replacing the chain in the keystore of a generation"
+cat "${WORK}/A.pem" "${FILES}/intermediate-ca.pem" "${FILES}/root-ca.pem" > "${WORK}/chain-a.pem"
+openssl pkcs12 -export -in "${WORK}/cln.pem" -inkey "${WORK}/cln.key" -certfile "${WORK}/chain-a.pem" -name intermediate-ca -out "${WORK}/cln-a.p12" -passout pass:atakatak 2> /dev/null
+cat "${WORK}/B.pem" "${FILES}/root-ca.pem" > "${WORK}/chain-b.pem"
+openssl pkcs12 -export -in "${WORK}/cln.pem" -inkey "${WORK}/cln.key" -certfile "${WORK}/chain-b.pem" -name intermediate-ca -out "${WORK}/cln-b.p12" -passout pass:atakatak 2> /dev/null
+assert_eq "install-signing 6 with the chain [Cl, A, S_old, R]" "$(trust install-signing 6 "${WORK}/cln-a.p12")" "0"
+assert_eq "the keystore in tmpfs has a chain of 4" "$(keytool -list -v -keystore "${TMPFS}/intermediate-ca-signing.jks" -storepass atakatak 2> /dev/null | grep 'Certificate chain length' | awk '{print $4}')" "4"
+: > "${STUB_LOG}/aws.log"
+assert_eq "rechain-signing 6 with [Cl, B, R]: exit 0" "$(trust rechain-signing 6 "${WORK}/cln-b.p12")" "0"
+assert_eq "the secret holds the new keystore" "$(cmp "${STUB_SECRETS}/TAK-Test_TAK-Server_Enrollment-CA-06" "${WORK}/cln-b.p12" && echo same)" "same"
+assert_eq "it was a new version of the same secret (put-secret-value), not a new secret" "$(grep -c 'put-secret-value --secret-id TAK-Test/TAK-Server/Enrollment-CA-06 ' "${STUB_LOG}/aws.log")/$(grep -c 'create-secret' "${STUB_LOG}/aws.log")" "1/0"
+assert_eq "this node's tmpfs has it: chain of 3" "$(keytool -list -v -keystore "${TMPFS}/intermediate-ca-signing.jks" -storepass atakatak 2> /dev/null | grep 'Certificate chain length' | awk '{print $4}')" "3"
+assert_eq "the state still says generation 6" "$(state .numbers.enrollment)/$(state .enrollmentSecret)" "6/TAK-Test/TAK-Server/Enrollment-CA-06"
+assert_eq "rechain again with the same file: exit 0, nothing to write" "$(trust rechain-signing 6 "${WORK}/cln-b.p12")" "0"
+assert_contains "...it says so" "$(cat "${WORK}/run.log")" "holds this keystore already"
+assert_eq "a keystore with another key is refused" "$(trust rechain-signing 6 "${WORK}/cl2.p12")" "1"
+assert_contains "...with a reason" "$(cat "${WORK}/run.log")" "does not hold the key and certificate"
+assert_eq "...the secret is unchanged" "$(cmp "${STUB_SECRETS}/TAK-Test_TAK-Server_Enrollment-CA-06" "${WORK}/cln-b.p12" && echo same)" "same"
+assert_eq "no such generation: exit 1" "$(trust rechain-signing 77 "${WORK}/cln-b.p12")" "1"
+assert_eq "a secret that cannot be written: exit 1" "$(STUB_SECRET_WRITE_FAILS=1 "${TRUST}" rechain-signing 6 "${WORK}/cln-a.p12" > "${WORK}/run.log" 2>&1; echo $?)" "1"
+assert_eq "...and it still holds [Cl, B, R]" "$(cmp "${STUB_SECRETS}/TAK-Test_TAK-Server_Enrollment-CA-06" "${WORK}/cln-b.p12" && echo same)" "same"
+assert_eq "usage: rechain-signing without a file" "$("${TRUST}" rechain-signing 6 > /dev/null 2>&1; echo $?)" "64"
 echo "another node holds the lock"
 mkdir -p "${FILES}/.locks"
 printf 'other:1:1:1 60 othernode\n' > "${FILES}/.locks/pki-rotation.lock"

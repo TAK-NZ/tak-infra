@@ -98,7 +98,7 @@ check_set() { # dir
   openssl rsa -in "${d}/admin.key" -passin "pass:${KS_PASS}" -check -noout > /dev/null 2>&1 || { log "check: admin.key does not open with the keystore password"; return 1; }
   [[ -n "$(pub_of_cert "${d}/admin.pem")" && "$(pub_of_cert "${d}/admin.pem")" == "$(openssl pkey -in "${d}/admin.key" -passin "pass:${KS_PASS}" -pubout 2> /dev/null | openssl sha256 2> /dev/null)" ]] \
     || { log "check: admin.key does not match admin.pem"; return 1; }
-  openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted <(cat "${FILES_DIR}/intermediate-ca.pem" "${FILES_DIR}/enrollment-ca.pem") "${d}/admin.pem" > /dev/null 2>&1 \
+  openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted <(cat "${FILES_DIR}/enrollment-ca.pem"; chain_without_last "$(enrollment_chain_file)") "${d}/admin.pem" > /dev/null 2>&1 \
     || { log "check: the certificate does not chain to Enrollment CA, Intermediate CA and Root CA"; return 1; }
   [[ "$(openssl x509 -in "${d}/admin.pem" -noout -subject -nameopt RFC2253 2> /dev/null)" == "subject=CN=admin,O=TAK.NZ" ]] || { log "check: the subject is not CN=admin,O=TAK.NZ"; return 1; }
   fp="$(fp_of_cert "${d}/admin.pem")"
@@ -129,8 +129,9 @@ build_new() {
   (( days > RENEW_DAYS )) || { log "check: the Enrollment CA has only ${cl_left} days left, not enough for a certificate that outlasts the renewal threshold of ${RENEW_DAYS} days: rotate the Enrollment CA first (#135)"; return 1; }
   openssl x509 -req -sha256 -days "${days}" -in admin.csr -CA "${FILES_DIR}/enrollment-ca.pem" -CAkey enrollment-ca.key \
     -set_serial "$(positive_serial)" -extensions client -extfile ext.cfg -out admin.cert.pem > /dev/null 2>&1 || { log "could not sign the new certificate"; return 1; }
-  cat "${FILES_DIR}/enrollment-ca.pem" "${FILES_DIR}/intermediate-ca.pem" "${FILES_DIR}/root-ca.pem" > cl-s-r.pem
-  cat admin.cert.pem "${FILES_DIR}/enrollment-ca.pem" "${FILES_DIR}/intermediate-ca.pem" > admin.pem
+  # the chain above Cl: [S, R] normally, [A, S_old, R] during the bridge of an Intermediate CA rotation (#172)
+  cat "${FILES_DIR}/enrollment-ca.pem" "$(enrollment_chain_file)" > cl-s-r.pem
+  { cat admin.cert.pem "${FILES_DIR}/enrollment-ca.pem"; chain_without_last "$(enrollment_chain_file)"; } > admin.pem
   openssl rsa -in admin.key.plain -aes256 -out admin.key -passout "pass:${KS_PASS}" 2> /dev/null || { log "could not write admin.key"; return 1; }
   openssl pkcs12 "${P12_OPTS[@]}" -export -in admin.cert.pem -inkey admin.key.plain -certfile cl-s-r.pem -name admin \
     -out admin.p12 -passout "pass:${KS_PASS}" 2> /dev/null || { log "could not build admin.p12"; return 1; }
