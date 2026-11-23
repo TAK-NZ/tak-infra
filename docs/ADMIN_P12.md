@@ -2,7 +2,7 @@
 
 ## The problem
 
-On a stack with the PKI of the TAK Server scripts (no `pki-state.json`), `makeCert.sh` writes `admin.p12` with plain `-legacy`. The keystore uses 3DES for the key, but the certificates are encrypted with **RC2-40** and the MAC is SHA-1. OpenSSL 3 without the legacy provider cannot read that (`unsupported ... Algorithm (RC2-40-CBC : 0)`), and neither can Node's `tls` `pfx` option. A third-party system that loads the secret failed this way. Readers that bring their own PKCS#12 code (node-forge, p12-pem) are not affected, which is why TAKTeamManager, TAK-Portal and CloudTAK worked.
+On a stack with the PKI of the TAK Server scripts (no `pki-state.json`), `makeCert.sh` writes `admin.p12` with plain `-legacy`. The keystore uses 3DES for the key, but the certificates are encrypted with **RC2-40** and the MAC is SHA-1. OpenSSL 3 without the legacy provider cannot read that (`unsupported ... Algorithm (RC2-40-CBC : 0)`), and neither can Node's `tls` `pfx` option. A third-party system that loads the secret failed this way. Readers that bring their own PKCS#12 code (node-forge, p12-pem) are not affected, which is why TAKTeamManager and CloudTAK worked.
 
 New stacks with the first-boot PKI (`pki.kmsCa`) write the compat3des profile already (`-legacy -descert`: 3DES, SHA-1 MAC; `docs/KMS_CA_KEYS.md`), so they need nothing.
 
@@ -43,7 +43,6 @@ Do both, or the next start uploads the file you did not roll back.
 | Consumer | How it reads the p12 | Reads 3DES / SHA-1 |
 |---|---|---|
 | TAKTeamManager `AdminCredentialLoader` | node-forge 1.4.3 `pkcs12FromAsn1` | yes (tested with the new profile) |
-| TAK-Portal `tak.service.js` | p12-pem 1.0.5 (node-forge) | yes (tested) |
 | CloudTAK `api/common/config.ts` | `pem.readPkcs12` 1.14.8, which runs `openssl pkcs12` | yes (tested). It reads the RC2-40 file too (`pem` adds `-legacy` on OpenSSL 3), so it was not affected |
 | Node `tls` with `pfx` | OpenSSL 3 | yes (tested in #133) |
 | `scripts/deviceprofiles/upload-device-profile.sh --p12` | curl | still needs PEM for the RC2 file; works with the new file |
