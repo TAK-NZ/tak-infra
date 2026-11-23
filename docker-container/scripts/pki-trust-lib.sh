@@ -115,7 +115,7 @@ trust_add() { # alias pemfile sets (comma separated)
     inter="$(mktemp "${TMPFS_DIR}/trust-inter.XXXXXX" 2> /dev/null || mktemp)" || return 1
     cat "${FILES_DIR}/intermediate-ca.pem" > "${inter}"
     while IFS= read -r f; do [[ -s "${FILES_DIR}/${f}" ]] && cat "${FILES_DIR}/${f}" >> "${inter}"; done < <(jq -r '.trust.entries[]?.file' "${STATE_FILE}")
-    if ! { openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted "${inter}" "${pem}" > /dev/null 2>&1 \
+    if ! { openssl verify -CAfile <(roots_cat) -untrusted "${inter}" "${pem}" > /dev/null 2>&1 \
            || [[ "$(openssl x509 -in "${pem}" -noout -subject)" == "$(openssl x509 -in "${pem}" -noout -issuer | sed 's/^issuer=/subject=/')" ]]; }; then
       find "${inter}" -delete 2> /dev/null
       log "trust: ${alias} does not chain to the Root CA through the Intermediate CA"; return 1
@@ -219,6 +219,14 @@ enrollment_chain_file() {
     cat "${FILES_DIR}/intermediate-ca.pem" "${FILES_DIR}/root-ca.pem" > "${f}.new" && chmod 644 "${f}.new" && mv -f "${f}.new" "${f}" || return 1
   fi
   echo "${f}"
+}
+# The roots that the PKI trusts: the certificates of the manifest entries `root-ca-NN`, and root-ca.pem. During a Root CA
+# rotation (#169) a chain ends at R_old or at R_new, so a check against "the root" uses all of them (as a CAfile:
+# `-CAfile <(roots_cat)`).
+roots_cat() {
+  local f
+  while IFS= read -r f; do [[ -s "${FILES_DIR}/${f}" ]] && cat "${FILES_DIR}/${f}"; done < <(jq -r '.trust.entries[]? | select(.alias | test("^root-ca-[0-9]{2}$")) | .file' "${STATE_FILE}" 2> /dev/null)
+  cat "${FILES_DIR}/root-ca.pem"
 }
 # every certificate of a PEM file except the last (the chain without R: what admin.pem carries after the certificate)
 chain_without_last() { # file

@@ -50,21 +50,19 @@ intermediate_summary() {
   echo "$(jq -r .names.intermediate "${STATE_FILE}")|${e}|$(( e - (2 * WINDOW_DAYS + 365) * DAY ))|expiry - (2 x W + 365 days)"
 }
 
-intermediate_due() {
-  local pem="${FILES_DIR}/intermediate-ca.pem" t left n next
-  [[ -s "${pem}" ]] || return 1
-  t="$(now)"
-  left=$(( ($(cert_enddate "${pem}") - t) / DAY ))
-  (( left <= 2 * WINDOW_DAYS + 365 )) || return 1
+# What a rotation needs to start, whatever the trigger (`pki-rotate.sh start` checks only this)
+intermediate_preflight() {
+  local left n next
+  left=$(( ($(cert_enddate "${FILES_DIR}/intermediate-ca.pem") - $(now)) / DAY ))
   trust_ensure_manifest || return 1
   n="$(crl_aliases | grep -c .)" || true
   if (( n != 1 )); then
-    log "intermediate: the Intermediate CA has ${left} days left, but the manifest lists ${n} Enrollment CAs: no rotation until there is one"
+    log "intermediate: the manifest lists ${n} Enrollment CAs: no rotation until there is one"
     return 1
   fi
   next="$(intermediate_next_number)"
   if [[ -z "${next}" ]]; then
-    log "WARNING: the Intermediate CA has ${left} days left and its rotation is due, but PKI_KMS_CA_KEYS has no later generation: add the next number to pki.kmsCa.intermediateCaNumbers and deploy (a CDK deploy creates the key)"
+    log "WARNING: the Intermediate CA has ${left} days left, but PKI_KMS_CA_KEYS has no later generation: add the next number to pki.kmsCa.intermediateCaNumbers and deploy (a CDK deploy creates the key)"
     return 1
   fi
   # A is valid for what S_old has left, and the new Enrollment CA under it needs its rotation period plus W
@@ -72,7 +70,21 @@ intermediate_due() {
     log "WARNING: the Intermediate CA has ${left} days left: too little for a rotation (a new Enrollment CA needs $(( CL_ROTATION_DAYS + WINDOW_DAYS )) days under it). Set PKI_ENROLLMENT_CA_ROTATION_DAYS lower or replace the Intermediate CA by hand"
     return 1
   fi
-  return 0
+}
+intermediate_due() {
+  local pem="${FILES_DIR}/intermediate-ca.pem" t left rleft
+  [[ -s "${pem}" ]] || return 1
+  t="$(now)"
+  left=$(( ($(cert_enddate "${pem}") - t) / DAY ))
+  (( left <= 2 * WINDOW_DAYS + 365 )) || return 1
+  # B, the new certificate, is issued by the Root CA and cannot outlive it: with less than 3 x W + 455 days left the root
+  # goes first (#169), and the cross-certificate of its rotation renews the Intermediate CA's certificate
+  rleft=$(( ($(cert_enddate "${FILES_DIR}/root-ca.pem") - t) / DAY ))
+  if (( rleft <= 3 * WINDOW_DAYS + 455 )); then
+    log "intermediate: the Intermediate CA has ${left} days left and its rotation is due, but the Root CA has ${rleft} days left (a new certificate could not outlive it): the Root CA has to be rotated first (#169)"
+    return 1
+  fi
+  intermediate_preflight
 }
 
 intermediate_steps() { echo "create bridge admin cut retire"; }

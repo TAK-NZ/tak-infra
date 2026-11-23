@@ -33,18 +33,28 @@ enrollment_summary() {
   echo "$(jq -r .names.enrollment "${STATE_FILE}")|$(cert_enddate "${pem}")|$(( $(cert_startdate "${pem}") + CL_ROTATION_DAYS * DAY ))|age ${CL_ROTATION_DAYS} days"
 }
 
+# What a rotation needs to start, whatever the trigger (`pki-rotate.sh start` checks only this): one Enrollment CA in the
+# manifest, and an Intermediate CA with enough life for a new one under it
+enrollment_preflight() {
+  local n s_left
+  trust_ensure_manifest || return 1
+  n="$(crl_aliases | grep -c .)" || true
+  if (( n != 1 )); then
+    log "enrollment: the manifest lists ${n} Enrollment CAs: no rotation until there is one"
+    return 1
+  fi
+  s_left=$(( ($(cert_enddate "${FILES_DIR}/intermediate-ca.pem") - $(now)) / DAY ))
+  if (( s_left - 1 < CL_ROTATION_DAYS + WINDOW_DAYS )); then
+    log "WARNING: the Intermediate CA has ${s_left} days left, not the $(( CL_ROTATION_DAYS + WINDOW_DAYS + 1 )) that a new Enrollment CA needs (age ${CL_ROTATION_DAYS} + window ${WINDOW_DAYS}): the Intermediate CA has to be rotated first (#172)"
+    return 1
+  fi
+}
 enrollment_due() {
-  local pem="${FILES_DIR}/enrollment-ca.pem" t age n s_left
+  local pem="${FILES_DIR}/enrollment-ca.pem" t age s_left
   [[ -s "${pem}" ]] || return 1
   t="$(now)"
   age=$(( (t - $(cert_startdate "${pem}")) / DAY ))
   (( age >= CL_ROTATION_DAYS )) || return 1
-  trust_ensure_manifest || return 1
-  n="$(crl_aliases | grep -c .)" || true
-  if (( n != 1 )); then
-    log "enrollment: the current Enrollment CA is ${age} days old, but the manifest lists ${n} Enrollment CAs: no rotation until there is one"
-    return 1
-  fi
   s_left=$(( ($(cert_enddate "${FILES_DIR}/intermediate-ca.pem") - t) / DAY ))
   # The Intermediate CA rotation (#172) makes a new Enrollment CA itself, and it must start at its trigger: a rotation of
   # the Enrollment CA that takes W and more would eat the margin that the trigger leaves
@@ -52,13 +62,8 @@ enrollment_due() {
     log "enrollment: the Enrollment CA is ${age} days old and due, but the Intermediate CA has ${s_left} days left (its rotation starts at $(( 2 * WINDOW_DAYS + 365 )) or fewer): the Intermediate CA has to be rotated first (#172), which makes a new Enrollment CA"
     return 1
   fi
-  if (( s_left - 1 < CL_ROTATION_DAYS + WINDOW_DAYS )); then
-    log "WARNING: the Enrollment CA is ${age} days old and due, but the Intermediate CA has ${s_left} days left, not the $(( CL_ROTATION_DAYS + WINDOW_DAYS + 1 )) that a new one needs (age ${CL_ROTATION_DAYS} + window ${WINDOW_DAYS}): the Intermediate CA has to be rotated first (#172)"
-    return 1
-  fi
-  return 0
+  enrollment_preflight
 }
-
 enrollment_steps() { echo "create switch admin retire"; }
 enrollment_gate() {
   case "$1" in
@@ -115,7 +120,7 @@ enrollment_create_in() { # workdir new
     openssl req -new -key "${w}/cl.key" -subj "/O=TAK.NZ/CN=$(enrollment_cn "${new}")" -out "${w}/cl.csr" || { log "ERROR: could not build the CSR"; return 1; }
     "${KMS_CA}" issue-ca "${issuer_label}" "${issuer_pem}" "${w}/cl.csr" "${w}/cl.pem" "${days}" > /dev/null \
       || { log "ERROR: ${issuer_label} could not sign the new Enrollment CA"; return 1; }
-    openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted <(chain_without_last "${chain}") "${w}/cl.pem" > /dev/null 2>&1 \
+    openssl verify -CAfile <(roots_cat) -untrusted <(chain_without_last "${chain}") "${w}/cl.pem" > /dev/null 2>&1 \
       || { log "ERROR: the new Enrollment CA does not chain to the Root CA"; return 1; }
     [[ "$(pub_of_key "${w}/cl.key")" == "$(pub_of_cert "${w}/cl.pem")" ]] || { log "ERROR: the new certificate does not match its key"; return 1; }
     signing_keystore_build "${w}/cl.pem" "${w}/cl.key" "${chain}" "${p12}" || { log "ERROR: could not build the keystore"; return 1; }
