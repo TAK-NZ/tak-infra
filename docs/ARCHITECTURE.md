@@ -41,6 +41,7 @@ The TAK Server Infrastructure provides centralized TAK communication services wi
 - **Purpose**: TAK certificates and Let's Encrypt certificate storage
 - **Mount Points**: `/opt/tak/certs/files` and `/etc/letsencrypt` in containers
 - **Encryption**: Encrypted at rest and in transit
+- **CA keys**: with `pki.kmsCa.enabled` the Root CA and Intermediate CA keys are in AWS KMS and the Enrollment CA key is in Secrets Manager and container memory; no CA key is on the EFS. See [CERT_ROTATION.md](CERT_ROTATION.md)
 
 ### Data Layer
 
@@ -171,10 +172,12 @@ The infrastructure implements a layered security model with dedicated security g
 - **User Management**: Centralized user management via Authentik
 
 ### 2. Certificate Management
-- **Admin Certificates**: Stored in AWS Secrets Manager
-- **Let's Encrypt**: Automated certificate generation and renewal
-- **TAK Certificates**: Persistent storage in EFS
+- **Hierarchy** (new stacks, `pki.kmsCa`): Root CA and Intermediate CA in AWS KMS, Enrollment CA in Secrets Manager; the container builds the PKI at the first start and renews and rotates every layer by itself (server and admin certificate yearly, the CAs with an overlap so that no phone is cut off). Operator guide: [CERT_ROTATION.md](CERT_ROTATION.md)
+- **Admin Certificates**: Secrets Manager (`Admin-Cert`), replaced by the rotation
+- **Let's Encrypt**: Automated certificate generation and renewal, one node at a time ([LETSENCRYPT.md](LETSENCRYPT.md))
+- **TAK Certificates**: Public certificates and truststores in EFS
 - **Certificate Enrollment**: Automated certificate enrollment endpoints
+- **Alerts**: CloudWatch alarms and SNS topics for expiry, rotation steps and failures
 
 ### 3. Configuration Management
 - **Environment Variables**: Core configuration via ECS environment variables
