@@ -115,7 +115,7 @@ export interface ContextEnvironmentConfig {
         bufferDays?: number;
         /** The Enrollment CA is replaced when it is this many days old. Default 365. */
         enrollmentCaRotationDays?: number;
-        /** Steps that wait for `pki-rotate.sh approve <scenario> <step>` before they run. Default: the destructive steps `retire`. */
+        /** Steps that wait for `pki-rotate.sh approve <scenario> <step>` before they run. Default: the steps that cannot be undone, `cut` and `retire`. */
         requireApproval?: string[];
       };
       /** PKCS#12 profile of the user-facing p12 files: `compat3des` (default) or `aes256` (#133). */

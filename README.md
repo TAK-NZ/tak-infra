@@ -68,7 +68,8 @@ npm run deploy:prod
 - **Target Groups** - HTTP, CoT TCP, API Admin, WebTAK Admin, and Federation endpoints
 
 ### Security & DNS
-- **AWS Secrets Manager** - Database credentials and TAK admin certificates
+- **AWS Secrets Manager** - Database credentials, TAK admin certificate, Enrollment CA keys
+- **AWS KMS CA keys, CloudWatch alarms, SNS topics** - only with `pki.kmsCa.enabled`: Root CA and Intermediate CA signing keys, certificate alarms and alert topics
 - **Security Groups** - Fine-grained network access controls
 - **Route 53 Records** - TAK Server endpoint DNS management
 - **KMS Encryption** - Data encryption at rest and in transit
@@ -179,6 +180,7 @@ npm run deploy:dev -- --context branding=generic
 - **[⚡ Quick Reference](docs/QUICK_REFERENCE.md)** - Fast deployment commands and environment comparison
 - **[⚙️ Configuration Guide](docs/PARAMETERS.md)** - Complete configuration management reference
 - **[🔧 TAK Server CoreConfig](docs/TAKSERVER_CORECONFIG.md)** - Dynamic environment variable configuration system
+- **[🔏 Certificate Management](docs/CERT_ROTATION.md)** - How certificates are renewed and rotated, and what an operator does when. Reference: [KMS CA keys and scripts](docs/KMS_CA_KEYS.md), [Let's Encrypt](docs/LETSENCRYPT.md), [cluster lock](docs/CLUSTER_LOCK.md)
 - **[🔐 WebTAK OIDC Integration](docs/WEBTAK_OIDC.md)** - Single sign-on authentication setup with Authentik
 - **[🐳 Docker Image Strategy](docs/DOCKER_IMAGE_STRATEGY.md)** - Hybrid image strategy for fast CI/CD and flexible development
 - **[🤖 TAK-GPT Plugin](docs/TAK_GPT_PLUGIN.md)** - AI-powered chat assistant integration
@@ -191,11 +193,12 @@ npm run deploy:dev -- --context branding=generic
 - **🛡️ Network Security** - Private subnets with controlled internet access
 - **🔒 IAM Policies** - Least-privilege access patterns throughout
 - **📋 LDAP Integration** - Secure LDAP authentication with Authentik
-- **🔐 Certificate Management** - Automated Let's Encrypt certificate handling
+- **🔐 Certificate Management** - Automated Let's Encrypt renewal; with `pki.kmsCa` the Root and Intermediate CA keys live in AWS KMS and every certificate and CA is renewed or rotated automatically, without a day on which phones stop working ([operator guide](docs/CERT_ROTATION.md))
 
 ## Getting Help
 
 ### Common Issues
+- **Certificates** - Alarm or expiry question: see the [operator guide](docs/CERT_ROTATION.md); an existing stack keeps its old PKI (no automatic CA rotation) unless it is built new with `pki.kmsCa`
 - **Base Infrastructure** - Ensure base infrastructure stack is deployed first
 - **Authentication Infrastructure** - Ensure authentication infrastructure stack is deployed first
 - **Route53 Hosted Zone** - Ensure your domain's hosted zone exists before deployment

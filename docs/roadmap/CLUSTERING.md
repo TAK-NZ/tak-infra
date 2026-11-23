@@ -92,7 +92,7 @@ exclusive.
   node should request/renew at a time.
 
 This same lock-file helper is designed to be reused by the certificate
-rotation work (see `docs/roadmap/CERT_ROTATION.md`), which adds several more
+rotation work (see `docs/CERT_ROTATION.md`), which adds several more
 singleton-only operations (server cert, admin cert, intermediate CA
 rotation) that don't exist yet but will need the same mechanism.
 
