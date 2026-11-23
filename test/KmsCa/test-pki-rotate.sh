@@ -70,7 +70,7 @@ orch() { # epoch [env assignments...] -> exit status; output in run.log
   local at="$1"
   shift
   env PKI_ROTATION_NOW="${at}" PKI_ROTATE_BUILTIN_SCENARIOS=0 PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf1.sh ${WORK}/leaf2.sh" \
-    PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh" PKI_ALERT_TOPIC_ARN="arn:aws:sns:ap-southeast-6:1:alert" PKI_ENV_LABEL=Test "$@" "${ROT}" run > "${WORK}/run.log" 2>&1
+    PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh" PKI_ALERT_TOPIC_ARN="arn:aws:sns:ap-southeast-6:1:alert" PKI_ENV_LABEL=Try "$@" "${ROT}" run > "${WORK}/run.log" 2>&1
   echo $?
 }
 reset_log() { : > "${STUB_LOG}/sns.log"; : > "${STUB_LOG}/coverage-args.log"; find "${STUB_LOG}" -maxdepth 1 -name 'coverage.*' -delete; : > "${STUB_LOG}/metrics.log"; : > "${STUB_LOG}/ecs.log"; : > "${STUB_LOG}/demo.log"; : > "${STUB_LOG}/leaf.log"; find "${STUB_LOG}" -maxdepth 1 -name 'demo-*' -delete; echo 0 > "${STUB_LOG}/coverage.count"; }
@@ -168,7 +168,7 @@ echo $(( T0 + 2 * W + 3 * 86400 )) > "${STUB_LOG}/demo-deadline-cut"
 assert_eq "before the window of cut is over: waits for the window, no message" "$(orch $(( T0 + 2 * W - 10 )))/$(wc -l < "${STUB_LOG}/sns.log")" "0/0"
 assert_eq "T0 + 2W: waits for coverage" "$(orch $(( T0 + 2 * W )))/$(state '.active.waitingFor')" "0/coverage"
 assert_eq "the scenario's arguments reach the coverage check" "$(sed 's/ *--json//; s/ *--list//' "${STUB_LOG}/coverage-args.log" | sort -u | tr '\n' ',')" "--issued-before 12345,"
-assert_eq "one message to the alert topic" "$(cat "${STUB_LOG}/sns.log")" "topic=arn:aws:sns:ap-southeast-6:1:alert subject=TAK.NZ Test rotation demo: 2 user(s) must enroll again"
+assert_eq "one message to the alert topic" "$(cat "${STUB_LOG}/sns.log")" "topic=arn:aws:sns:ap-southeast-6:1:alert subject=TAK.NZ Try rotation demo: 2 user(s) must enroll again"
 msg="$(cat "${STUB_LOG}/sns-last.txt")"
 assert_contains "the message names the users" "${msg}" "x u-two"
 assert_contains "...and the unknown ones, saying that they do not hold the rotation back" "${msg}" "x u-hand"

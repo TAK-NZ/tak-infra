@@ -93,6 +93,15 @@ load_settings() {
   SAN="DNS:takserver"
   for n in "${NAMES[@]}"; do SAN="${SAN},DNS:${n}"; done
 
+  # The label is part of the CA names for the life of the PKI. A deploy that lost it (the label defaults to the stack
+  # name, so a stack that was built with another label needs it on every deploy) must not start: the service keeps its
+  # old task and the deployment rolls back.
+  if [[ -f "${STATE_FILE}" ]]; then
+    local built
+    built="$(jq -r '.environmentLabel // empty' "${STATE_FILE}")"
+    [[ -z "${built}" || "${built}" == "${PKI_ENV_LABEL}" ]] \
+      || die "this stack's PKI was built with the environment label '${built}', but this deployment says '${PKI_ENV_LABEL}'. The label is part of the CA names and must not change: deploy with --context pkiEnvironmentLabel='${built}' (or pki.kmsCa.environmentLabel in cdk.json)"
+  fi
   # A new stack starts with generation 01. A stack with a PKI takes its generations from the state file: after a rotation
   # (#171) an operator removes the old generation from the configuration, and every script must still start (#172).
   local slots=(root-ca-01 intermediate-ca-01)

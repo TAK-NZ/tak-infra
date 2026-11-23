@@ -163,6 +163,17 @@ rc_is "a missing PKI file with a state file stops the start" 1
 assert_contains "the message names the file" "$(cat "${WORK}/run.log")" "takserver.jks is missing"
 mv "${FILES}/takserver.jks.gone" "${FILES}/takserver.jks"
 rc_is "and works again once it is back" 0
+echo "the environment label of the stack must not change"
+FP_LABEL="$(sha256sum "${FILES}/takserver.pem" "${FILES}/root-ca.pem" "${FILES}/pki-state.json" | awk '{print $1}' | tr '\n' ' ')"
+assert_eq "the state file records the label" "$(jq -r .environmentLabel "${FILES}/pki-state.json")" "${PKI_ENV_LABEL}"
+( export PKI_ENV_LABEL="Other"; rc="$("${SCRIPT}" > "${WORK}/run.log" 2>&1; echo $?)"; [[ "${rc}" == 1 ]] ) && pass "a different label stops the start (exit 1)" || fail "a different label stops the start (exit 1)"
+assert_contains "the message names the label the stack was built with" "$(cat "${WORK}/run.log")" "built with the environment label '${PKI_ENV_LABEL}', but this deployment says 'Other'"
+assert_contains "...and the flag to pass" "$(cat "${WORK}/run.log")" "--context pkiEnvironmentLabel='${PKI_ENV_LABEL}'"
+assert_eq "nothing was changed" "$(sha256sum "${FILES}/takserver.pem" "${FILES}/root-ca.pem" "${FILES}/pki-state.json" | awk '{print $1}' | tr '\n' ' ')" "${FP_LABEL}"
+( export PKI_ENV_LABEL="${PKI_ENV_LABEL} "; "${SCRIPT}" > "${WORK}/run.log" 2>&1; [[ $? == 1 ]] ) && pass "the same label with a trailing blank is a different label" || fail "the same label with a trailing blank is a different label"
+rc_is "the right label starts" 0
+jq 'del(.environmentLabel)' "${FILES}/pki-state.json" > "${WORK}/s.json" && cp "${WORK}/s.json" "${FILES}/pki-state.json"
+( export PKI_ENV_LABEL="Other"; "${SCRIPT}" > "${WORK}/run.log" 2>&1; [[ $? == 0 ]] ) && pass "a state file without a label is not checked" || fail "a state file without a label is not checked"
 
 echo "a failed secret write installs nothing"
 fresh b
