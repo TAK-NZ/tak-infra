@@ -266,7 +266,7 @@ root_retire() {
     [[ "${FILES_DIR}/${f}" != "${FILES_DIR}/${c_file}" ]] && find "${FILES_DIR}/${f}" -delete 2> /dev/null
   done
   "${METRICS}" emit RootCARotated 1 || true
-  log "root: ${r_alias_old} is retired: the server presents [L, ${c_alias}, ${r_alias_new}]. Its KMS key is still there and the signer role can use it: remove generation ${old} from pki.kmsCa.rootCaNumbers (a CDK deploy drops it from the role policy; the key is retained), then schedule its deletion in KMS with a 30-day window"
+  log "root: ${r_alias_old} is retired: the server presents [L, ${c_alias}, ${r_alias_new}]. Its KMS key is still there and the signer role can use it. First schedule its deletion (30-day window, by alias: the alias goes with the number): aws kms schedule-key-deletion --key-id alias/<alias of generation ${old}> --pending-window-in-days 30; then remove generation ${old} from pki.kmsCa.rootCaNumbers and deploy (the key leaves the policy of the signer role)"
   return 10
 }
 
