@@ -94,6 +94,8 @@ jobs:
         run: test/KmsCa/test-pki-rotate.sh
       - name: Test rotation/enrollment.sh (Enrollment CA rotation, #135)
         run: test/KmsCa/test-rotation-enrollment.sh
+      - name: Test pki-legacy-reset.sh (an old-PKI stack moves to the first-boot PKI)
+        run: test/KmsCa/test-pki-legacy-reset.sh
       - name: Test rotation/root.sh (Root CA rotation with a cross-certificate, #169)
         run: test/KmsCa/test-rotation-root.sh
       - name: Test rotation/intermediate.sh (Intermediate CA rotation, bridge and cut, #172)

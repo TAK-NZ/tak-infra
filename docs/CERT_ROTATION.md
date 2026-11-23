@@ -10,7 +10,7 @@ How the certificates of a TAK Server stack are issued and renewed, and what an o
 | Renewal and rotation | Automatic, see below | **Manual.** Nothing renews the TAK certificates |
 | Let's Encrypt (port 8446) | Automatic | Automatic and cluster-safe (the failure alarm needs `pki.kmsCa`) |
 
-There is no migration of an existing PKI: a stack that has one keeps it, even if `pki.kmsCa` is turned on later. To get the new PKI, build a new stack (every phone enrols again).
+A stack that has the old PKI keeps it, even if `pki.kmsCa` is turned on later: there is no migration of the certificates. To get the new PKI, build a new stack, or reset the PKI of the stack in place (below). Either way every phone enrols again.
 
 ## The hierarchy and what rotates when (defaults)
 
@@ -51,6 +51,15 @@ Run commands in the container: `aws ecs execute-command --cluster TAK-<n>-BaseIn
 | Federation peers | When the log or mail says a new Root CA is in use, give the peers the fingerprints and the new CA certificate (secret `<stack>/TAK-Server/FederateCA`) before you approve the root `retire` step |
 | Data packages | Made-by-hand packages carry the truststore of the day. Make new ones from `truststore-phone.p12` after each CA rotation; old ones stop working at the `cut` of an Intermediate CA rotation |
 | Info alarms (`...Rotated`, `...RotationPhase`) | Nothing: a step happened |
+
+### Moving a stack with the old PKI to the new one
+
+A **flag day**: the new hierarchy has other CAs, so every phone enrols again (QR code), data packages made before are dead, and federation peers need the new `FederateCA`. The database, users and the Let's Encrypt certificate stay. Do it before the old Intermediate CA expires (`ca.pem`, see `openssl x509 -enddate`); do it first on a stack without users.
+
+1. Deploy with `pki.kmsCa.enabled` and an `environmentLabel` (`--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=<Env>`). The stack keeps its old PKI and logs "already has a PKI from the old flow".
+2. In the container: `pki-legacy-reset.sh reset --dry-run` (checks everything, lists the files), then `pki-legacy-reset.sh reset --restart`. It moves the old PKI, with its CA keys, to `legacy-pki-<time>/` on the EFS and starts a rolling deployment (6 to 10 minutes). The new node builds the PKI at its start and uploads the new `Admin-Cert` and `FederateCA`.
+3. Check `pki-rotate.sh plan`, enrol a phone, restart TAKTeamManager and CloudTAK (or wait a day) so that they read the new `Admin-Cert`. Tell the users and the federation peers.
+4. When it works: `pki-legacy-reset.sh purge legacy-pki-<time>` deletes the old CA keys. If the new node did not start the new PKI and nothing was built, `pki-legacy-reset.sh restore legacy-pki-<time>` puts the old files back.
 
 ### Emergencies
 

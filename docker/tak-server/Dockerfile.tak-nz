@@ -70,6 +70,7 @@ RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/revoke-cert.sh \
     && chmod +x /opt/tak/scripts/rotation-coverage.sh \
     && chmod +x /opt/tak/scripts/admin-p12-reexport.sh \
+    && chmod +x /opt/tak/scripts/pki-legacy-reset.sh \
     && if [ -d "branding" ]; then \
         cd branding \
         && zip -u ../takserver.war index.html \

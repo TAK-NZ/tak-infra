@@ -70,6 +70,7 @@ RUN chmod +x /opt/tak/scripts/start-tak.sh \
     && chmod +x /opt/tak/scripts/revoke-cert.sh \
     && chmod +x /opt/tak/scripts/rotation-coverage.sh \
     && chmod +x /opt/tak/scripts/admin-p12-reexport.sh \
+    && chmod +x /opt/tak/scripts/pki-legacy-reset.sh \
     && python3 /tmp/patch-jvm-flags.py \
     && grep 'G1HeapRegionSize' /opt/tak/configureInDocker.sh \
     && rm /tmp/patch-jvm-flags.py
