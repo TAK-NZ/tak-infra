@@ -129,6 +129,11 @@ describe('TakInfraStack', () => {
       expect(env).not.toContain('PKI_KMS_CA_KEYS');
     });
 
+    test('outputs the environment label only when the PKI is on', () => {
+      expect(build({ kmsCa: { enabled: true, environmentLabel: 'Try' } }).findOutputs('PkiEnvironmentLabel').PkiEnvironmentLabel.Value).toBe('Try');
+      expect(build({ kmsCa: { enabled: false, environmentLabel: 'Try' } }).findOutputs('PkiEnvironmentLabel')).toEqual({});
+      expect(build().findOutputs('PkiEnvironmentLabel')).toEqual({});
+    });
     test('creates nothing when disabled', () => {
       expect(kmsKeysWithSigningPolicy(build({ kmsCa: { enabled: false, environmentLabel: 'Try' } }))).toHaveLength(0);
     });
