@@ -4,7 +4,7 @@ How the certificates of a TAK Server stack are issued and renewed, and what an o
 
 ## Two kinds of stack
 
-| | Stack with `pki.kmsCa.enabled` (new stacks) | Stack without it (existing stacks) |
+| | Stack with `pki.kmsCa.enabled` (the default for new stacks) | Stack without it (existing stacks, or `--context pkiKmsCaEnabled=false`) |
 |---|---|---|
 | PKI | Built at the first start: Root CA (R) and Intermediate CA (S) keys in AWS KMS, Enrollment CA (Cl) key in Secrets Manager and tmpfs, never on the EFS | Made by the TAK Server scripts (`makeCert.sh`), CA keys on the EFS |
 | Renewal and rotation | Automatic, see below | **Manual.** Nothing renews the TAK certificates |
@@ -57,7 +57,7 @@ Run commands in the container: `aws ecs execute-command --cluster TAK-<n>-BaseIn
 
 A **flag day**: the new hierarchy has other CAs, so every phone enrols again (QR code), data packages made before are dead, and federation peers need the new `FederateCA`. The database, users and the Let's Encrypt certificate stay. Do it before the old Intermediate CA expires (`ca.pem`, see `openssl x509 -enddate`); do it first on a stack without users.
 
-1. Deploy with `pki.kmsCa.enabled` and an `environmentLabel` (`--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=<Env>`). The stack keeps its old PKI and logs "already has a PKI from the old flow".
+1. Deploy with the PKI turned on and the label of the stack (`--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=<Env>`; a stack whose deploy command has `pkiKmsCaEnabled=false`, like Demo in `demo-deploy.yml`, must drop that flag). The stack keeps its old PKI and logs "already has a PKI from the old flow".
 2. In the container: `pki-legacy-reset.sh reset --dry-run` (checks everything, lists the files), then `pki-legacy-reset.sh reset --restart`. It moves the old PKI, with its CA keys, to `legacy-pki-<time>/` on the EFS and starts a rolling deployment (6 to 10 minutes). The new node builds the PKI at its start and uploads the new `Admin-Cert` and `FederateCA`.
 3. Check `pki-rotate.sh plan` and enrol a phone. Tell the users and the federation peers.
 4. If TAKTeamManager or CloudTAK run in the account: do [CloudTAK and TAKTeamManager](#cloudtak-and-takteammanager) (new admin certificate, user certificates and ETL connections).

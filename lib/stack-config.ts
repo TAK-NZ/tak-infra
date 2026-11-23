@@ -74,12 +74,18 @@ export interface ContextEnvironmentConfig {
    */
   pki?: {
     /**
-     * Root CA and Intermediate CA signing keys in AWS KMS. Unset or `enabled: false` keeps the
-     * existing behaviour (CA keys as files on EFS) and creates nothing.
+     * Root CA and Intermediate CA signing keys in AWS KMS, and the first-boot PKI. `enabled` is true in the
+     * `dev-test` and `prod` profiles of cdk.json. Unset or `enabled: false` keeps the old behaviour (CA keys as
+     * files on EFS, no rotation) and creates nothing: set it with `--context pkiKmsCaEnabled=false` for a stack
+     * that must stay on the old PKI.
      */
     kmsCa?: {
       enabled: boolean;
-      /** Environment label in CA names and aliases, e.g. `Try` -> `TAK.NZ Try Root CA 01`. */
+      /**
+       * Environment label in CA names and aliases, e.g. `Try` -> `TAK.NZ Try Root CA 01`. Defaults to the stack
+       * name (which is unique per account and region, like the aliases). Set it for a stack whose label is
+       * not its stack name, and keep it on every deploy: it is part of the CA names.
+       */
       environmentLabel: string;
       /**
        * Root CA key generations to create. Default `[1, 2]`: the next generation exists from the start as the spare

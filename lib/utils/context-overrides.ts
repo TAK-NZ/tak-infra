@@ -5,6 +5,7 @@
 
 import * as cdk from 'aws-cdk-lib';
 import { ContextEnvironmentConfig } from '../stack-config';
+import { validateEnvironmentLabel } from './pki-names';
 
 export function applyContextOverrides(
   app: cdk.App, 
@@ -70,15 +71,29 @@ export function applyContextOverrides(
       ...baseConfig.bedrock,
       knowledgeBases: parseContextList(app.node.tryGetContext('bedrockKnowledgeBases')) ?? baseConfig.bedrock?.knowledgeBases,
     },
-    pki: applyPkiOverrides(app, baseConfig.pki),
+    pki: applyPkiOverrides(app, baseConfig.pki, app.node.tryGetContext('stackName') ?? baseConfig.stackName),
   };
 }
 
 /**
- * Root CA / Intermediate CA keys in KMS (#136). Stays undefined unless the config or the command
- * line mentions it, so stacks that do not use it are unchanged.
+ * The stack name as the PKI environment label, when it is a valid label. Only matters when the PKI is enabled;
+ * an invalid name then needs an explicit pkiEnvironmentLabel.
  */
-function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']): ContextEnvironmentConfig['pki'] {
+function defaultEnvironmentLabel(stackName: string | undefined, enabled: boolean): string | undefined {
+  if (!enabled || !stackName) return undefined;
+  try {
+    validateEnvironmentLabel(stackName);
+  } catch {
+    throw new Error(`The stack name "${stackName}" cannot be the PKI environment label (1-24 letters, digits, spaces or hyphens): set --context pkiEnvironmentLabel=<label> or pki.kmsCa.environmentLabel`);
+  }
+  return stackName;
+}
+/**
+ * Root CA / Intermediate CA keys in KMS (#136) and the first-boot PKI. cdk.json turns it on for the dev-test and
+ * prod profiles; `--context pkiKmsCaEnabled=false` keeps a stack on the old PKI. The environment label defaults to
+ * the stack name. Stays undefined when neither the config nor the command line mentions it.
+ */
+function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki'], stackName: string): ContextEnvironmentConfig['pki'] {
   const enabled = parseContextBoolean(app.node.tryGetContext('pkiKmsCaEnabled'));
   const environmentLabel = app.node.tryGetContext('pkiEnvironmentLabel');
   const rootCaNumbers = parseContextNumberList(app.node.tryGetContext('pkiRootCaNumbers'));
@@ -109,7 +124,7 @@ function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki']):
   const kmsCa = base?.kmsCa;
   const merged = {
     enabled: enabled ?? kmsCa?.enabled ?? false,
-    environmentLabel: environmentLabel ?? kmsCa?.environmentLabel,
+    environmentLabel: environmentLabel ?? kmsCa?.environmentLabel ?? defaultEnvironmentLabel(stackName, enabled ?? kmsCa?.enabled ?? false),
     rootCaNumbers: rootCaNumbers ?? kmsCa?.rootCaNumbers,
     intermediateCaNumbers: intermediateCaNumbers ?? kmsCa?.intermediateCaNumbers,
     alertEmail: alertEmail ?? kmsCa?.alertEmail,

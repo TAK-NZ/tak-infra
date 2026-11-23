@@ -150,13 +150,54 @@ describe('Context Overrides', () => {
       expect(result.pki?.kmsCa?.validity).toBeUndefined();
     });
 
-    test('enabled without an environment label is an error', () => {
-      expect(() => applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true' }), withKmsCa())).toThrow(/environmentLabel/);
+    test('enabled without an environment label uses the stack name', () => {
+      expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true' }), withKmsCa()).pki?.kmsCa?.environmentLabel).toBe('DevTest');
+      expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true', stackName: 'Demo' }), withKmsCa()).pki?.kmsCa?.environmentLabel).toBe('Demo');
+    });
+    test('an explicit label wins over the stack name', () => {
+      const result = applyContextOverrides(appWith({ stackName: 'Demo', pkiEnvironmentLabel: 'Test' }), withKmsCa({ enabled: true }));
+      expect(result.pki?.kmsCa?.environmentLabel).toBe('Test');
+    });
+    test('a stack name that is not a valid label needs an explicit one', () => {
+      expect(() => applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true', stackName: 'Demo_Stack' }), withKmsCa()))
+        .toThrow(/cannot be the PKI environment label/);
+      expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true', stackName: 'Demo_Stack', pkiEnvironmentLabel: 'Demo' }), withKmsCa())
+        .pki?.kmsCa?.environmentLabel).toBe('Demo');
+    });
+    test('an invalid stack name does not matter while the PKI is off', () => {
+      const result = applyContextOverrides(appWith({ pkiKmsCaEnabled: 'false', stackName: 'Demo_Stack' }), withKmsCa({ enabled: true }));
+      expect(result.pki?.kmsCa?.enabled).toBe(false);
     });
 
     test('a number list with a non-number is an error', () => {
       expect(() => applyContextOverrides(appWith({ pkiRootCaNumbers: '1,x', pkiEnvironmentLabel: 'Try' }), withKmsCa()))
         .toThrow(/Invalid number 'x'/);
     });
+  });
+  describe('the PKI default in cdk.json', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const cdkContext = require('../../../cdk.json').context;
+    const appWith = (ctx: Record<string, string>) => ({ node: { tryGetContext: (k: string) => ctx[k] } }) as any;
+    test.each(['dev-test', 'prod'])('%s is on, labelled with its stack name', (profile) => {
+      const base = cdkContext[profile];
+      const result = applyContextOverrides(appWith({}), base);
+      expect(result.pki?.kmsCa).toMatchObject({ enabled: true, environmentLabel: base.stackName });
+    });
+    test.each(['dev-test', 'prod'])('%s: the label follows --context stackName', (profile) => {
+      const result = applyContextOverrides(appWith({ stackName: 'Demo' }), cdkContext[profile]);
+      expect(result.pki?.kmsCa).toMatchObject({ enabled: true, environmentLabel: 'Demo' });
+    });
+    test.each(['dev-test', 'prod'])('%s: Demo CI stays on the old PKI with pkiKmsCaEnabled=false', (profile) => {
+      const result = applyContextOverrides(appWith({ stackName: 'Demo', pkiKmsCaEnabled: 'false' }), cdkContext[profile]);
+      expect(result.pki?.kmsCa?.enabled).toBe(false);
+    });
+    test('the Demo workflow switches it off in every CDK command', () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const workflow: string = require('fs').readFileSync(require('path').join(__dirname, '../../../.github/workflows/demo-deploy.yml'), 'utf8');
+      const commands = workflow.split('\n').filter(l => /npm run cdk (synth|deploy)/.test(l));
+      expect(commands.length).toBeGreaterThanOrEqual(4);
+      for (const c of commands) expect(c).toContain('--context pkiKmsCaEnabled=false');
+    });
+
   });
 });
