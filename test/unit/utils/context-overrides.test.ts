@@ -191,6 +191,15 @@ describe('Context Overrides', () => {
       const result = applyContextOverrides(appWith({ stackName: 'Demo', pkiKmsCaEnabled: 'false' }), cdkContext[profile]);
       expect(result.pki?.kmsCa?.enabled).toBe(false);
     });
+    test('the production workflow passes the PKI email variables to the deploy', () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const workflow: string = require('fs').readFileSync(require('path').join(__dirname, '../../../.github/workflows/production-deploy.yml'), 'utf8');
+      expect(workflow).toContain('vars.PROD_PKI_ALERT_EMAIL');
+      expect(workflow).toContain('vars.PROD_PKI_INFO_EMAIL');
+      const deploy = workflow.split('\n').filter(l => /npm run cdk deploy/.test(l));
+      expect(deploy).toHaveLength(1);
+      expect(deploy[0]).toContain('steps.pki-config.outputs.context');
+    });
     test('the Demo workflow switches it off in every CDK command', () => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const workflow: string = require('fs').readFileSync(require('path').join(__dirname, '../../../.github/workflows/demo-deploy.yml'), 'utf8');
