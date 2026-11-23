@@ -283,7 +283,7 @@ intermediate_retire() {
   (( rc == 10 )) || return "${rc}"
   for f in "$(intermediate_alias "${old}")" "$(intermediate_bridge_alias "${new}")"; do find "${FILES_DIR}/$(intermediate_file "${f}")" -delete 2> /dev/null; done
   "${METRICS}" emit IntermediateCARotationPhase 1 Phase=retire || true
-  log "intermediate: $(intermediate_alias "${old}") is retired. Its KMS key is still there and the signer role can use it: remove generation ${old} from pki.kmsCa.intermediateCaNumbers (a CDK deploy drops it from the role policy; the key is retained), then schedule its deletion in KMS with a 30-day window"
+  log "intermediate: $(intermediate_alias "${old}") is retired. Its KMS key is still there and the signer role can use it. First schedule its deletion (30-day window, by alias: the alias goes with the number): aws kms schedule-key-deletion --key-id alias/<alias of generation ${old}> --pending-window-in-days 30; then remove generation ${old} from pki.kmsCa.intermediateCaNumbers and deploy (the key leaves the policy of the signer role)"
   return 10
 }
 
