@@ -8,7 +8,7 @@ This page is the reference for the scripts behind [CERT_ROTATION.md](CERT_ROTATI
 
 ## Turning it on
 
-Off by default. A stack that does not set it is unchanged.
+On by default in the `dev-test` and `prod` profiles of `cdk.json`; the environment label is the stack name. `--context pkiKmsCaEnabled=false` keeps a stack on the old PKI (Demo does this in `demo-deploy.yml` until it is moved). To set the label and the alert address:
 
 ```json
 "pki": {
@@ -20,7 +20,7 @@ Off by default. A stack that does not set it is unchanged.
 }
 ```
 
-or on the command line: `--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=Try`. See [PARAMETERS.md](PARAMETERS.md#kms-ca-keys).
+or on the command line: `--context pkiEnvironmentLabel=Try --context pkiAlertEmail=pki-alerts@example.org`. A stack whose label is not its stack name (Dev, Test) passes `pkiEnvironmentLabel` on every deploy. See [PARAMETERS.md](PARAMETERS.md#kms-ca-keys).
 
 ## What the stack creates
 

@@ -83,6 +83,11 @@
         "knowledgeBases": [
           "nema-cdem"
         ]
+      },
+      "pki": {
+        "kmsCa": {
+          "enabled": true
+        }
       }
     },
     "prod": {
@@ -148,6 +153,11 @@
         "knowledgeBases": [
           "nema-cdem"
         ]
+      },
+      "pki": {
+        "kmsCa": {
+          "enabled": true
+        }
       }
     },
     "tak-defaults": {
