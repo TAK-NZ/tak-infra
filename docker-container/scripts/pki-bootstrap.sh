@@ -223,7 +223,7 @@ bootstrap() {
   openssl pkcs12 "${P12_OPTS[@]}" -export -in takserver.pem -inkey takserver.key -certfile s-r.pem -name takserver \
     -out takserver.p12 -passout "pass:${KS_PASS}"
   jks_from_p12 takserver.p12 takserver.jks takserver
-  # Admin: p12 in the configured profile (read by TAKTeamManager and TAK-Portal), PEM pair for the health check
+  # Admin: p12 in the configured profile (read by TAKTeamManager and CloudTAK), PEM pair for the health check
   openssl pkcs12 "${P12_OPTS[@]}" -export -in admin.cert.pem -inkey admin.key.plain -certfile cl-s-r.pem -name admin \
     -out admin.p12 -passout "pass:${KS_PASS}"
   openssl rsa -in admin.key.plain -aes256 -out admin.key -passout "pass:${KS_PASS}" 2> /dev/null
