@@ -37,6 +37,7 @@ cat > "${WORK}/scenarios/demo.sh" <<'EOF'
 demo_summary() { echo "demo"; }
 demo_due() { [[ -e "${STUB_LOG}/demo-due" ]]; }
 demo_steps() { echo "start bridge cut retire"; }
+demo_preflight() { [[ ! -e "${STUB_LOG}/demo-nopreflight" ]]; }
 demo_gate() { case "$1" in start) echo none ;; bridge) echo window ;; cut) echo "window coverage" ;; retire) echo window ;; esac; }
 demo_coverage_args() { echo "--issued-before 12345"; }
 demo_deadline() { [[ -f "${STUB_LOG}/demo-deadline-$1" ]] && cat "${STUB_LOG}/demo-deadline-$1"; return 0; }
@@ -285,6 +286,16 @@ assert_eq "the abort hook may refuse (2): the rotation stays active, exit 2" "$(
 assert_contains "it says so" "$(cat "${WORK}/run.log")" "cannot be aborted any more"
 assert_eq "a new task: the second step runs" "$(orch $(( T0 + 3 * 86400 )) PKI_ROTATE_TASK_STARTED=$(( T0 + 1 )))/$(grep -c 'run second' "${STUB_LOG}/restarty.log")/$(state '.active')" "0/1/null"
 rm -f "${STUB_LOG}/restarty-refuse"
+echo "start: a rotation now, whatever the trigger"
+reset_log
+touch "${STUB_LOG}/demo-nopreflight"
+assert_eq "start with a preflight that fails: exit 1, no rotation" "$("${ROT}" start demo > "${WORK}/run.log" 2>&1; echo $?)/$(state '.active')" "1/null"
+assert_contains "...it says so" "$(cat "${WORK}/run.log")" "demo cannot start"
+rm -f "${STUB_LOG}/demo-nopreflight"
+assert_eq "start (demo is not due): exit 0, the first step ran" "$(env PKI_ROTATION_NOW=${T0} PKI_ROTATE_SCENARIO_DIR="${WORK}/scenarios" PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf1.sh" PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh" "${ROT}" start demo > "${WORK}/run.log" 2>&1; echo $?)/$(state '.active.scenario')" "0/demo"
+assert_eq "start while a rotation is active: exit 1" "$("${ROT}" start demo > "${WORK}/run.log" 2>&1; echo $?)" "1"
+assert_eq "usage: start without a scenario: exit 64" "$("${ROT}" start > /dev/null 2>&1; echo $?)" "64"
+"${ROT}" abort > /dev/null 2>&1
 echo "the default approvals are cut and retire; the higher layer starts first"
 reset_log
 touch "${STUB_LOG}/demo-due"
@@ -365,7 +376,7 @@ plan_env "${ROT}" plan --at "$(date -u -d '+10 years' +%Y-%m-%d)" --json > "${WO
 assert_eq "plan --at in 10 years: everything but the Root CA is due" "$(j '[.layers[] | select(.status == "due") | .layer] | join(",")')" "Server certificate,Admin certificate,Enrollment CA,Intermediate CA"
 assert_not_contains "plan: the Enrollment CA rotation is built" "$(cat "${WORK}/plan.txt")" "not built yet (#135)"
 assert_not_contains "plan: the Intermediate CA rotation is built" "$(cat "${WORK}/plan.txt")" "not built yet (#172)"
-assert_contains "plan notes that the Root CA rotation is not built yet" "$(cat "${WORK}/plan.txt")" "orchestrated rotation not built yet (#169)"
+assert_not_contains "plan: the Root CA rotation is built" "$(cat "${WORK}/plan.txt")" "not built yet (#169)"
 assert_eq "plan with a bad date: exit 1" "$(plan_env "${ROT}" plan --at nonsense > /dev/null 2>&1; echo $?)" "1"
 assert_eq "plan with an unknown option: exit 64" "$(plan_env "${ROT}" plan --bogus > /dev/null 2>&1; echo $?)" "64"
 echo "plan shows an active rotation"

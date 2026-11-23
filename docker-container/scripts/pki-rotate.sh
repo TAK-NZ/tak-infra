@@ -8,6 +8,8 @@
 #   pki-rotate.sh status                   the state file and what the active rotation waits for
 #   pki-rotate.sh approve <scenario> <step>  release a step that needs an approval
 #   pki-rotate.sh abort                    stop the active rotation (the scenario undoes what it can)
+#   pki-rotate.sh start <scenario>         begin a rotation now, whatever its trigger (an emergency, an algorithm change):
+#                                          the scenario's <n>_preflight must pass; refused while a rotation is active
 #
 # Applies to stacks with the first-boot PKI of pki-bootstrap.sh (a state file exists); anything else exits 0.
 #
@@ -36,6 +38,7 @@
 # prefixed with the name (hyphens as underscores):
 #   <n>_summary           one line for plan: current|notAfter epoch|trigger epoch or -|note
 #   <n>_due               returns 0 when a rotation must start now
+#   <n>_preflight         optional: returns 0 when a rotation can start (`start` checks this and not <n>_due)
 #   <n>_steps             echoes the step names in order
 #   <n>_gate <step>       echoes the gates of the step: none, or any of: restart window coverage approval
 #   <n>_deadline <step>   echoes an epoch (optional)
@@ -291,7 +294,16 @@ run_locked() {
   WAITING_STUCK=0
   local s failed=0
   st_init || { log "ERROR: cannot write ${ROT_STATE}"; return 1; }
-  if [[ "$(st_get '.active != null')" == "false" ]]; then
+  if [[ -n "${START_SCENARIO:-}" ]]; then
+    # `start`: this scenario now, whatever its trigger (an emergency, an algorithm change, a test)
+    if [[ "$(st_get '.active != null')" == "true" ]]; then
+      log "ERROR: the rotation $(st_get '.active.scenario') is active: finish or abort it first"
+      return 1
+    fi
+    scn_has "${START_SCENARIO}" steps || { log "ERROR: no scenario '${START_SCENARIO}' (have: ${SCENARIOS[*]})"; return 1; }
+    if scn_has "${START_SCENARIO}" preflight; then scn "${START_SCENARIO}" preflight || { log "ERROR: ${START_SCENARIO} cannot start (see above)"; return 1; }; fi
+    begin_rotation "${START_SCENARIO}" || return 1
+  elif [[ "$(st_get '.active != null')" == "false" ]]; then
     for s in "${SCENARIOS[@]}"; do
       if scn "${s}" due; then
         begin_rotation "${s}" || return 1
@@ -404,7 +416,7 @@ scenario_note() { # name ticket
 # ---------------------------------------------------------------------------------------------
 main() {
   local cmd="${1:-}"
-  case "${cmd}" in run | plan | status | approve | abort) ;; *) echo "usage: ${0##*/} run|plan [--at DATE] [--json]|status|approve <scenario> <step>|abort" >&2; exit 64 ;; esac
+  case "${cmd}" in run | plan | status | approve | abort | start) ;; *) echo "usage: ${0##*/} run|plan [--at DATE] [--json]|status|approve <scenario> <step>|abort|start <scenario>" >&2; exit 64 ;; esac
   shift
   if [[ -z "${PKI_KMS_CA_KEYS:-}" || ! -f "${STATE_FILE}" ]]; then
     log "rotation: not applicable (no first-boot PKI on this stack)"
@@ -445,6 +457,14 @@ main() {
       [[ $# -eq 2 && "$1" =~ ^[a-z][a-z0-9-]*$ && "$2" =~ ^[a-z][a-z0-9-]*$ ]] || { echo "usage: ${0##*/} approve <scenario> <step>" >&2; exit 64; }
       mkdir -p "${APPROVAL_DIR}" && date -u +%Y-%m-%dT%H:%M:%SZ > "${APPROVAL_DIR}/$1.$2" || die "cannot write the approval"
       log "approved: $1 $2 (it runs at the next daily run)"
+      ;;
+    start)
+      [[ $# -eq 1 && "$1" =~ ^[a-z][a-z0-9-]*$ ]] || { echo "usage: ${0##*/} start <scenario>  (root, intermediate, enrollment)" >&2; exit 64; }
+      START_SCENARIO="$1"
+      local rc=0
+      CLUSTER_LOCK_WAIT="${CLUSTER_LOCK_WAIT:-120}"
+      with_cluster_lock "${LOCK_NAME}" run_locked || rc=$?
+      exit "${rc}"
       ;;
     abort)
       local rc=0

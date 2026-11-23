@@ -146,9 +146,14 @@ with_cluster_lock() {
   _cl_acquire "${lock}" "${ttl}" "${wait_s}" || return $?
   local token="${_CL_TOKEN}" holder_pid="${BASHPID:-$$}" # taken here: inside `cmd &` BASHPID is the subshell's
   _cl_log "took ${name}.lock"
-  # The subshell inherits the caller's EXIT trap and would run it when killed below: clear it first
+  # The subshell inherits the caller's EXIT trap and would run it when killed below: clear it first. When the command
+  # ends at once, the kill could arrive before it has done that (the trap ran twice, seen in CI), so the holder waits
+  # for a sign that the trap is cleared before it stops the heartbeat.
+  local ready
+  ready="$(mktemp)" || ready=""
   (
     trap - EXIT
+    [[ -z "${ready}" ]] || echo ready > "${ready}"
     _cl_heartbeat "${lock}" "${token}" "${ttl}" "${holder_pid}"
   ) &
   hb=$!
@@ -156,6 +161,11 @@ with_cluster_lock() {
   # ends the shell, and the heartbeat then releases the lock.
   "$@"
   rc=$?
+  if [[ -n "${ready}" ]]; then
+    local _i
+    for _i in $(seq 1 150); do [[ -s "${ready}" ]] && break; sleep 0.02; done
+    rm -f "${ready}"
+  fi
   kill "${hb}" 2> /dev/null || true
   wait "${hb}" 2> /dev/null || true
   _cl_release "${lock}" "${token}"

@@ -98,7 +98,7 @@ check_set() { # dir
   openssl rsa -in "${d}/admin.key" -passin "pass:${KS_PASS}" -check -noout > /dev/null 2>&1 || { log "check: admin.key does not open with the keystore password"; return 1; }
   [[ -n "$(pub_of_cert "${d}/admin.pem")" && "$(pub_of_cert "${d}/admin.pem")" == "$(openssl pkey -in "${d}/admin.key" -passin "pass:${KS_PASS}" -pubout 2> /dev/null | openssl sha256 2> /dev/null)" ]] \
     || { log "check: admin.key does not match admin.pem"; return 1; }
-  openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted <(cat "${FILES_DIR}/enrollment-ca.pem"; chain_without_last "$(enrollment_chain_file)") "${d}/admin.pem" > /dev/null 2>&1 \
+  openssl verify -CAfile <(roots_cat) -untrusted <(cat "${FILES_DIR}/enrollment-ca.pem"; chain_without_last "$(enrollment_chain_file)") "${d}/admin.pem" > /dev/null 2>&1 \
     || { log "check: the certificate does not chain to Enrollment CA, Intermediate CA and Root CA"; return 1; }
   [[ "$(openssl x509 -in "${d}/admin.pem" -noout -subject -nameopt RFC2253 2> /dev/null)" == "subject=CN=admin,O=TAK.NZ" ]] || { log "check: the subject is not CN=admin,O=TAK.NZ"; return 1; }
   fp="$(fp_of_cert "${d}/admin.pem")"

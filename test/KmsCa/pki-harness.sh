@@ -31,7 +31,7 @@ ENGINE_SO="$(ls /usr/lib/*/engines-3/pkcs11.so /usr/lib/*/engines-3/libpkcs11.so
 export SOFTHSM2_CONF="${WORK}/softhsm2.conf"
 mkdir -p "${WORK}/tokens" "${WORK}/bin" "${WORK}/secrets"
 printf 'directories.tokendir = %s\nobjectstore.backend = file\nlog.level = ERROR\n' "${WORK}/tokens" > "${SOFTHSM2_CONF}"
-for label in root-ca-01 intermediate-ca-01 intermediate-ca-02; do
+for label in root-ca-01 root-ca-02 intermediate-ca-01 intermediate-ca-02; do
   softhsm2-util --init-token --free --label "${label}" --so-pin 12345678 --pin 1234 > /dev/null
   pkcs11-tool --module "${SOFTHSM_LIB}" --token-label "${label}" --login --pin 1234 \
     --keypairgen --key-type rsa:2048 --label "${label}" --id 01 > /dev/null 2>&1 || { echo "could not create key for ${label}"; exit 1; }

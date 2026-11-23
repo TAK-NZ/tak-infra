@@ -50,7 +50,7 @@ check_set() { # dir
     || { log "check: a file is missing or empty in ${d}"; return 1; }
   [[ -n "$(pub_of_cert "${d}/takserver.pem")" && "$(pub_of_cert "${d}/takserver.pem")" == "$(pub_of_key "${d}/takserver.key")" ]] \
     || { log "check: the key does not match the certificate"; return 1; }
-  openssl verify -CAfile "${FILES_DIR}/root-ca.pem" -untrusted "${FILES_DIR}/intermediate-ca.pem" "${d}/takserver.pem" > /dev/null 2>&1 \
+  openssl verify -CAfile <(roots_cat) -untrusted "${FILES_DIR}/intermediate-ca.pem" "${d}/takserver.pem" > /dev/null 2>&1 \
     || { log "check: the certificate does not chain to the Intermediate CA and Root CA"; return 1; }
   fp="$(fp_of_cert "${d}/takserver.pem")"
   [[ -n "${fp}" && "$(fp_of_jks "${d}/takserver.jks")" == "${fp}" ]] \

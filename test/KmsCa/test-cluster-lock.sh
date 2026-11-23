@@ -226,9 +226,15 @@ pkill -f '^sleep 60$' 2> /dev/null
 
 echo "== the caller's EXIT trap runs once, not when the heartbeat is stopped"
 TRAPLOG="${WORK}/trap.log"
-: > "${TRAPLOG}"
-bash -c "trap 'echo exit-trap >> '${TRAPLOG}'' EXIT; source '${LIB}'; with_cluster_lock traps true; with_cluster_lock traps true" 2> /dev/null
-assert_eq "the EXIT trap of the caller ran once" "$(grep -c exit-trap "${TRAPLOG}")" "1"
+# a command that ends at once is the worst case: the kill of the heartbeat arrives while its shell starts (a flake in CI
+# until the trap was cleared before the fork); 40 rounds
+bad=0
+for _ in $(seq 1 40); do
+  : > "${TRAPLOG}"
+  bash -c "trap 'echo exit-trap >> '${TRAPLOG}'' EXIT; source '${LIB}'; with_cluster_lock traps true; with_cluster_lock traps true" 2> /dev/null
+  [[ "$(grep -c exit-trap "${TRAPLOG}")" == "1" ]] || bad=$((bad + 1))
+done
+assert_eq "the EXIT trap of the caller ran once, in 40 rounds" "${bad}" "0"
 
 echo "== a lock that was taken over is not released by its old holder"
 LOST="${CLUSTER_LOCK_DIR}/lost.lock"
