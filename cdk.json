@@ -86,7 +86,10 @@
       },
       "pki": {
         "kmsCa": {
-          "enabled": true
+          "enabled": true,
+          "rotation": {
+            "requireApproval": []
+          }
         }
       }
     },
@@ -156,7 +159,12 @@
       },
       "pki": {
         "kmsCa": {
-          "enabled": true
+          "enabled": true,
+          "rotation": {
+            "requireApproval": [
+              "cut"
+            ]
+          }
         }
       }
     },
