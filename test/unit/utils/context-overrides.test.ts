@@ -191,6 +191,13 @@ describe('Context Overrides', () => {
       const result = applyContextOverrides(appWith({ stackName: 'Demo', pkiKmsCaEnabled: 'false' }), cdkContext[profile]);
       expect(result.pki?.kmsCa?.enabled).toBe(false);
     });
+    test('rotation approvals: none on dev-test, only the Intermediate CA cut on prod (QR code enrolment only)', () => {
+      expect(applyContextOverrides(appWith({}), cdkContext['dev-test']).pki?.kmsCa?.rotation?.requireApproval).toEqual([]);
+      expect(applyContextOverrides(appWith({}), cdkContext.prod).pki?.kmsCa?.rotation?.requireApproval).toEqual(['cut']);
+      // the command line still wins
+      expect(applyContextOverrides(appWith({ pkiRotationRequireApproval: 'cut,retire' }), cdkContext.prod).pki?.kmsCa?.rotation?.requireApproval)
+        .toEqual(['cut', 'retire']);
+    });
     test('the production workflow passes the PKI email variables to the deploy', () => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const workflow: string = require('fs').readFileSync(require('path').join(__dirname, '../../../.github/workflows/production-deploy.yml'), 'utf8');

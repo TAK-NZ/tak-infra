@@ -39,7 +39,7 @@ Run commands in the container: `aws ecs execute-command --cluster TAK-<n>-BaseIn
 
 | When | What to do |
 |---|---|
-| A CA rotation waits for an approval (`pki-rotate.sh status`, alarm `RotationWaiting`) | Check `pki-rotate.sh status` (and the list of users in the alert mail, if there is one), then `pki-rotate.sh approve <scenario> <step>`. By default the steps `cut` (Intermediate CA) and `retire` (all scenarios) need it: they cannot be undone. A stack that never has hand-made certificates (QR code enrolment only) can set `pki.kmsCa.rotation.requireApproval` to fewer steps or `[]`: then the rotations run without an admin |
+| A CA rotation waits for an approval (`pki-rotate.sh status`, alarm `RotationWaiting`) | Check `pki-rotate.sh status` (and the list of users in the alert mail, if there is one), then `pki-rotate.sh approve <scenario> <step>`. By default the steps `cut` (Intermediate CA) and `retire` (all scenarios) need it: they cannot be undone. TAK.NZ enrols by QR code only, so `cdk.json` sets `pki.kmsCa.rotation.requireApproval` to `["cut"]` in the `prod` profile (the only approval left is the Intermediate CA `cut`) and to `[]` in `dev-test` (no approvals: the rotations run without an admin). The default of the setting itself is `["cut", "retire"]` |
 | Alarm `RotationCoverageStragglers`, or the mail "N user(s) must enroll again" | **Not expected in normal operation:** client certificates last 365 days and every step waits W = 455 days, so no active user still holds a valid certificate of the old chain. It happens after an emergency rotation with shortened windows, when the hard deadline opens a window early, or with certificates that last longer than `clientCertDays` (made by hand or by the API). Ask the listed users to enrol again (QR code); the rotation goes on by itself when all have. Users listed as *unknown* use a hand-made data package: the check cannot see them, tell them yourself |
 | Alarm `RotationSpareKeyMissing` | Add the next number to `pki.kmsCa.rootCaNumbers` or `intermediateCaNumbers` and deploy (creates the KMS key). There is years of time; do it before the next rotation |
 | A rotation has finished (log: "is retired") | Schedule the old KMS key for deletion with a 30-day window, by alias (`aws kms schedule-key-deletion --key-id alias/... --pending-window-in-days 30`; the container cannot), **then** remove the old generation from `rootCaNumbers` / `intermediateCaNumbers` and deploy: the alias goes with the number. Old Enrollment CA secrets are deleted by the rotation, with a recovery window of 30 days |
@@ -53,6 +53,29 @@ Run commands in the container: `aws ecs execute-command --cluster TAK-<n>-BaseIn
 | Federation peers | When the log or mail says a new Root CA is in use, give the peers the fingerprints and the new CA certificate (secret `<stack>/TAK-Server/FederateCA`) before you approve the root `retire` step |
 | Data packages | Made-by-hand packages carry the truststore of the day. Make new ones from `truststore-phone.p12` after each CA rotation; old ones stop working at the `cut` of an Intermediate CA rotation |
 | Other info alarms (`...Rotated`, `...RotationPhase`) | Nothing: a step happened |
+
+### What an admin does over 25 years
+A model for a stack installed on day 0 (dates: 1 January 2027) with the defaults and the `prod` approvals (`["cut"]`), every approval given on the day a step is ready. It follows the trigger rules of the scripts; it is not a measurement. Each day of delay moves the later rows by a day, and `pki-rotate.sh plan` shows the real next dates of a stack.
+
+| When (years after install) | What happens | Admin does |
+|---|---|---|
+| Day 0 | Installation | Confirm the SNS subscription mails (alert, critical, info). Enrol a phone, look at `pki-rotate.sh plan`. If you federate, give the peers the `FederateCA` |
+| Every year | Server and admin certificates rotate by themselves (about every 305 days, from year 0.8). Let's Encrypt renews. Users enrol again when their certificate expires | Nothing. Check once a year that the certificates of the CloudTAK ETL connections were renewed (they renew only in their last 7 days: CloudTAK#258) |
+| Years 1, 2.25, 3.5, 4.75, 9, 10.25, 11.5, 12.75, 18, 19.25, 20.5, 21.75 | Twelve Enrollment CA rotations, each about 15 months (W = 455 days) from start to retire | Nothing |
+| 6.5 (2033-07) | Intermediate CA rotation 1 starts | Nothing |
+| 7.75 (2034-10) | `cut` is ready (`RotationWaiting`) | `pki-rotate.sh approve intermediate cut` |
+| 9 (2035-12) | Intermediate CA rotation 1 retires | Housekeeping (below) |
+| 14.25 (2041-04) | Intermediate CA rotation 2 starts | Nothing |
+| 15.5 (2042-07) | `cut` is ready | `pki-rotate.sh approve intermediate cut` |
+| 16.75 (2043-09) | Intermediate CA rotation 2 retires, and the Root CA rotation starts at once (the Root CA has less than `3 x W + 455` days left) | Housekeeping. When the mail "new root in use" arrives: give federation peers the new `FederateCA` |
+| 18 (2044-12) | Root CA rotation retires | Housekeeping for the Root CA keys |
+| 23.25 (2050-04) | Intermediate CA rotation 3 starts | Nothing |
+| 24.5 (2051-06) | `cut` is ready | `pki-rotate.sh approve intermediate cut` |
+| 25.75 (2052-09) | Intermediate CA rotation 3 retires | Housekeeping (after the 25 years) |
+
+Housekeeping after a retire: schedule the old KMS key for deletion by alias (30-day window), remove its number from `rootCaNumbers` or `intermediateCaNumbers`, add the next number (the next spare), deploy with the same settings as always. The alarm `RotationSpareKeyMissing` reminds you.
+
+Admin actions in 25 years: 3 approvals and 3 housekeeping deploys (years 9, 16.75 and 18), plus the federation hand-over of year 16.75 if you have peers. With the library default `["cut", "retire"]` the approvals would be 18 (12 Enrollment CA retires, 3 Intermediate CA cuts, 2 Intermediate CA retires, 1 Root CA retire), and with `[]` none.
 
 ### Moving a stack with the old PKI to the new one
 
