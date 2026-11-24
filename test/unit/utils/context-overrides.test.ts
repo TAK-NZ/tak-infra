@@ -206,6 +206,10 @@ describe('Context Overrides', () => {
       const commands = workflow.split('\n').filter(l => /npm run cdk (synth|deploy)/.test(l));
       expect(commands.length).toBeGreaterThanOrEqual(4);
       for (const c of commands) expect(c).toContain('--context pkiKmsCaEnabled=false');
+      // the change set check synthesizes the template too
+      const validations = workflow.split('\n').filter(l => /validate-changeset\.sh/.test(l));
+      expect(validations.length).toBeGreaterThanOrEqual(1);
+      for (const c of validations) expect(c).toContain('--context pkiKmsCaEnabled=false');
     });
 
   });

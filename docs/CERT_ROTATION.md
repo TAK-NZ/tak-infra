@@ -43,7 +43,7 @@ Run commands in the container: `aws ecs execute-command --cluster TAK-<n>-BaseIn
 | Alarm `RotationCoverageStragglers`, or the mail "N user(s) must enroll again" | Ask the listed users to enrol again (QR code). The rotation goes on by itself when all have. Users listed as *unknown* use a hand-made data package: the check cannot see them, tell them yourself |
 | Alarm `RotationSpareKeyMissing` | Add the next number to `pki.kmsCa.rootCaNumbers` or `intermediateCaNumbers` and deploy (creates the KMS key). There is years of time; do it before the next rotation |
 | A rotation has finished (log: "is retired") | Schedule the old KMS key for deletion with a 30-day window, by alias (`aws kms schedule-key-deletion --key-id alias/... --pending-window-in-days 30`; the container cannot), **then** remove the old generation from `rootCaNumbers` / `intermediateCaNumbers` and deploy: the alias goes with the number. Old Enrollment CA secrets are deleted by the rotation, with a recovery window of 30 days |
-| Info alarm `AdminCertRotated` (new admin certificate) | Restart CloudTAK, see [CloudTAK and TAKTeamManager](#cloudtak-and-takteammanager). TAKTeamManager follows by itself within a day |
+| Info alarm `AdminCertRotated` (new admin certificate) | Nothing: TAKTeamManager (daily) and CloudTAK (hourly) read it, see [CloudTAK and TAKTeamManager](#cloudtak-and-takteammanager) |
 | A deploy fails with "built with the environment label 'X', but this deployment says 'Y'" (log group `TakServer-takserver`) | The label is part of the CA names. Deploy again with `--context pkiEnvironmentLabel=X`. The label of a stack is its stack output `PkiEnvironmentLabel` |
 | Alarm `RotationStepFailed` | Read the log group `TakServer-takserver` (`PKI:` lines). The step is retried daily; fix the cause |
 | `TakServerCertRotationFailed`, `AdminCertRotationFailed` | Same; run `server-cert-rotate.sh rotate` or `admin-cert-rotate.sh rotate` by hand after the fix |
@@ -61,36 +61,20 @@ A **flag day**: the new hierarchy has other CAs, so every phone enrols again (QR
 1. Deploy with the PKI turned on and the label of the stack (`--context pkiKmsCaEnabled=true --context pkiEnvironmentLabel=<Env>`; a stack whose deploy command has `pkiKmsCaEnabled=false`, like Demo in `demo-deploy.yml`, must drop that flag). The stack keeps its old PKI and logs "already has a PKI from the old flow".
 2. In the container: `pki-legacy-reset.sh reset --dry-run` (checks everything, lists the files), then `pki-legacy-reset.sh reset --restart`. It moves the old PKI, with its CA keys, to `legacy-pki-<time>/` on the EFS and starts a rolling deployment (6 to 10 minutes). The new node builds the PKI at its start and uploads the new `Admin-Cert` and `FederateCA`.
 3. Check `pki-rotate.sh plan` and enrol a phone. Tell the users and the federation peers.
-4. If TAKTeamManager or CloudTAK run in the account: do [CloudTAK and TAKTeamManager](#cloudtak-and-takteammanager) (new admin certificate, user certificates and ETL connections).
+4. If CloudTAK runs in the account: regenerate the certificates of its ETL connections ([CloudTAK and TAKTeamManager](#cloudtak-and-takteammanager)).
 5. When it works: `pki-legacy-reset.sh purge legacy-pki-<time>` deletes the old CA keys. If the new node did not start the new PKI and nothing was built, `pki-legacy-reset.sh restore legacy-pki-<time>` puts the old files back.
 
 ### CloudTAK and TAKTeamManager
-Both read the admin certificate from the secret `<stack>/TAK-Server/Admin-Cert`, and CloudTAK also keeps a client certificate for every user and every ETL connection.
+Both read the admin certificate from the secret `<stack>/TAK-Server/Admin-Cert`. CloudTAK also keeps a client certificate for every user and every ETL connection.
 
-| Service | Admin certificate | Own certificates |
-|---|---|---|
-| TAKTeamManager | Reads the secret every 24 hours. To be quicker, restart `TAK-<n>-TAKTeamManager` and `TAK-<n>-TAKTeamManager-SyncWorker` | None |
-| CloudTAK | Reads the secret **only when a task starts**. Never refreshed | Per user and per ETL connection. They are renewed only 7 days before they expire, not when TAK Server rejects them |
+| | Admin certificate | Certificates of users | Certificates of ETL connections |
+|---|---|---|---|
+| TAKTeamManager | Reads the secret every 24 hours | none | none |
+| CloudTAK (with the fixes of CloudTAK #256) | Reads the secret every hour (`CLOUDTAK_Server_auth_p12_refresh_interval`, seconds, `0` turns it off) and at once when TAK Server rejects it. **No restart** | A rejected certificate is replaced at the next login (SSO or password) | **Not renewed when rejected, only in their last 7 days.** By hand, see below |
 
-**A new admin certificate** (the daily rotation 60 days before expiry; the `AdminCertRotated` info alarm; a reset; a new `admin.p12` by hand): restart CloudTAK after the secret has changed (check `LastChangedDate`; a restart before that loads the old certificate). The old certificate keeps working until it expires or until its issuer is retired, so do it within the 60 days and before any Enrollment CA `retire`.
+After a reset, or when an Enrollment CA is retired, every ETL connection whose certificate TAK Server no longer accepts is dead (`secure:false` in the log of `TAK-<n>-CloudTAK-stateful`; its data is dropped without an error). For each one: *Connections*, *Edit*, *Certificate*, *Regenerate Certificate*, *Save* (or `POST /api/connection/<id>/cert/renew?force=true`). Restarting does not help. Users need nothing but a new login.
 
-```bash
-for s in CloudTAK CloudTAK-stateful; do
-  aws ecs update-service --cluster TAK-<n>-BaseInfra --service TAK-<n>-$s --force-new-deployment >/dev/null
-done
-```
-
-In the log of `TAK-<n>-CloudTAK` look for `ok - Server updated from environment variables` and no `Error loading P12`. Without this restart, CloudTAK logins end in `UND_ERR_SOCKET: other side closed` as soon as TAK Server stops accepting the old admin certificate.
-
-**After a reset, and when an Enrollment CA is retired** (user and ETL certificates that TAK Server no longer accepts): CloudTAK does not notice this at login (its certificate check throws on a TLS 1.3 rejection instead of reporting "rejected"), so users stay stuck with a dead certificate: password login fails with `UND_ERR_SOCKET`, SSO login ends in "Failed to sync groups". After the restart above:
-1. Blank the stored certificates and end all sessions in the CloudTAK database (run it in the `api` container of `TAK-<n>-CloudTAK` with ECS Exec and Node's `pg` module; the connection string is in `$POSTGRES`, remove its `sslmode` parameter):
-   ```sql
-   UPDATE profile SET auth = '{"ca":[],"key":"","cert":""}'::jsonb;
-   DELETE FROM profile_sessions;
-   ```
-   Add `WHERE username IN (...)` to the first statement to limit it to some users. An empty certificate is re-enrolled at the next login (SSO or password).
-2. Everybody logs in again.
-3. Every ETL connection and machine user: *Connections*, *Edit*, *Certificate*, *Regenerate Certificate*, *Save*. Until then the connection shows `secure:false` and its data is dropped silently. A restart does not help.
+A CloudTAK without the fixes needs a new deployment of `TAK-<n>-CloudTAK` and `TAK-<n>-CloudTAK-stateful` after the secret has changed, and, after a reset, the stored user certificates blanked and the sessions ended in its database (`UPDATE profile SET auth = '{"ca":[],"key":"","cert":""}'::jsonb; DELETE FROM profile_sessions;`).
 
 ### Emergencies
 

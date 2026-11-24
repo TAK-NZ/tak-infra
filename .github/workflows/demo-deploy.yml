@@ -54,7 +54,7 @@ jobs:
           if [[ "$COMMIT_MSG" == *"[force-deploy]"* ]]; then
             echo "🚨 Force deploy detected - skipping change set validation"
           else
-            ./scripts/github/validate-changeset.sh TAK-${{ vars.DEMO_STACK_NAME }}-TakInfra
+            ./scripts/github/validate-changeset.sh TAK-${{ vars.DEMO_STACK_NAME }}-TakInfra --context pkiKmsCaEnabled=false
           fi
 
   # Deploy demo environment with production configuration for testing
