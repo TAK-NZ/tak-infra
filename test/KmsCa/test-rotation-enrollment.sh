@@ -47,8 +47,8 @@ EOF
 chmod +x "${WORK}/bin/java-stub" "${WORK}/bin/curl-stub" "${WORK}/leaf.sh" "${WORK}/coverage.sh"
 export JAVA_BIN="${WORK}/bin/java-stub" CURL_BIN="${WORK}/bin/curl-stub" TAK_USER_MANAGER_JAR=/nonexistent/UserManager.jar
 export PKI_ROTATE_LEAF_SCRIPTS="${WORK}/leaf.sh" PKI_ROTATE_COVERAGE_CMD="${WORK}/coverage.sh"
-# Rotation every 10 days, W = 20 + 10 = 30 days, Enrollment CA 100 days, Intermediate CA 500 days (more than 2 x W + 365 = 425: its own rotation is not due)
-export PKI_ROOT_DAYS=700 PKI_INTERMEDIATE_DAYS=500 PKI_ENROLLMENT_CA_DAYS=100 PKI_SERVER_CERT_DAYS=30 PKI_ADMIN_CERT_DAYS=30
+# Rotation every 10 days, W = 20 + 10 = 30 days, Enrollment CA 100 days, Intermediate CA 600 days (more than 3 x W + 365 = 455: neither its own rotation nor a block of the Enrollment CA rotation applies in the first 145 days)
+export PKI_ROOT_DAYS=700 PKI_INTERMEDIATE_DAYS=600 PKI_ENROLLMENT_CA_DAYS=100 PKI_SERVER_CERT_DAYS=30 PKI_ADMIN_CERT_DAYS=30
 export PKI_CLIENT_CERT_DAYS=20 PKI_ROTATION_BUFFER_DAYS=10 PKI_ENROLLMENT_CA_ROTATION_DAYS=10 PKI_ADMIN_CERT_RENEW_DAYS=10
 T=$(date +%s)
 DAY=86400
@@ -238,6 +238,17 @@ new_stack notdue
 assert_eq "the Intermediate CA has not enough life left: exit 0" "$(orch 600 0 PKI_ENROLLMENT_CA_ROTATION_DAYS=500)" "0"
 assert_eq "no rotation" "$(rstate '.active')" "null"
 assert_contains "it says why" "$(cat "${WORK}/run.log")" "the Intermediate CA has to be rotated first (#172)"
+echo "no rotation that would still run at the trigger of the Intermediate CA rotation"
+# W = 30: the Intermediate CA rotation starts at 425 days left, and an Enrollment CA rotation takes 30 days: none from 455 days left. 470 days of life: 459 days left on day 11, 439 on day 31
+INTER_SAVED="${PKI_INTERMEDIATE_DAYS}"; export PKI_INTERMEDIATE_DAYS=470
+new_stack nearly
+assert_eq "459 days left (day 11): the rotation starts" "$(orch 11 0)" "0"
+assert_eq "...it is active" "$(rstate '.active.scenario')" "enrollment"
+new_stack tooclose
+assert_eq "439 days left (day 31), between 425 and 455: exit 0" "$(orch 31 0)" "0"
+assert_eq "no rotation" "$(rstate '.active')" "null"
+assert_contains "it says why" "$(cat "${WORK}/run.log")" "none starts at 455 or fewer"
+export PKI_INTERMEDIATE_DAYS="${INTER_SAVED}"
 new_stack two
 cl="${WORK}/cl2"
 openssl genrsa -out "${cl}.key" 2048 2> /dev/null

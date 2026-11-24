@@ -56,10 +56,11 @@ enrollment_due() {
   age=$(( (t - $(cert_startdate "${pem}")) / DAY ))
   (( age >= CL_ROTATION_DAYS )) || return 1
   s_left=$(( ($(cert_enddate "${FILES_DIR}/intermediate-ca.pem") - t) / DAY ))
-  # The Intermediate CA rotation (#172) makes a new Enrollment CA itself, and it must start at its trigger: a rotation of
-  # the Enrollment CA that takes W and more would eat the margin that the trigger leaves
-  if (( s_left <= 2 * WINDOW_DAYS + 365 )); then
-    log "enrollment: the Enrollment CA is ${age} days old and due, but the Intermediate CA has ${s_left} days left (its rotation starts at $(( 2 * WINDOW_DAYS + 365 )) or fewer): the Intermediate CA has to be rotated first (#172), which makes a new Enrollment CA"
+  # Only one rotation runs at a time, and the Intermediate CA rotation (#172) makes a new Enrollment CA itself. It must
+  # start at its trigger (2 x W + 365 days left), so no Enrollment CA rotation may be running then: one that starts with
+  # 3 x W + 365 days or fewer left would still run at the trigger, because its retire waits W days
+  if (( s_left <= 3 * WINDOW_DAYS + 365 )); then
+    log "enrollment: the Enrollment CA is ${age} days old and due, but the Intermediate CA has ${s_left} days left (its rotation starts at $(( 2 * WINDOW_DAYS + 365 )) or fewer, and an Enrollment CA rotation takes ${WINDOW_DAYS} days: none starts at $(( 3 * WINDOW_DAYS + 365 )) or fewer): the Intermediate CA has to be rotated first (#172), which makes a new Enrollment CA"
     return 1
   fi
   enrollment_preflight
