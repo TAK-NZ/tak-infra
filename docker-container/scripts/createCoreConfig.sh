@@ -330,6 +330,18 @@ detect_tak_version() {
     fi
 }
 
+# Certificate revocation lists (#204): one <crl> element in <security><tls> for every CRL file that
+# pki-bootstrap.sh and revoke-cert.sh keep for an Enrollment CA (TAK Server reads them only at start). TAK_CRL_DIR is
+# for the tests.
+generate_crl_elements() {
+    local dir="${TAK_CRL_DIR:-/opt/tak/certs/files/crl}" f out=""
+    for f in "$dir"/*.crl; do
+        [[ -f "$f" ]] || continue
+        out+="<crl _name=\"$(basename "$f" .crl)\" crlFile=\"$f\"/>"
+    done
+    printf '%s' "$out"
+}
+CRL_ELEMENTS="$(generate_crl_elements)"
 # Template substitution function
 substitute_template() {
     local template_file="$1"
@@ -337,6 +349,7 @@ substitute_template() {
 
     # Read template and substitute variables
     sed -e "s|{{SERVER_ID}}|$SERVER_ID|g" \
+        -e "s|{{CRL_ELEMENTS}}|${CRL_ELEMENTS//&/\\&}|g" \
         -e "s|{{TAK_VERSION}}|${TAK_VERSION#takserver-docker-}|g" \
         -e "s|{{CLOUDWATCH_ENABLE}}|$(get_env_value "TAKSERVER_CoreConfig_Network_CloudwatchEnable" "false" "boolean")|g" \
         -e "s|{{STACK_NAME}}|$StackName|g" \

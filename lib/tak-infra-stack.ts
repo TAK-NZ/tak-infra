@@ -341,6 +341,15 @@ export class TakInfraStack extends cdk.Stack {
       exportName: `${resolvedStackName}-DatabaseEndpoint`
     });
 
+    // The label the PKI was built with: part of the CA names and aliases, so every deploy must pass the same one
+    // (--context pkiEnvironmentLabel=...) unless it is the stack name. pki-bootstrap.sh refuses to start otherwise.
+    if (envConfig.pki?.kmsCa?.enabled) {
+      new CfnOutput(this, 'PkiEnvironmentLabel', {
+        value: envConfig.pki.kmsCa.environmentLabel,
+        description: 'PKI environment label (part of the CA names; must not change)',
+        exportName: `${resolvedStackName}-PkiEnvironmentLabel`
+      });
+    }
     // EFS file system ID
     new CfnOutput(this, 'EfsFileSystemId', {
       value: efs.fileSystem.fileSystemId,

@@ -54,5 +54,20 @@ jobs:
             ./scripts/github/validate-changeset.sh TAK-${{ vars.PROD_STACK_NAME }}-TakInfra
           fi
 
+      - name: Configure PKI notifications
+        id: pki-config
+        env:
+          PKI_ALERT_EMAIL: ${{ vars.PROD_PKI_ALERT_EMAIL }}
+          PKI_INFO_EMAIL: ${{ vars.PROD_PKI_INFO_EMAIL }}
+        run: |
+          # Optional repository or organization variables; each one that is set becomes a CDK context value
+          flags=""
+          for pair in "pkiAlertEmail=${PKI_ALERT_EMAIL}" "pkiInfoEmail=${PKI_INFO_EMAIL}"; do
+            value="${pair#*=}"
+            [[ -n "${value}" ]] || continue
+            [[ "${value}" =~ ^[^[:space:]@]+@[^[:space:]@]+$ ]] || { echo "::error::${pair%%=*}: not an email address"; exit 1; }
+            flags="${flags} --context ${pair%%=*}=${value}"
+          done
+          echo "context=${flags}" >> "$GITHUB_OUTPUT"
       - name: Deploy Production
-        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.PROD_STACK_NAME }} --context usePreBuiltImages=true --context takImageTag=${{ needs.build-images.outputs.tak-tag }} --require-approval never
+        run: npm run cdk deploy -- --context envType=prod --context stackName=${{ vars.PROD_STACK_NAME }} --context usePreBuiltImages=true --context takImageTag=${{ needs.build-images.outputs.tak-tag }} ${{ steps.pki-config.outputs.context }} --require-approval never

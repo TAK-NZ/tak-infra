@@ -115,6 +115,15 @@ The core organization secrets (`DEMO_AWS_ACCOUNT_ID`, `DEMO_AWS_ROLE_ARN`, `DEMO
 [BaseInfra's setup guide](https://github.com/TAK-NZ/base-infra/blob/main/docs/AWS_GITHUB_SETUP.md#3-github-organization-setup-one-time-configuration)
 and used by every layer, including this one.
 
+This layer adds two optional variables for the production deploy (`production-deploy.yml`):
+
+| Variable | Used for |
+|---|---|
+| `PROD_PKI_ALERT_EMAIL` | `--context pkiAlertEmail`: receives the certificate alert and critical messages (every Root CA signature, expiry warnings, failed rotations) |
+| `PROD_PKI_INFO_EMAIL` | `--context pkiInfoEmail`: receives the informational messages (a rotation step happened) |
+
+Without them the alarms still exist, but nobody gets the mail. The Demo stack is not set up for the first-boot PKI yet (`demo-deploy.yml`), so it has no equivalent.
+
 ## 7. Composite Actions
 
 Location: `.github/actions/setup-cdk/action.yml`. Same purpose and benefits as

@@ -87,4 +87,130 @@ describe('Context Overrides', () => {
       expect(result.bedrock?.knowledgeBases).toBeUndefined();
     });
   });
+  describe('pki.kmsCa (#136)', () => {
+    const appWith = (ctx: Record<string, string>) => ({ node: { tryGetContext: (k: string) => ctx[k] } }) as any;
+    const withKmsCa = (kmsCa?: any) => ({ ...MOCK_CONFIGS.DEV_TEST, pki: kmsCa ? { kmsCa } : undefined });
+
+    test('stays undefined when neither the config nor the command line mention it', () => {
+      expect(applyContextOverrides(appWith({}), withKmsCa()).pki).toBeUndefined();
+    });
+
+    test('the command line can switch it on', () => {
+      const result = applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true', pkiEnvironmentLabel: 'Try' }), withKmsCa());
+      expect(result.pki?.kmsCa).toMatchObject({ enabled: true, environmentLabel: 'Try' });
+    });
+
+    test('keeps the config values when there are no overrides', () => {
+      const base = { enabled: true, environmentLabel: 'Try', rootCaNumbers: [1], intermediateCaNumbers: [1, 2] };
+      expect(applyContextOverrides(appWith({}), withKmsCa(base)).pki?.kmsCa).toMatchObject(base);
+    });
+
+    test('the command line can add the next generation', () => {
+      const base = { enabled: true, environmentLabel: 'Try', intermediateCaNumbers: [1] };
+      const result = applyContextOverrides(appWith({ pkiIntermediateCaNumbers: '1, 2' }), withKmsCa(base));
+      expect(result.pki?.kmsCa?.intermediateCaNumbers).toEqual([1, 2]);
+    });
+
+    test('the command line can switch it off', () => {
+      const base = { enabled: true, environmentLabel: 'Try' };
+      expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'false' }), withKmsCa(base)).pki?.kmsCa?.enabled).toBe(false);
+    });
+
+    test('the command line can set the p12 profile and the validities', () => {
+      const base = { enabled: true, environmentLabel: 'Try', validity: { serverCertDays: 300 } };
+      const result = applyContextOverrides(appWith({ pkiP12Profile: 'aes256', pkiRootDays: '5000', pkiAdminCertDays: '100' }), withKmsCa(base));
+      expect(result.pki?.kmsCa?.p12Profile).toBe('aes256');
+      expect(result.pki?.kmsCa?.validity).toEqual({ serverCertDays: 300, rootDays: 5000, adminCertDays: 100 });
+    });
+
+    test('the command line can set the server certificate renewal threshold', () => {
+      const base = { enabled: true, environmentLabel: 'Try' };
+      const result = applyContextOverrides(appWith({ pkiServerCertRenewDays: '45' }), withKmsCa(base));
+      expect(result.pki?.kmsCa?.validity).toEqual({ serverCertRenewDays: 45 });
+    });
+    test('the command line can set the admin certificate renewal threshold and grace period', () => {
+      const result = applyContextOverrides(appWith({ pkiAdminCertRenewDays: '45', pkiAdminCertGraceDays: '3' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.validity).toEqual({ adminCertRenewDays: 45, adminCertGraceDays: 3 });
+    });
+    test('the command line can set the rotation settings', () => {
+      const result = applyContextOverrides(appWith({ pkiRotationBufferDays: '30', pkiEnrollmentCaRotationDays: '300', pkiRotationRequireApproval: 'cut, retire' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.rotation).toEqual({ bufferDays: 30, enrollmentCaRotationDays: 300, requireApproval: ['cut', 'retire'] });
+    });
+    test('an empty approval list switches the approval off', () => {
+      const result = applyContextOverrides(appWith({ pkiRotationRequireApproval: '' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.rotation?.requireApproval).toEqual([]);
+    });
+    test('the command line can set the info email', () => {
+      const result = applyContextOverrides(appWith({ pkiInfoEmail: 'info@example.org' }), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.infoEmail).toBe('info@example.org');
+    });
+
+    test('no validity is created when nothing sets one', () => {
+      const result = applyContextOverrides(appWith({}), withKmsCa({ enabled: true, environmentLabel: 'Try' }));
+      expect(result.pki?.kmsCa?.validity).toBeUndefined();
+    });
+
+    test('enabled without an environment label uses the stack name', () => {
+      expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true' }), withKmsCa()).pki?.kmsCa?.environmentLabel).toBe('DevTest');
+      expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true', stackName: 'Demo' }), withKmsCa()).pki?.kmsCa?.environmentLabel).toBe('Demo');
+    });
+    test('an explicit label wins over the stack name', () => {
+      const result = applyContextOverrides(appWith({ stackName: 'Demo', pkiEnvironmentLabel: 'Test' }), withKmsCa({ enabled: true }));
+      expect(result.pki?.kmsCa?.environmentLabel).toBe('Test');
+    });
+    test('a stack name that is not a valid label needs an explicit one', () => {
+      expect(() => applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true', stackName: 'Demo_Stack' }), withKmsCa()))
+        .toThrow(/cannot be the PKI environment label/);
+      expect(applyContextOverrides(appWith({ pkiKmsCaEnabled: 'true', stackName: 'Demo_Stack', pkiEnvironmentLabel: 'Demo' }), withKmsCa())
+        .pki?.kmsCa?.environmentLabel).toBe('Demo');
+    });
+    test('an invalid stack name does not matter while the PKI is off', () => {
+      const result = applyContextOverrides(appWith({ pkiKmsCaEnabled: 'false', stackName: 'Demo_Stack' }), withKmsCa({ enabled: true }));
+      expect(result.pki?.kmsCa?.enabled).toBe(false);
+    });
+
+    test('a number list with a non-number is an error', () => {
+      expect(() => applyContextOverrides(appWith({ pkiRootCaNumbers: '1,x', pkiEnvironmentLabel: 'Try' }), withKmsCa()))
+        .toThrow(/Invalid number 'x'/);
+    });
+  });
+  describe('the PKI default in cdk.json', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const cdkContext = require('../../../cdk.json').context;
+    const appWith = (ctx: Record<string, string>) => ({ node: { tryGetContext: (k: string) => ctx[k] } }) as any;
+    test.each(['dev-test', 'prod'])('%s is on, labelled with its stack name', (profile) => {
+      const base = cdkContext[profile];
+      const result = applyContextOverrides(appWith({}), base);
+      expect(result.pki?.kmsCa).toMatchObject({ enabled: true, environmentLabel: base.stackName });
+    });
+    test.each(['dev-test', 'prod'])('%s: the label follows --context stackName', (profile) => {
+      const result = applyContextOverrides(appWith({ stackName: 'Demo' }), cdkContext[profile]);
+      expect(result.pki?.kmsCa).toMatchObject({ enabled: true, environmentLabel: 'Demo' });
+    });
+    test.each(['dev-test', 'prod'])('%s: Demo CI stays on the old PKI with pkiKmsCaEnabled=false', (profile) => {
+      const result = applyContextOverrides(appWith({ stackName: 'Demo', pkiKmsCaEnabled: 'false' }), cdkContext[profile]);
+      expect(result.pki?.kmsCa?.enabled).toBe(false);
+    });
+    test('the production workflow passes the PKI email variables to the deploy', () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const workflow: string = require('fs').readFileSync(require('path').join(__dirname, '../../../.github/workflows/production-deploy.yml'), 'utf8');
+      expect(workflow).toContain('vars.PROD_PKI_ALERT_EMAIL');
+      expect(workflow).toContain('vars.PROD_PKI_INFO_EMAIL');
+      const deploy = workflow.split('\n').filter(l => /npm run cdk deploy/.test(l));
+      expect(deploy).toHaveLength(1);
+      expect(deploy[0]).toContain('steps.pki-config.outputs.context');
+    });
+    test('the Demo workflow switches it off in every CDK command', () => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const workflow: string = require('fs').readFileSync(require('path').join(__dirname, '../../../.github/workflows/demo-deploy.yml'), 'utf8');
+      const commands = workflow.split('\n').filter(l => /npm run cdk (synth|deploy)/.test(l));
+      expect(commands.length).toBeGreaterThanOrEqual(4);
+      for (const c of commands) expect(c).toContain('--context pkiKmsCaEnabled=false');
+      // the change set check synthesizes the template too
+      const validations = workflow.split('\n').filter(l => /validate-changeset\.sh/.test(l));
+      expect(validations.length).toBeGreaterThanOrEqual(1);
+      for (const c of validations) expect(c).toContain('--context pkiKmsCaEnabled=false');
+    });
+
+  });
 });

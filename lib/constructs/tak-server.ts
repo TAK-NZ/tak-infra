@@ -22,6 +22,9 @@ import type {
   StorageConfig
 } from '../construct-configs';
 import { TAK_SERVER_PORTS } from '../utils/constants';
+import { CaKmsKeys } from './ca-kms-keys';
+import { CertificateAlarms } from './certificate-alarms';
+import { resolvePkiRotation, resolvePkiValidity, validateP12Profile } from '../utils/pki-settings';
 import { createAuthImportValue, AUTH_EXPORT_NAMES } from '../cloudformation-imports';
 import { Fn } from 'aws-cdk-lib';
 
@@ -97,6 +100,14 @@ export interface TakServerProps {
  * CDK construct for the TAK Server container and ECS service
  */
 export class TakServer extends Construct {
+  /**
+   * Root CA and Intermediate CA signing keys in KMS. Only set when `pki.kmsCa.enabled` (#136).
+   */
+  public caKmsKeys?: CaKmsKeys;
+  /**
+   * CloudWatch alarms and SNS topics for the certificate rotation work. Only set when `pki.kmsCa.enabled` (#129).
+   */
+  public certificateAlarms?: CertificateAlarms;
   /**
    * The ECS task definition for the TAK Server
    */
@@ -313,6 +324,30 @@ export class TakServer extends Construct {
       ]
     }));
 
+    // Root CA and Intermediate CA signing keys in KMS (#136). Created after the task role because
+    // the key policy names the role as the only principal allowed to sign.
+    const kmsCa = props.contextConfig.pki?.kmsCa;
+    if (kmsCa?.enabled) {
+      // Metrics and alarms for the certificate work (#129); the Root CA signing alert uses its alert topic
+      this.certificateAlarms = new CertificateAlarms(this, 'CertificateAlarms', {
+        environmentLabel: kmsCa.environmentLabel,
+        stackName: Stack.of(this).stackName,
+        alertEmail: kmsCa.alertEmail,
+        infoEmail: kmsCa.infoEmail,
+      });
+      this.caKmsKeys = new CaKmsKeys(this, 'CaKmsKeys', {
+        environmentLabel: kmsCa.environmentLabel,
+        signerRole: taskRole,
+        rootCaNumbers: kmsCa.rootCaNumbers,
+        intermediateCaNumbers: kmsCa.intermediateCaNumbers,
+        alertTopic: this.certificateAlarms.alertTopic,
+        secretEncryptionKey: props.infrastructure.kmsKey,
+      });
+      // The coverage check of the rotation orchestrator sends the list of users who have not enrolled again to the
+      // alert topic (#171)
+      this.certificateAlarms.alertTopic.grantPublish(taskRole);
+    }
+
     // Create task definition
     this.taskDefinition = new ecs.FargateTaskDefinition(this, 'TaskDef', {
       cpu: props.contextConfig.ecs.taskCpu,
@@ -432,6 +467,38 @@ export class TakServer extends Construct {
         LDAP_SECURE_URL: Fn.importValue(createAuthImportValue(props.contextConfig.stackName, AUTH_EXPORT_NAMES.LDAPS_ENDPOINT)),
         StackName: Stack.of(this).stackName,
         Environment: props.environment,
+        ...(this.caKmsKeys ? {
+          PKI_ENV_LABEL: props.contextConfig.pki!.kmsCa!.environmentLabel,
+          PKI_KMS_CA_KEYS: this.caKmsKeys.pkcs11SlotsValue,
+          PKI_KMS_REGION: Stack.of(this).region,
+          PKI_ALERT_TOPIC_ARN: this.certificateAlarms!.alertTopic.topicArn,
+          // First-boot PKI (pki-bootstrap.sh, #189). The server cert CN is the first name: the public
+          // service name, then the TAK host name; both come from the config and the hosted zone.
+          PKI_ENROLLMENT_CA_SECRET: this.caKmsKeys.enrollmentCaSecret.secretArn,
+          PKI_SERVER_NAMES: [
+            props.contextConfig.takserver.servicename,
+            props.contextConfig.takserver.hostname,
+          ].map(n => `${n}.${Fn.importValue(props.network.hostedZoneName)}`).join(','),
+          P12_PROFILE: validateP12Profile(props.contextConfig.pki!.kmsCa!.p12Profile),
+          ...(() => {
+            const v = resolvePkiValidity(props.contextConfig.pki!.kmsCa!.validity);
+            const r = resolvePkiRotation(props.contextConfig.pki!.kmsCa!.rotation, v);
+            return {
+              PKI_CLIENT_CERT_DAYS: String(r.clientCertDays),
+              PKI_ROTATION_BUFFER_DAYS: String(r.bufferDays),
+              PKI_ENROLLMENT_CA_ROTATION_DAYS: String(r.enrollmentCaRotationDays),
+              PKI_ROTATION_REQUIRE_APPROVAL: r.requireApproval.join(','),
+              PKI_ROOT_DAYS: String(v.rootDays),
+              PKI_INTERMEDIATE_DAYS: String(v.intermediateDays),
+              PKI_ENROLLMENT_CA_DAYS: String(v.enrollmentCaDays),
+              PKI_SERVER_CERT_DAYS: String(v.serverCertDays),
+              PKI_ADMIN_CERT_DAYS: String(v.adminCertDays),
+              PKI_SERVER_CERT_RENEW_DAYS: String(v.serverCertRenewDays),
+              PKI_ADMIN_CERT_RENEW_DAYS: String(v.adminCertRenewDays),
+              PKI_ADMIN_CERT_GRACE_DAYS: String(v.adminCertGraceDays),
+            };
+          })(),
+        } : {}),
         ECS_Cluster_Name: props.infrastructure.ecsCluster.clusterName,
         ECS_Service_Name: `${Stack.of(this).stackName}-TakServer`,
         PostgresURL: `jdbc:postgresql://${props.network.databaseHostname}:5432/takserver`,

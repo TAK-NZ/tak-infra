@@ -9,9 +9,11 @@ on:
   push:
     branches:
       - main
+      - feature/ca-overhaul
   pull_request:
     branches:
       - main
+      - feature/ca-overhaul
   workflow_call:
   workflow_dispatch:
 
@@ -36,8 +38,9 @@ jobs:
 
       - name: Install system dependencies
         # Required for TAK server XML configuration validation (xmllint)
-        # Note: auth-infra doesn't need this, but tak-infra has XML validation tests
-        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+        # Note: auth-infra doesn't need this, but tak-infra has XML validation tests.
+        # softhsm2, opensc, libengine-pkcs11-openssl and jq are for the kms-ca.sh tests (SoftHSM stands in for KMS).
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils softhsm2 opensc libengine-pkcs11-openssl jq
 
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -61,5 +64,47 @@ jobs:
           fi
           ./scripts/github/check-breaking-changes.sh tak prod $OVERRIDE
 
+      - name: Type check (ts-node compiles the app at deploy time; Jest does not catch every error)
+        run: npx tsc --noEmit -p .
+      - name: Test kms-ca.sh (CA signing through PKCS#11)
+        run: test/KmsCa/test-kms-ca.sh
+
+      - name: Test pki-bootstrap.sh (first-boot PKI)
+        run: test/KmsCa/test-pki-bootstrap.sh
+
+      - name: Test cert-metrics.sh (certificate metrics)
+        run: test/KmsCa/test-cert-metrics.sh
+
+      - name: Test cluster-lock.sh (lock for steps that run once per cluster)
+        run: test/KmsCa/test-cluster-lock.sh
+      - name: Test cluster-lock.sh on Ubuntu 22.04 and 24.04 (GNU coreutils; the runner image has uutils)
+        run: |
+          for image in ubuntu:22.04 ubuntu:24.04; do
+            docker run --rm -v "$PWD":/repo -w /repo "$image" test/KmsCa/test-cluster-lock.sh
+          done
+      - name: Test server-cert-rotate.sh (TAK Server certificate rotation)
+        run: test/KmsCa/test-server-cert-rotate.sh
+      - name: Test rotation-coverage.sh (who is still on the old side of a rotation)
+        run: test/KmsCa/test-rotation-coverage.sh
+      - name: Test revoke-cert.sh (CRLs of the Enrollment CAs, CoreConfig.xml)
+        run: test/KmsCa/test-pki-crl.sh
+      - name: Test pki-trust.sh (truststores and signing keystore generations)
+        run: test/KmsCa/test-pki-trust.sh
+      - name: Test pki-rotate.sh (rotation orchestrator)
+        run: test/KmsCa/test-pki-rotate.sh
+      - name: Test rotation/enrollment.sh (Enrollment CA rotation, #135)
+        run: test/KmsCa/test-rotation-enrollment.sh
+      - name: Test pki-legacy-reset.sh (an old-PKI stack moves to the first-boot PKI)
+        run: test/KmsCa/test-pki-legacy-reset.sh
+      - name: Test rotation/root.sh (Root CA rotation with a cross-certificate, #169)
+        run: test/KmsCa/test-rotation-root.sh
+      - name: Test rotation/intermediate.sh (Intermediate CA rotation, bridge and cut, #172)
+        run: test/KmsCa/test-rotation-intermediate.sh
+      - name: Test admin-cert-rotate.sh (admin certificate rotation)
+        run: test/KmsCa/test-admin-cert-rotate.sh
+      - name: Test admin-p12-reexport.sh (admin.p12 readable by OpenSSL 3)
+        run: test/KmsCa/test-admin-p12-reexport.sh
+      - name: Test certbot-renew.sh (Let's Encrypt renewal, cron line, failure metric)
+        run: test/KmsCa/test-certbot-renew.sh
       - name: Run tests with coverage report
         run: npm run test:coverage

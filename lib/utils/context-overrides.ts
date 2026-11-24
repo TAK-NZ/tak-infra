@@ -5,6 +5,7 @@
 
 import * as cdk from 'aws-cdk-lib';
 import { ContextEnvironmentConfig } from '../stack-config';
+import { validateEnvironmentLabel } from './pki-names';
 
 export function applyContextOverrides(
   app: cdk.App, 
@@ -70,7 +71,94 @@ export function applyContextOverrides(
       ...baseConfig.bedrock,
       knowledgeBases: parseContextList(app.node.tryGetContext('bedrockKnowledgeBases')) ?? baseConfig.bedrock?.knowledgeBases,
     },
+    pki: applyPkiOverrides(app, baseConfig.pki, app.node.tryGetContext('stackName') ?? baseConfig.stackName),
   };
+}
+
+/**
+ * The stack name as the PKI environment label, when it is a valid label. Only matters when the PKI is enabled;
+ * an invalid name then needs an explicit pkiEnvironmentLabel.
+ */
+function defaultEnvironmentLabel(stackName: string | undefined, enabled: boolean): string | undefined {
+  if (!enabled || !stackName) return undefined;
+  try {
+    validateEnvironmentLabel(stackName);
+  } catch {
+    throw new Error(`The stack name "${stackName}" cannot be the PKI environment label (1-24 letters, digits, spaces or hyphens): set --context pkiEnvironmentLabel=<label> or pki.kmsCa.environmentLabel`);
+  }
+  return stackName;
+}
+/**
+ * Root CA / Intermediate CA keys in KMS (#136) and the first-boot PKI. cdk.json turns it on for the dev-test and
+ * prod profiles; `--context pkiKmsCaEnabled=false` keeps a stack on the old PKI. The environment label defaults to
+ * the stack name. Stays undefined when neither the config nor the command line mentions it.
+ */
+function applyPkiOverrides(app: cdk.App, base: ContextEnvironmentConfig['pki'], stackName: string): ContextEnvironmentConfig['pki'] {
+  const enabled = parseContextBoolean(app.node.tryGetContext('pkiKmsCaEnabled'));
+  const environmentLabel = app.node.tryGetContext('pkiEnvironmentLabel');
+  const rootCaNumbers = parseContextNumberList(app.node.tryGetContext('pkiRootCaNumbers'));
+  const intermediateCaNumbers = parseContextNumberList(app.node.tryGetContext('pkiIntermediateCaNumbers'));
+  const alertEmail = app.node.tryGetContext('pkiAlertEmail');
+  const infoEmail = app.node.tryGetContext('pkiInfoEmail');
+  const p12Profile = app.node.tryGetContext('pkiP12Profile');
+  const rotationDays = {
+    clientCertDays: parseContextNumber(app.node.tryGetContext('pkiClientCertDays')),
+    bufferDays: parseContextNumber(app.node.tryGetContext('pkiRotationBufferDays')),
+    enrollmentCaRotationDays: parseContextNumber(app.node.tryGetContext('pkiEnrollmentCaRotationDays')),
+  };
+  const rotationApproval = parseContextList(app.node.tryGetContext('pkiRotationRequireApproval'));
+  const rotationOverridden = Object.values(rotationDays).some(v => v !== undefined) || rotationApproval !== undefined;
+  const days = {
+    rootDays: parseContextNumber(app.node.tryGetContext('pkiRootDays')),
+    intermediateDays: parseContextNumber(app.node.tryGetContext('pkiIntermediateDays')),
+    enrollmentCaDays: parseContextNumber(app.node.tryGetContext('pkiEnrollmentCaDays')),
+    serverCertDays: parseContextNumber(app.node.tryGetContext('pkiServerCertDays')),
+    adminCertDays: parseContextNumber(app.node.tryGetContext('pkiAdminCertDays')),
+    serverCertRenewDays: parseContextNumber(app.node.tryGetContext('pkiServerCertRenewDays')),
+    adminCertRenewDays: parseContextNumber(app.node.tryGetContext('pkiAdminCertRenewDays')),
+    adminCertGraceDays: parseContextNumber(app.node.tryGetContext('pkiAdminCertGraceDays')),
+  };
+  const daysOverridden = Object.values(days).some(v => v !== undefined);
+  const overridden = [enabled, environmentLabel, rootCaNumbers, intermediateCaNumbers, alertEmail, infoEmail, p12Profile].some(v => v !== undefined) || daysOverridden || rotationOverridden;
+  if (!base?.kmsCa && !overridden) return base;
+  const kmsCa = base?.kmsCa;
+  const merged = {
+    enabled: enabled ?? kmsCa?.enabled ?? false,
+    environmentLabel: environmentLabel ?? kmsCa?.environmentLabel ?? defaultEnvironmentLabel(stackName, enabled ?? kmsCa?.enabled ?? false),
+    rootCaNumbers: rootCaNumbers ?? kmsCa?.rootCaNumbers,
+    intermediateCaNumbers: intermediateCaNumbers ?? kmsCa?.intermediateCaNumbers,
+    alertEmail: alertEmail ?? kmsCa?.alertEmail,
+    infoEmail: infoEmail ?? kmsCa?.infoEmail,
+    p12Profile: p12Profile ?? kmsCa?.p12Profile,
+    rotation: rotationOverridden || kmsCa?.rotation
+      ? {
+        ...kmsCa?.rotation,
+        ...Object.fromEntries(Object.entries(rotationDays).filter(([, v]) => v !== undefined)),
+        ...(rotationApproval !== undefined ? { requireApproval: rotationApproval } : {}),
+      }
+      : undefined,
+    validity: daysOverridden || kmsCa?.validity
+      ? { ...kmsCa?.validity, ...Object.fromEntries(Object.entries(days).filter(([, v]) => v !== undefined)) }
+      : undefined,
+  };
+  if (merged.enabled && !merged.environmentLabel) {
+    throw new Error('pki.kmsCa is enabled but has no environmentLabel (set pki.kmsCa.environmentLabel or --context pkiEnvironmentLabel=<label>)');
+  }
+  return { ...base, kmsCa: merged as NonNullable<ContextEnvironmentConfig['pki']>['kmsCa'] };
+}
+
+/**
+ * Parse a comma-separated list of numbers (for example `1,2`). Anything that is not a number is
+ * an error rather than silently dropped.
+ */
+function parseContextNumberList(value: any): number[] | undefined {
+  const items = parseContextList(value);
+  if (items === undefined) return undefined;
+  return items.map(item => {
+    const n = Number(item);
+    if (!Number.isInteger(n)) throw new Error(`Invalid number '${item}' in context list '${value}'`);
+    return n;
+  });
 }
 
 /**
