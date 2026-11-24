@@ -12,8 +12,12 @@ if ! aws cloudformation describe-stacks --stack-name "$STACK_NAME" >/dev/null 2>
   exit 0
 fi
 
-# Generate CDK template with same context as deployment
-npm run cdk synth -- --context envType=prod --context stackName=Demo > template.json
+# Generate CDK template with same context as deployment. The stack name is part of the template (the PKI environment
+# label defaults to it, and it is in the names of the key aliases), so take it from the stack: TAK-<name>-TakInfra
+CDK_STACK_NAME="${STACK_NAME#TAK-}"
+CDK_STACK_NAME="${CDK_STACK_NAME%-TakInfra}"
+# Further arguments (for example --context pkiKmsCaEnabled=false for Demo) go to cdk synth
+npm run cdk synth -- --context envType=prod --context stackName="$CDK_STACK_NAME" "${@:2}" > template.json
 
 # Create change set
 aws cloudformation create-change-set \
